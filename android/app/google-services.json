@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "502664654131",
+    "project_id": "logicodeapp-ba496",
+    "storage_bucket": "logicodeapp-ba496.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:502664654131:android:76fae17e1fabea7ab3a246",
+        "android_client_info": {
+          "package_name": "com.example.logicode"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "502664654131-8kf6evlkqoumpi8ndlvedflbeuj5517d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBTzvU_P8fG2CnkjnId6ZrR9E5DuF0NeL0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "502664654131-8kf6evlkqoumpi8ndlvedflbeuj5517d.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "502664654131-l32dbdjspj73m5t2vnv05glt1k6fv0tq.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.logicode"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
