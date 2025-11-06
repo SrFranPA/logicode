@@ -52,12 +52,16 @@ class _CustomButtonState extends State<CustomButton>
             children: [
               Icon(widget.icon, color: widget.textColor),
               const SizedBox(width: 10),
-              Text(
-                widget.text,
-                style: TextStyle(
-                  color: widget.textColor,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+              Expanded( // 👈 Aquí está la corrección
+                child: Text(
+                  widget.text,
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: widget.textColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],

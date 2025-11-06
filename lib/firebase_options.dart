@@ -51,11 +51,12 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBTzvU_P8fG2CnkjnId6ZrR9E5DuF0NeL0',
-    appId: '1:502664654131:android:76fae17e1fabea7ab3a246',
-    messagingSenderId: '502664654131',
+    apiKey: 'TU_API_KEY',
+    appId: 'TU_APP_ID',
+    messagingSenderId: 'TU_MESSAGING_SENDER_ID',
     projectId: 'logicodeapp-ba496',
-    storageBucket: 'logicodeapp-ba496.firebasestorage.app',
+    databaseURL: 'https://logicodeapp-ba496-default-rtdb.firebaseio.com', // 🔥 AGREGA ESTO
+    storageBucket: 'logicodeapp-ba496.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(

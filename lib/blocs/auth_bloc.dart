@@ -9,24 +9,29 @@ class AuthBloc {
   final DatabaseReference _dbRef =
       FirebaseDatabase.instance.ref().child('users');
 
-  // ---------------------- GOOGLE LOGIN ----------------------
+  // ---------------------- GOOGLE LOGIN CORREGIDO ----------------------
   Future<User?> signInWithGoogle() async {
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn.instance.authenticate();
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
       if (googleUser == null) return null;
 
-      final googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
 
       final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
       UserCredential userCredential =
-          await _auth.signInWithCredential(credential);
+          await FirebaseAuth.instance.signInWithCredential(credential);
+
       final user = userCredential.user;
+
       if (user != null) {
-        // Si es primera vez, crear usuario en DB con nodos vacíos
-        final snapshot = await _dbRef.child(user.uid).get();
+        final userRef = _dbRef.child(user.uid);
+        final snapshot = await userRef.get();
+
         if (!snapshot.exists) {
           final newUser = UserModel(
             uid: user.uid,
@@ -47,26 +52,29 @@ class AuthBloc {
             },
             records: {},
           );
-          await _dbRef.child(user.uid).set(newUser.toMap());
+
+          await userRef.set(newUser.toMap());
+          print("✅ Usuario creado en Firebase Database");
+        } else {
+          print("ℹ️ El usuario ya existía en Firebase Database");
         }
       }
+
       return user;
     } catch (e) {
-      throw Exception('Error Google SignIn: $e');
+      print("⚠️ ERROR Google Sign-In: $e");
+      return null;
     }
   }
 
+  // ---------------------- SIGN OUT ----------------------
   Future<void> signOutGoogle() async {
-  try {
-    // Cerrar sesión de Firebase
-    await FirebaseAuth.instance.signOut();
-    
-    // Cerrar sesión de Google
-    await GoogleSignIn.instance.signOut();
-
-    print('Usuario desconectado correctamente');
-  } catch (e) {
-    print('Error al cerrar sesión: $e');
+    try {
+      await _auth.signOut();
+      await GoogleSignIn().signOut();
+      print('✅ Usuario desconectado correctamente');
+    } catch (e) {
+      print('❌ Error al cerrar sesión: $e');
+    }
   }
-}
 }
