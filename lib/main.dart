@@ -1,67 +1,90 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'firebase_options.dart';
-import 'package:logicode/screens/home_screen.dart';
-import 'package:logicode/screens/main_menu_screen.dart'; // ✅ Y esta
+// lib/main.dart
 
-Future<void> main() async {
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_core/firebase_core.dart';
+
+import 'blocs/onboarding/onboarding_cubit.dart';
+import 'blocs/auth/auth_cubit.dart';
+import 'blocs/auth/auth_state.dart';
+
+import 'data/repositories/auth_repository.dart';
+
+import 'services/local_storage_service.dart';
+import 'firebase_options.dart';
+
+import 'presentation/screens/onboarding/name_screen.dart';
+import 'presentation/screens/home/home_screen.dart';
+import 'presentation/screens/role_gate.dart';
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Inicializar Firebase de forma segura
-  try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-  } catch (e) {
-    debugPrint('⚠️ Firebase ya estaba inicializado o ocurrió un error: $e');
-  }
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
-  runApp(const MyApp());
+  // 👉 Un solo OnboardingCubit para toda la app
+  final onboardingCubit = OnboardingCubit();
+
+  // ¿Ya terminó onboarding previamente?
+  final onboardingCompleted =
+      await LocalStorageService().getOnboardingCompleted();
+
+  runApp(MyApp(
+    onboardingCubit: onboardingCubit,
+    showOnboarding: !onboardingCompleted,
+  ));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final OnboardingCubit onboardingCubit;
+  final bool showOnboarding;
+
+  const MyApp({
+    super.key,
+    required this.onboardingCubit,
+    required this.showOnboarding,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'LogiCode App',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.amber,
-        useMaterial3: true,
+    return MultiBlocProvider(
+      providers: [
+        // ⭐ OnboardingCubit global
+        BlocProvider<OnboardingCubit>(
+          create: (_) => onboardingCubit,
+        ),
+
+        // ⭐ AuthCubit con repositorio y onboarding adjunto
+        BlocProvider<AuthCubit>(
+          create: (_) {
+            final auth = AuthCubit(AuthRepository());
+            auth.attachOnboarding(onboardingCubit);
+            return auth;
+          },
+        ),
+      ],
+
+      // 🔥 Escucha global para redirigir según el rol
+      child: BlocListener<AuthCubit, AuthState>(
+        listener: (context, state) {
+          if (state is AuthAuthenticated) {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (_) => RoleGate(uid: state.user.uid),
+              ),
+              (route) => false,
+            );
+          }
+        },
+
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          home: showOnboarding ? const NameScreen() : const HomeScreen(),
+        ),
       ),
-      home: const AuthGate(),
-    );
-  }
-}
-
-/// 🔐 Widget que controla si el usuario está logueado o no
-class AuthGate extends StatelessWidget {
-  const AuthGate({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.authStateChanges(),
-      builder: (context, snapshot) {
-        // Esperando conexión con Firebase
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        // Si el usuario está autenticado
-        if (snapshot.hasData) {
-          return const MainMenuScreen();
-        }
-
-        // Si no hay usuario autenticado
-        
-        return  HomeScreen();
-      },
     );
   }
 }
