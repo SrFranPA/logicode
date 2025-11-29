@@ -32,7 +32,7 @@ class _AdminCursosScreenState extends State<AdminCursosScreen> {
 
       body: StreamBuilder<QuerySnapshot>(
         stream: _db.collection("cursos").orderBy("orden").snapshots(),
-        builder: (context, snapshot) {
+        builder: (_, snapshot) {
           if (snapshot.hasError) {
             return const Center(child: Text("Error al cargar cursos"));
           }
@@ -109,7 +109,7 @@ class _AdminCursosScreenState extends State<AdminCursosScreen> {
   }
 
   // -------------------------------------------------------------------
-  // CREAR CURSO (CON CAMPO ID)
+  // CREAR CURSO
   // -------------------------------------------------------------------
   void _openCreateDialog() {
     final idCtrl = TextEditingController();
@@ -127,7 +127,7 @@ class _AdminCursosScreenState extends State<AdminCursosScreen> {
             children: [
               TextField(
                 controller: idCtrl,
-                decoration: const InputDecoration(labelText: "ID del curso (ej: abst)"),
+                decoration: const InputDecoration(labelText: "ID del curso (ej: desc_prob)"),
               ),
               TextField(
                 controller: nameCtrl,
@@ -156,10 +156,16 @@ class _AdminCursosScreenState extends State<AdminCursosScreen> {
             onPressed: () async {
               final id = idCtrl.text.trim();
               final nombre = nameCtrl.text.trim();
-              final orden = int.tryParse(orderCtrl.text.trim()) ?? 0;
               final descripcion = descCtrl.text.trim();
+              final orden = int.tryParse(orderCtrl.text) ?? -1;
 
-              if (id.isEmpty || nombre.isEmpty) return;
+              // Validación real
+              if (id.isEmpty || nombre.isEmpty || orden < 0) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Llena todos los campos correctamente")),
+                );
+                return;
+              }
 
               await _db.collection("cursos").doc(id).set({
                 "nombre": nombre,
@@ -177,12 +183,12 @@ class _AdminCursosScreenState extends State<AdminCursosScreen> {
   }
 
   // -------------------------------------------------------------------
-  // EDITAR (SIN MOSTRAR ID)
+  // EDITAR
   // -------------------------------------------------------------------
   void _openEditDialog(DocumentSnapshot curso) {
     final nameCtrl = TextEditingController(text: curso["nombre"]);
     final orderCtrl = TextEditingController(text: curso["orden"].toString());
-    final descCtrl = TextEditingController(text: curso["descripcion"] ?? "");
+    final descCtrl = TextEditingController(text: curso["descripcion"]);
 
     showDialog(
       context: context,
@@ -203,8 +209,8 @@ class _AdminCursosScreenState extends State<AdminCursosScreen> {
               ),
               TextField(
                 controller: descCtrl,
-                maxLines: 3,
                 decoration: const InputDecoration(labelText: "Descripción"),
+                maxLines: 3,
               ),
             ],
           ),
@@ -216,12 +222,14 @@ class _AdminCursosScreenState extends State<AdminCursosScreen> {
             child: const Text("Cancelar"),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               final nombre = nameCtrl.text.trim();
-              final orden = int.tryParse(orderCtrl.text.trim()) ?? 0;
               final descripcion = descCtrl.text.trim();
+              final orden = int.tryParse(orderCtrl.text) ?? -1;
 
-              _db.collection("cursos").doc(curso.id).update({
+              if (nombre.isEmpty || orden < 0) return;
+
+              await _db.collection("cursos").doc(curso.id).update({
                 "nombre": nombre,
                 "orden": orden,
                 "descripcion": descripcion,
@@ -237,16 +245,13 @@ class _AdminCursosScreenState extends State<AdminCursosScreen> {
   }
 
   // -------------------------------------------------------------------
-  // CONFIRMAR ELIMINACIÓN
+  // ELIMINAR
   // -------------------------------------------------------------------
   void _confirmDelete(String id) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text(
-          "¿Eliminar curso?",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+        title: const Text("¿Eliminar curso?"),
         content: const Text("Esta acción no se puede deshacer."),
         actions: [
           TextButton(
@@ -257,19 +262,12 @@ class _AdminCursosScreenState extends State<AdminCursosScreen> {
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text("Eliminar"),
             onPressed: () {
+              _db.collection("cursos").doc(id).delete();
               Navigator.pop(context);
-              _deleteCurso(id);
             },
           ),
         ],
       ),
     );
-  }
-
-  // -------------------------------------------------------------------
-  // ELIMINAR
-  // -------------------------------------------------------------------
-  void _deleteCurso(String id) {
-    _db.collection("cursos").doc(id).delete();
   }
 }

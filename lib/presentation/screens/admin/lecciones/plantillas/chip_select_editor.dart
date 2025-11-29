@@ -18,6 +18,9 @@ class _ChipSelectEditorState extends State<ChipSelectEditor> {
   final _storage = FirebaseStorage.instance;
 
   final tituloCtrl = TextEditingController();
+  final feedbackCorrectoCtrl = TextEditingController();
+  final feedbackIncorrectoCtrl = TextEditingController();
+
   bool cargando = true;
 
   File? imagenPregunta;
@@ -32,9 +35,6 @@ class _ChipSelectEditorState extends State<ChipSelectEditor> {
     _cargarDatos();
   }
 
-  // -----------------------------------------------------------
-  // CARGAR DATOS EXISTENTES
-  // -----------------------------------------------------------
   Future<void> _cargarDatos() async {
     final doc = await _db.collection("banco_preguntas").doc(widget.preguntaId).get();
 
@@ -51,25 +51,21 @@ class _ChipSelectEditorState extends State<ChipSelectEditor> {
         );
 
         respuestaCorrecta = c["respuesta_correcta"];
+
+        feedbackCorrectoCtrl.text = c["feedback_correcto"] ?? "";
+        feedbackIncorrectoCtrl.text = c["feedback_incorrecto"] ?? "";
       }
     }
 
     setState(() => cargando = false);
   }
 
-  // -----------------------------------------------------------
-  // SUBIR IMAGEN A STORAGE
-  // -----------------------------------------------------------
   Future<String?> _subirImagen(File file, String nombre) async {
     final ref = _storage.ref().child("preguntas/${widget.preguntaId}/$nombre");
-
     await ref.putFile(file);
     return await ref.getDownloadURL();
   }
 
-  // -----------------------------------------------------------
-  // GUARDAR EN FIRESTORE
-  // -----------------------------------------------------------
   Future<void> _guardar() async {
     if (tituloCtrl.text.trim().isEmpty) {
       _msg("El enunciado no puede estar vacío");
@@ -84,7 +80,6 @@ class _ChipSelectEditorState extends State<ChipSelectEditor> {
       return;
     }
 
-    // Subir imagen principal si existe
     String? imagenPrincipalUrl = urlImagenPregunta;
 
     if (imagenPregunta != null) {
@@ -97,19 +92,18 @@ class _ChipSelectEditorState extends State<ChipSelectEditor> {
         "imagen_pregunta": imagenPrincipalUrl,
         "opciones": opciones,
         "respuesta_correcta": respuestaCorrecta,
+        "feedback_correcto": feedbackCorrectoCtrl.text.trim(),
+        "feedback_incorrecto": feedbackIncorrectoCtrl.text.trim(),
       }
     });
 
-    _msg("Guardado correctamente");
+    _msg("Guardado correctamente ✔");
   }
 
   void _msg(String txt) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(txt)));
   }
 
-  // -----------------------------------------------------------
-  // AGREGAR OPCIÓN
-  // -----------------------------------------------------------
   void _agregarOpcion() {
     final textoCtrl = TextEditingController();
     File? img;
@@ -139,10 +133,7 @@ class _ChipSelectEditorState extends State<ChipSelectEditor> {
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancelar"),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancelar")),
           ElevatedButton(
             onPressed: () async {
               String? url;
@@ -167,15 +158,19 @@ class _ChipSelectEditorState extends State<ChipSelectEditor> {
     );
   }
 
-  // -----------------------------------------------------------
-  // UI PRINCIPAL
-  // -----------------------------------------------------------
+  Future<void> _seleccionarImagenPrincipal() async {
+    final picker = ImagePicker();
+    final p = await picker.pickImage(source: ImageSource.gallery);
+
+    if (p != null) {
+      setState(() => imagenPregunta = File(p.path));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (cargando) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
@@ -189,7 +184,6 @@ class _ChipSelectEditorState extends State<ChipSelectEditor> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Enunciado
             TextField(
               controller: tituloCtrl,
               decoration: const InputDecoration(labelText: "Enunciado de la pregunta"),
@@ -197,7 +191,6 @@ class _ChipSelectEditorState extends State<ChipSelectEditor> {
 
             const SizedBox(height: 20),
 
-            // IMAGEN PRINCIPAL
             Row(
               children: [
                 const Text("Imagen principal: "),
@@ -213,6 +206,12 @@ class _ChipSelectEditorState extends State<ChipSelectEditor> {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Image.network(urlImagenPregunta!, height: 100),
+              ),
+
+            if (imagenPregunta != null)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Image.file(imagenPregunta!, height: 100),
               ),
 
             const SizedBox(height: 20),
@@ -256,6 +255,22 @@ class _ChipSelectEditorState extends State<ChipSelectEditor> {
               ),
             ),
 
+            const SizedBox(height: 20),
+            const Text("Retroalimentación correcta"),
+            TextField(
+              controller: feedbackCorrectoCtrl,
+              maxLines: 2,
+            ),
+
+            const SizedBox(height: 12),
+            const Text("Retroalimentación incorrecta"),
+            TextField(
+              controller: feedbackIncorrectoCtrl,
+              maxLines: 2,
+            ),
+
+            const SizedBox(height: 20),
+
             ElevatedButton(
               onPressed: _guardar,
               style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
@@ -265,14 +280,5 @@ class _ChipSelectEditorState extends State<ChipSelectEditor> {
         ),
       ),
     );
-  }
-
-  Future<void> _seleccionarImagenPrincipal() async {
-    final picker = ImagePicker();
-    final p = await picker.pickImage(source: ImageSource.gallery);
-
-    if (p != null) {
-      setState(() => imagenPregunta = File(p.path));
-    }
   }
 }
