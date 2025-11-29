@@ -1,20 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../blocs/onboarding/onboarding_cubit.dart';
-import 'age_screen.dart';
 
-class NameScreen extends StatelessWidget {
+import '../../../blocs/onboarding/onboarding_cubit.dart';
+import 'age_screen.dart';   // 🔥 IMPORTANTE: aquí estaba el error
+
+class NameScreen extends StatefulWidget {
   const NameScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final nameCtrl = TextEditingController();
-    final onboarding = context.read<OnboardingCubit>();
+  State<NameScreen> createState() => _NameScreenState();
+}
 
+class _NameScreenState extends State<NameScreen> {
+  final controller = TextEditingController();
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF6EDF7),
+      backgroundColor: const Color(0xFFF7EDF7),
       body: Padding(
-        padding: const EdgeInsets.all(28.0),
+        padding: const EdgeInsets.all(30),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -22,30 +33,51 @@ class NameScreen extends StatelessWidget {
               "¿Cuál es tu nombre?",
               style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 25),
+            const SizedBox(height: 30),
+
             TextField(
-              controller: nameCtrl,
+              controller: controller,
               decoration: InputDecoration(
-                labelText: "Tu nombre",
+                hintText: "Escribe tu nombre...",
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(18),
                 ),
+                filled: true,
+                fillColor: Colors.white,
               ),
             ),
-            SizedBox(height: 25),
-            ElevatedButton(
-              onPressed: () {
-                final nombre = nameCtrl.text.trim();
-                if (nombre.isEmpty) return;
 
-                onboarding.setNombre(nombre);
+            const SizedBox(height: 40),
 
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const AgeScreen()),
-                );
-              },
-              child: const Text("Continuar"),
+            SizedBox(
+              width: double.infinity,
+              height: 60,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFFA200),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                ),
+                onPressed: () {
+                  if (controller.text.trim().isEmpty) return;
+
+                  context
+                      .read<OnboardingCubit>()
+                      .setNombre(controller.text.trim());
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const AgeScreen(),
+                    ),
+                  );
+                },
+                child: const Text(
+                  "Continuar",
+                  style: TextStyle(fontSize: 22, color: Colors.white),
+                ),
+              ),
             ),
           ],
         ),

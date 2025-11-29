@@ -2,25 +2,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'onboarding_state.dart';
 
 class OnboardingCubit extends Cubit<OnboardingState> {
-  /// 👉 Valores que el usuario ingresa en el flujo inicial
-  String nombre = "";
-  int edad = 0;
+  OnboardingCubit() : super(OnboardingState());
 
-  OnboardingCubit() : super(OnboardingInitial());
-
-  /// -------------------------
-  /// GUARDAR NOMBRE
-  /// -------------------------
-  void setNombre(String value) {
-    nombre = value;
-    emit(OnboardingUpdated(nombre, edad));
+  void setNombre(String nombre) {
+    emit(state.copyWith(nombre: nombre));
   }
 
-  /// -------------------------
-  /// GUARDAR EDAD
-  /// -------------------------
-  void setEdad(int value) {
-    edad = value;
-    emit(OnboardingUpdated(nombre, edad));
+  void setEdad(int edad) {
+    emit(state.copyWith(edad: edad));
   }
 }

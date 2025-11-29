@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'admin/admin_home_screen.dart';
-import 'home/home_screen.dart';
+import '../screens/admin/admin_home_screen.dart';
+import '../screens/home/home_screen.dart';
 
 class RoleGate extends StatelessWidget {
   final String uid;
+
   const RoleGate({super.key, required this.uid});
 
   @override
@@ -16,12 +17,9 @@ class RoleGate extends StatelessWidget {
           .doc(uid)
           .get(),
       builder: (context, snapshot) {
-        // Cargando
         if (!snapshot.hasData) {
           return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
+            body: Center(child: CircularProgressIndicator()),
           );
         }
 
@@ -29,11 +27,10 @@ class RoleGate extends StatelessWidget {
 
         final rol = data?['rol'] ?? "estudiante";
 
-        // 🔥 Redirección según rol
         if (rol == "admin") {
           return const AdminHomeScreen();
         } else {
-          return const HomeScreen(); // pantalla estudiante
+          return const HomeScreen();
         }
       },
     );

@@ -1,61 +1,64 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-
 import 'auth_state.dart';
 import '../../data/repositories/auth_repository.dart';
-import '../onboarding/onboarding_cubit.dart';
 
 class AuthCubit extends Cubit<AuthState> {
-  final AuthRepository _repo;
-  OnboardingCubit? _onboarding;
+  final AuthRepository repo;
+  final users = FirebaseFirestore.instance.collection('usuarios');
 
-  AuthCubit(this._repo) : super(AuthInitial());
+  AuthCubit(this.repo) : super(AuthInitial());
 
-  void attachOnboarding(OnboardingCubit onboarding) {
-    _onboarding = onboarding;
-  }
-
-  // -------------------------------------------------
   // LOGIN EMAIL
-  // -------------------------------------------------
   Future<void> loginEmailPassword(String email, String pass) async {
     emit(AuthLoading());
     try {
-      final cred = await _repo.loginEmail(email, pass);
-      final rol = await _repo.getUserRole(cred.user!.uid);
+      final user = await repo.loginEmailPassword(email, pass);
+      if (user == null) throw Exception("Error iniciando sesión");
 
-      emit(AuthAuthenticated(cred.user!, rol ?? "estudiante"));
-    } catch (_) {
-      emit(AuthError("Correo o contraseña incorrectos."));
+      final userDoc = await users.doc(user.uid).get();
+      final rol = userDoc.data()?['rol'] ?? "estudiante";
+
+      emit(AuthAuthenticated(uid: user.uid, rol: rol));
+    } catch (e) {
+      emit(AuthError(e.toString()));
     }
   }
 
-  // -------------------------------------------------
   // REGISTER EMAIL
-  // -------------------------------------------------
   Future<void> registerEmailPassword(
       String email, String pass, String nombre, int edad) async {
     emit(AuthLoading());
     try {
-      final cred = await _repo.registerEmail(email, pass, nombre, edad);
-      emit(AuthAuthenticated(cred.user!, "estudiante"));
-    } catch (_) {
-      emit(AuthError("Ya existe una cuenta con ese correo."));
+      final user =
+          await repo.registerEmailPassword(email, pass, nombre, edad);
+
+      if (user == null) throw Exception("Error creando usuario");
+
+      emit(AuthAuthenticated(uid: user.uid, rol: "estudiante"));
+    } catch (e) {
+      emit(AuthError(e.toString()));
     }
   }
 
-  // -------------------------------------------------
-  // GOOGLE LOGIN
-  // -------------------------------------------------
-  Future<void> signInWithGoogle() async {
+  // LOGIN GOOGLE
+  Future<void> loginGoogle() async {
     emit(AuthLoading());
     try {
-      final cred = await _repo.signInWithGoogle();
-      final rol = await _repo.getUserRole(cred.user!.uid);
+      final user = await repo.loginGoogle();
+      if (user == null) throw Exception("Google cancelado");
 
-      emit(AuthAuthenticated(cred.user!, rol ?? "estudiante"));
-    } catch (_) {
-      emit(AuthError("Error al conectar con Google"));
+      final userDoc = await users.doc(user.uid).get();
+      final rol = userDoc.data()?['rol'] ?? "estudiante";
+
+      emit(AuthAuthenticated(uid: user.uid, rol: rol));
+    } catch (e) {
+      emit(AuthError(e.toString()));
     }
+  }
+
+  Future<void> logout() async {
+    await repo.logout();
+    emit(AuthInitial());
   }
 }

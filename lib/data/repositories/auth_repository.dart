@@ -1,87 +1,74 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+// lib/data/repositories/auth_repository.dart
+
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../services/firebase_auth_service.dart';
+import '../../services/user_service.dart';
 
 class AuthRepository {
-  final _auth = FirebaseAuthService();
-  final _db = FirebaseFirestore.instance;
+  final FirebaseAuthService authService;
+  final UserService userService;
 
-  // -------------------------------------------------
-  // LOGIN EMAIL
-  // -------------------------------------------------
-  Future<UserCredential> loginEmail(String email, String pass) {
-    return _auth.loginEmailPassword(email, pass);
+  AuthRepository(this.authService, this.userService);
+
+  // REGISTRO EMAIL
+  Future<User?> registerEmailPassword(
+    String email,
+    String pass,
+    String nombre,
+    int edad,
+  ) async {
+    try {
+      final credential = await authService.registerEmailPassword(email, pass);
+
+      final uid = credential.user?.uid;
+      if (uid == null) throw Exception("No se pudo obtener UID.");
+
+      await userService.createUser(
+        uid: uid,
+        nombre: nombre,
+        email: email,
+        edad: edad,
+        rol: "estudiante",
+      );
+
+      return credential.user;
+    } catch (e) {
+      rethrow;
+    }
   }
 
-  // -------------------------------------------------
-  // REGISTER EMAIL
-  // -------------------------------------------------
-  Future<UserCredential> registerEmail(
-      String email, String pass, String nombre, int edad) async {
+  // LOGIN EMAIL
+  Future<User?> loginEmailPassword(String email, String pass) async {
+    final cred = await authService.loginEmailPassword(email, pass);
+    return cred.user;
+  }
 
-    final cred = await _auth.registerEmailPassword(email, pass);
+  // LOGIN GOOGLE
+  Future<User?> loginGoogle() async {
+    final cred = await authService.signInGoogle();
 
-    await saveUserData(
+    // si es el primer login, registrar
+    await userService.ensureUserExists(
       uid: cred.user!.uid,
-      email: email,
-      nombre: nombre,
-      edad: edad,
+      nombre: cred.user!.displayName ?? "Usuario",
+      email: cred.user!.email ?? "",
     );
 
-    return cred;
+    return cred.user;
   }
 
-  // -------------------------------------------------
-  // GOOGLE LOGIN
-  // -------------------------------------------------
-  Future<UserCredential> signInWithGoogle() async {
-    final cred = await _auth.signInWithGoogle();
-    final uid = cred.user!.uid;
+  // LOGIN FACEBOOK
+  Future<User?> loginFacebook() async {
+    final cred = await authService.signInFacebook();
 
-    final doc = await _db.collection("usuarios").doc(uid).get();
+    await userService.ensureUserExists(
+      uid: cred.user!.uid,
+      nombre: cred.user!.displayName ?? "Usuario",
+      email: cred.user!.email ?? "",
+    );
 
-    if (!doc.exists) {
-      await saveUserData(
-        uid: uid,
-        email: cred.user!.email ?? "",
-        nombre: cred.user!.displayName ?? "Sin nombre",
-        edad: 0,
-      );
-    }
-
-    return cred;
+    return cred.user;
   }
 
-  // -------------------------------------------------
-  // GUARDAR INFO EN FIRESTORE
-  // -------------------------------------------------
-  Future<void> saveUserData({
-    required String uid,
-    required String email,
-    required String nombre,
-    required int edad,
-  }) async {
-    await _db.collection("usuarios").doc(uid).set({
-      "nombre": nombre,
-      "email": email,
-      "edad": edad,
-      "rol": "estudiante",
-      "nivel_actual": "1",
-      "division_actual": "explorador_1",
-      "curso_actual": "tablas_de_verdad",
-      "errores": [],
-      "progreso": {
-        "racha": 0,
-      },
-      "fecha_registro": DateTime.now(),
-    }, SetOptions(merge: true));
-  }
-
-  // -------------------------------------------------
-  // OBTENER ROL DEL USUARIO
-  // -------------------------------------------------
-  Future<String?> getUserRole(String uid) async {
-    final doc = await _db.collection("usuarios").doc(uid).get();
-    return doc.data()?["rol"];
-  }
+  Future<void> logout() async => authService.logout();
 }
