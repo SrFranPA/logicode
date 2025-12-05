@@ -300,7 +300,7 @@ class _StudentHudState extends State<_StudentHud> {
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: const Icon(
-                            Icons.science_rounded,
+                            Icons.handshake,
                             color: Colors.white,
                           ),
                         ),

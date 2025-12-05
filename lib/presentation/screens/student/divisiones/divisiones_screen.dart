@@ -11,32 +11,60 @@ class DivisionesScreen extends StatelessWidget {
         nombre: 'Division Beta',
         rango: '0 - 499 XP',
         estado: 'En curso',
-        color: const Color(0xFF0E6BA8),
+        color: const Color(0xFFF2A03A),
       ),
       _DivisionCardData(
         nombre: 'Division Gamma',
         rango: '500 - 999 XP',
         estado: 'Siguiente parada',
-        color: const Color(0xFF1BB1E6),
+        color: const Color(0xFFEF8B2C),
       ),
       _DivisionCardData(
         nombre: 'Division Delta',
         rango: '1000+ XP',
         estado: 'Objetivo a largo plazo',
-        color: const Color(0xFF65D6FF),
+        color: const Color(0xFFE2701A),
       ),
     ];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFE9F3FF),
+      backgroundColor: const Color(0xFFF6F6F6),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0E6BA8),
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.transparent,
+        elevation: 3,
+        // AppBar sencillo solo con el nombre de la sección
+        toolbarHeight: 44,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(12)),
+        ),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFFF8D7A8), Color(0xFFF2B260)],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Color(0x22000000),
+                blurRadius: 10,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+        ),
+        centerTitle: true,
         title: const Text(
           'Divisiones',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+            fontSize: 18,
+            letterSpacing: 0.2,
+          ),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
-        elevation: 0,
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
@@ -48,7 +76,7 @@ class DivisionesScreen extends StatelessWidget {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF12314D),
+              color: Color(0xFF1E2026),
             ),
           ),
           const SizedBox(height: 6),
@@ -56,7 +84,7 @@ class DivisionesScreen extends StatelessWidget {
             'Cada division desbloquea nuevos retos cientificos. Completa XP para avanzar.',
             style: TextStyle(
               fontSize: 13,
-              color: Color(0xFF4A6275),
+              color: Color(0xFF555B64),
             ),
           ),
           const SizedBox(height: 16),
@@ -65,7 +93,7 @@ class DivisionesScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: const Color(0xFF0E6BA8),
+              color: const Color(0xFFF2A03A),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Row(
@@ -92,116 +120,148 @@ class _TopGlobalSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Top 5 por XP',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF12314D),
-          ),
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFDF2DE), Color(0xFFFFFAF3)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        const SizedBox(height: 10),
-        StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-          stream: FirebaseFirestore.instance
-              .collection('usuarios')
-              .orderBy('xp_acumulada', descending: true)
-              .limit(5)
-              .snapshots(),
-          builder: (context, snap) {
-            if (!snap.hasData) {
-              return const Center(child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 16),
-                child: CircularProgressIndicator.adaptive(),
-              ));
-            }
-            final docs = snap.data!.docs;
-            if (docs.isEmpty) {
-              return const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
-                child: Text(
-                  'Aun no hay usuarios registrados.',
-                  style: TextStyle(color: Color(0xFF4A6275)),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFF2A03A).withOpacity(0.28)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x22000000),
+            blurRadius: 10,
+            offset: Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: const [
+              Icon(Icons.emoji_events, color: Color(0xFFE27C1A)),
+              SizedBox(width: 8),
+              Text(
+                'Top 5 por XP',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1E2026),
                 ),
-              );
-            }
-
-            return Column(
-              children: List.generate(docs.length, (i) {
-                final data = docs[i].data();
-                final nombre = (data['nombre'] ?? 'Estudiante').toString();
-                final xp = (data['xp_acumulada'] as num?)?.toInt() ?? 0;
-
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.03),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+            stream: FirebaseFirestore.instance
+                .collection('usuarios')
+                .orderBy('xp_acumulada', descending: true)
+                .limit(5)
+                .snapshots(),
+            builder: (context, snap) {
+              if (!snap.hasData) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Center(child: CircularProgressIndicator.adaptive()),
+                );
+              }
+              final docs = snap.data!.docs;
+              if (docs.isEmpty) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: Text(
+                    'Aun no hay usuarios registrados.',
+                    style: TextStyle(color: Color(0xFF555B64)),
                   ),
-                  child: Row(
-                    children: [
-                      Container(
-                        height: 34,
-                        width: 34,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: const Color(0xFF0E6BA8).withOpacity(0.12),
+                );
+              }
+
+              return Column(
+                children: List.generate(docs.length, (i) {
+                  final data = docs[i].data();
+                  final nombre = (data['nombre'] ?? 'Estudiante').toString();
+                  final xp = (data['xp_acumulada'] as num?)?.toInt() ?? 0;
+
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
                         ),
-                        child: Center(
-                          child: Text(
-                            '#${i + 1}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF0E6BA8),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          height: 34,
+                          width: 34,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: const Color(0xFFF2A03A).withOpacity(0.18),
+                          ),
+                          child: Center(
+                            child: Text(
+                              '#${i + 1}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFFE27C1A),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              nombre,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF12314D),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                nombre,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF1E2026),
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 2),
-                            const Text(
-                              'Division actual',
-                              style: TextStyle(color: Color(0xFF4A6275), fontSize: 12),
-                            ),
-                          ],
+                              const SizedBox(height: 2),
+                              const Text(
+                                'Division actual',
+                                style: TextStyle(color: Color(0xFF555B64), fontSize: 12),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      Text(
-                        '$xp XP',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF12314D),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF2A03A).withOpacity(0.14),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            '$xp XP',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFFE27C1A),
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              }),
-            );
-          },
-        ),
-      ],
+                      ],
+                    ),
+                  );
+                }),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 }
@@ -228,17 +288,17 @@ class _DivisionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: data.color.withOpacity(0.35), width: 1.2),
-        boxShadow: [
+        border: Border.all(color: const Color(0xFFE9A34F).withOpacity(0.25), width: 1),
+        boxShadow: const [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
+            color: Color(0x22000000),
+            blurRadius: 10,
+            offset: Offset(0, 4),
           ),
         ],
       ),
@@ -249,11 +309,8 @@ class _DivisionCard extends StatelessWidget {
             width: 44,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [data.color, data.color.withOpacity(0.72)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              color: data.color.withOpacity(0.18),
+              border: Border.all(color: data.color.withOpacity(0.38)),
             ),
             child: const Icon(Icons.rocket_launch, color: Colors.white),
           ),
@@ -267,34 +324,40 @@ class _DivisionCard extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF12314D),
+                    color: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   data.rango,
-                  style: const TextStyle(fontSize: 12, color: Color(0xFF4A6275)),
-                ),
-                const SizedBox(height: 6),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: data.color.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    data.estado,
-                    style: TextStyle(
-                      color: data.color,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 11,
-                    ),
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.75)),
                 ),
               ],
             ),
           ),
-          const Icon(Icons.chevron_right, color: Color(0xFF4A6275)),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: data.color,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x22000000),
+                  blurRadius: 6,
+                  offset: Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Text(
+              data.estado,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                fontSize: 11,
+                letterSpacing: 0.2,
+              ),
+            ),
+          ),
         ],
       ),
     );

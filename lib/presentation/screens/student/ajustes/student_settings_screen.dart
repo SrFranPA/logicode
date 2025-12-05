@@ -15,15 +15,42 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFE9F3FF),
+      backgroundColor: const Color(0xFFF6F6F6),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0E6BA8),
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.transparent,
+        elevation: 3,
+        toolbarHeight: 44,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(12)),
+        ),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFFF8D7A8), Color(0xFFF2B260)],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Color(0x22000000),
+                blurRadius: 10,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+        ),
+        centerTitle: true,
         title: const Text(
           'Ajustes',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+            letterSpacing: 0.2,
+          ),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
-        elevation: 0,
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
@@ -33,7 +60,7 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF12314D),
+              color: Color(0xFF1E2026),
             ),
           ),
           const SizedBox(height: 10),
@@ -61,7 +88,7 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF12314D),
+              color: Color(0xFF1E2026),
             ),
           ),
           const SizedBox(height: 10),
@@ -107,17 +134,17 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
       child: SwitchListTile(
         value: value,
         onChanged: onChanged,
-        activeColor: const Color(0xFF0E6BA8),
+        activeColor: const Color(0xFFF2A03A),
         title: Text(
           title,
           style: const TextStyle(
             fontWeight: FontWeight.w700,
-            color: Color(0xFF12314D),
+            color: Color(0xFF1E2026),
           ),
         ),
         subtitle: Text(
           subtitle,
-          style: const TextStyle(color: Color(0xFF4A6275)),
+          style: const TextStyle(color: Color(0xFF555B64)),
         ),
       ),
     );
@@ -132,14 +159,14 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF3A4048),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFF0E6BA8).withOpacity(0.12)),
-        boxShadow: [
+        border: Border.all(color: const Color(0xFF4A515B), width: 1),
+        boxShadow: const [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Color(0x33000000),
             blurRadius: 10,
-            offset: const Offset(0, 6),
+            offset: Offset(0, 4),
           ),
         ],
       ),
@@ -150,9 +177,9 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
             width: 40,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFF0E6BA8).withOpacity(0.12),
+              color: const Color(0xFFF2A03A).withOpacity(0.20),
             ),
-            child: Icon(icon, color: const Color(0xFF0E6BA8)),
+            child: Icon(icon, color: Colors.white),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -163,18 +190,18 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
                   title,
                   style: const TextStyle(
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF12314D),
+                    color: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
-                  style: const TextStyle(color: Color(0xFF4A6275), fontSize: 12),
+                  style: const TextStyle(color: Colors.white70, fontSize: 12),
                 ),
               ],
             ),
           ),
-          const Icon(Icons.arrow_forward_ios, size: 16, color: Color(0xFF4A6275)),
+          const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white70),
         ],
       ),
     );

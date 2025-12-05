@@ -61,7 +61,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0E6BA8),
+                    backgroundColor: const Color(0xFFF2A03A),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -120,15 +120,42 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
     final authUser = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFE9F3FF),
+      backgroundColor: const Color(0xFFF6F6F6),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0E6BA8),
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.transparent,
+        elevation: 3,
+        toolbarHeight: 44,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(12)),
+        ),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFFF5D6A1), Color(0xFFE9A34F)],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Color(0x22000000),
+                blurRadius: 10,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+        ),
+        centerTitle: true,
         title: const Text(
           'Perfil',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+            letterSpacing: 0.2,
+          ),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
-        elevation: 0,
       ),
       body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
         stream: FirebaseFirestore.instance.collection('usuarios').doc(uid).snapshots(),
@@ -150,11 +177,16 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFFFF8EF), Color(0xFFFFEAD3)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Color(0xFFE8B46B).withOpacity(0.22)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withOpacity(0.06),
                       blurRadius: 18,
                       offset: const Offset(0, 8),
                     ),
@@ -168,7 +200,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(18),
                         gradient: const LinearGradient(
-                          colors: [Color(0xFF0E6BA8), Color(0xFF1BB1E6)],
+                          colors: [Color(0xFFE9A34F), Color(0xFFD9823B)],
                         ),
                       ),
                       child: const Icon(Icons.person, color: Colors.white, size: 32),
@@ -183,7 +215,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFF12314D),
+                              color: Color(0xFF1E2026),
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -191,20 +223,29 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                             email,
                             style: const TextStyle(
                               fontSize: 13,
-                              color: Color(0xFF4A6275),
+                              color: Color(0xFF555B64),
                             ),
                           ),
                         ],
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.edit, color: Color(0xFF4A6275)),
+                      icon: const Icon(Icons.edit, color: Color(0xFF555B64)),
                       onPressed: () => _showEditSheet(context, nombre),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 18),
+              const Text(
+                'Progreso',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1E2026),
+                ),
+              ),
+              const SizedBox(height: 10),
               _StatTile(
                 title: 'Racha activa',
                 value: '$racha d',
@@ -223,14 +264,34 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                 subtitle: 'Sumado en cursos y retos',
                 icon: Icons.stacked_bar_chart,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
+              const Text(
+                'Logros',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1E2026),
+                ),
+              ),
+              const SizedBox(height: 8),
               _AchievementsSection(userData: data),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0E6BA8),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFF5D6A1), Color(0xFFE9A34F)],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
                   borderRadius: BorderRadius.circular(14),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x22000000),
+                      blurRadius: 10,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Row(
                   children: const [
@@ -265,13 +326,18 @@ class _AchievementsSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFFF8EF), Color(0xFFFFEAD3)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE8B46B).withOpacity(0.20)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
             blurRadius: 10,
-            offset: const Offset(0, 6),
+            offset: const Offset(0, 5),
           ),
         ],
       ),
@@ -280,13 +346,13 @@ class _AchievementsSection extends StatelessWidget {
         children: [
           Row(
             children: const [
-              Icon(Icons.emoji_events, color: Color(0xFF0E6BA8)),
+              Icon(Icons.emoji_events, color: Color(0xFFE27C1A)),
               SizedBox(width: 8),
               Text(
                 'Logros y medallas',
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF12314D),
+                  color: Color(0xFF1E2026),
                 ),
               ),
             ],
@@ -295,7 +361,7 @@ class _AchievementsSection extends StatelessWidget {
           if (logros.isEmpty)
             const Text(
               'Aun no tienes logros. Completa cursos y retos para obtener medallas.',
-              style: TextStyle(color: Color(0xFF4A6275), fontSize: 12),
+              style: TextStyle(color: Color(0xFF555B64), fontSize: 12),
             )
           else
             Wrap(
@@ -379,14 +445,18 @@ class _StatTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFFF8EF), Color(0xFFFFEAD3)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFF0E6BA8).withOpacity(0.12)),
+        border: Border.all(color: Color(0xFFE8B46B).withOpacity(0.20)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withOpacity(0.03),
             blurRadius: 10,
-            offset: const Offset(0, 6),
+            offset: const Offset(0, 5),
           ),
         ],
       ),
@@ -397,9 +467,13 @@ class _StatTile extends StatelessWidget {
             width: 40,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFF0E6BA8).withOpacity(0.12),
+              gradient: const LinearGradient(
+                colors: [Color(0xFFE9A34F), Color(0xFFD9823B)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
-            child: Icon(icon, color: const Color(0xFF0E6BA8)),
+            child: Icon(icon, color: Colors.white),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -410,13 +484,13 @@ class _StatTile extends StatelessWidget {
                   title,
                   style: const TextStyle(
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF12314D),
+                    color: Color(0xFF1E2026),
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
-                  style: const TextStyle(color: Color(0xFF4A6275), fontSize: 12),
+                  style: const TextStyle(color: Color(0xFF555B64), fontSize: 12),
                 ),
               ],
             ),
@@ -425,7 +499,7 @@ class _StatTile extends StatelessWidget {
             value,
             style: const TextStyle(
               fontWeight: FontWeight.w700,
-              color: Color(0xFF12314D),
+              color: Color(0xFF1E2026),
             ),
           ),
         ],

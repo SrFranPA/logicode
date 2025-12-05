@@ -10,32 +10,59 @@ class StudentPracticasScreen extends StatelessWidget {
         titulo: 'Laboratorio 1',
         descripcion: 'Variables y tipos con desafios guiados.',
         dificultad: 'Basico',
-        color: const Color(0xFF1BB1E6),
+        color: const Color(0xFFF2A03A),
       ),
       _PracticaData(
         titulo: 'Laboratorio 2',
         descripcion: 'Condicionales y flujo de decisiones.',
         dificultad: 'Intermedio',
-        color: const Color(0xFF0E6BA8),
+        color: const Color(0xFFEF8B2C),
       ),
       _PracticaData(
         titulo: 'Laboratorio 3',
         descripcion: 'Bucles y patrones recurrentes.',
         dificultad: 'Intermedio',
-        color: const Color(0xFF65D6FF),
+        color: const Color(0xFFE2701A),
       ),
     ];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFE9F3FF),
+      backgroundColor: const Color(0xFFF6F6F6),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0E6BA8),
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.transparent,
+        elevation: 3,
+        toolbarHeight: 44,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(12)),
+        ),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFFF8D7A8), Color(0xFFF2B260)],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Color(0x22000000),
+                blurRadius: 10,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+        ),
+        centerTitle: true,
         title: const Text(
           'Practicas',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+            letterSpacing: 0.2,
+          ),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
-        elevation: 0,
       ),
       body: ListView.builder(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
