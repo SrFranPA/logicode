@@ -19,6 +19,7 @@ class AprendeScreen extends StatelessWidget {
 
         final user = userSnap.data?.data() ?? <String, dynamic>{};
         final cursoActualId = (user['curso_actual'] ?? '').toString();
+        final testAprobado = (user['test_aprobado'] as bool?) ?? false;
 
         return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
           stream: db.collection('cursos').orderBy('orden').snapshots(),
@@ -49,15 +50,72 @@ class AprendeScreen extends StatelessWidget {
                         padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text(
+                          children: [
+                            const Text(
                               'Elige un curso y avanza en tu laboratorio. Cada modulo desbloquea el siguiente.',
                               style: TextStyle(
                                 fontSize: 13,
                                 color: Color(0xFF4A6275),
                               ),
                             ),
-                            SizedBox(height: 14),
+                            const SizedBox(height: 12),
+                            if (!testAprobado)
+                              Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFF3E0),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: const Color(0xFFFFA726)),
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: const [
+                                    Icon(Icons.error_outline, color: Color(0xFFFF7043)),
+                                    SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        'Realiza el test para desbloquear los cursos.',
+                                        style: TextStyle(
+                                          color: Color(0xFF8A5A2F),
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF0E6BA8),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                ),
+                                onPressed: () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Iniciar test (pendiente).'),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(Icons.assignment_turned_in, color: Colors.white),
+                                label: const Text(
+                                  'Realizar test',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 14),
                           ],
                         ),
                       ),
@@ -79,7 +137,7 @@ class AprendeScreen extends StatelessWidget {
                             final descripcion = (data['descripcion'] ?? '').toString();
                             final orden = (data['orden'] as num?)?.toInt() ?? 1;
 
-                            final unlocked = orden <= unlockedUntilOrder;
+                            final unlocked = testAprobado && orden <= unlockedUntilOrder;
                             final isCurrent = doc.id == cursoActualId;
 
                             return _CourseCard(
@@ -94,9 +152,8 @@ class AprendeScreen extends StatelessWidget {
                                 if (!unlocked) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text(
-                                        'Desbloquea este laboratorio completando el anterior.',
-                                      ),
+                                      content:
+                                          Text('Completa el test inicial para desbloquear los cursos.'),
                                     ),
                                   );
                                   return;

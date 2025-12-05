@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class DivisionesScreen extends StatelessWidget {
@@ -40,6 +41,8 @@ class DivisionesScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
         children: [
+          const _TopGlobalSection(),
+          const SizedBox(height: 18),
           const Text(
             'Rutas de progresion',
             style: TextStyle(
@@ -80,6 +83,125 @@ class DivisionesScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _TopGlobalSection extends StatelessWidget {
+  const _TopGlobalSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Top 5 por XP',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF12314D),
+          ),
+        ),
+        const SizedBox(height: 10),
+        StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+          stream: FirebaseFirestore.instance
+              .collection('usuarios')
+              .orderBy('xp_acumulada', descending: true)
+              .limit(5)
+              .snapshots(),
+          builder: (context, snap) {
+            if (!snap.hasData) {
+              return const Center(child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: CircularProgressIndicator.adaptive(),
+              ));
+            }
+            final docs = snap.data!.docs;
+            if (docs.isEmpty) {
+              return const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: Text(
+                  'Aun no hay usuarios registrados.',
+                  style: TextStyle(color: Color(0xFF4A6275)),
+                ),
+              );
+            }
+
+            return Column(
+              children: List.generate(docs.length, (i) {
+                final data = docs[i].data();
+                final nombre = (data['nombre'] ?? 'Estudiante').toString();
+                final xp = (data['xp_acumulada'] as num?)?.toInt() ?? 0;
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.03),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        height: 34,
+                        width: 34,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: const Color(0xFF0E6BA8).withOpacity(0.12),
+                        ),
+                        child: Center(
+                          child: Text(
+                            '#${i + 1}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF0E6BA8),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              nombre,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF12314D),
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            const Text(
+                              'Division actual',
+                              style: TextStyle(color: Color(0xFF4A6275), fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Text(
+                        '$xp XP',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF12314D),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+            );
+          },
+        ),
+      ],
     );
   }
 }

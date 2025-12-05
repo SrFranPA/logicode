@@ -224,6 +224,8 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                 icon: Icons.stacked_bar_chart,
               ),
               const SizedBox(height: 12),
+              _AchievementsSection(userData: data),
+              const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
@@ -246,8 +248,115 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
             ],
           );
         },
+        ),
+      );
+    }
+}
+
+class _AchievementsSection extends StatelessWidget {
+  final Map<String, dynamic> userData;
+
+  const _AchievementsSection({required this.userData});
+
+  @override
+  Widget build(BuildContext context) {
+    final logros = (userData['logros'] as List?)?.cast<Map?>() ?? [];
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: const [
+              Icon(Icons.emoji_events, color: Color(0xFF0E6BA8)),
+              SizedBox(width: 8),
+              Text(
+                'Logros y medallas',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF12314D),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          if (logros.isEmpty)
+            const Text(
+              'Aun no tienes logros. Completa cursos y retos para obtener medallas.',
+              style: TextStyle(color: Color(0xFF4A6275), fontSize: 12),
+            )
+          else
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: logros.map((raw) {
+                final logro = (raw ?? {}) as Map;
+                final titulo = (logro['titulo'] ?? 'Logro').toString();
+                final icono = (logro['icono'] ?? 'star').toString();
+                final colorHex = (logro['color'] ?? '#0E6BA8').toString();
+                final color = _hexToColor(colorHex);
+
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: color.withOpacity(0.35)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(_iconFromString(icono), color: color),
+                      const SizedBox(width: 6),
+                      Text(
+                        titulo,
+                        style: TextStyle(
+                          color: color,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+        ],
       ),
     );
+  }
+
+  Color _hexToColor(String hex) {
+    var h = hex.replaceAll('#', '');
+    if (h.length == 6) h = 'FF$h';
+    final intColor = int.tryParse(h, radix: 16) ?? 0xFF0E6BA8;
+    return Color(intColor);
+  }
+
+  IconData _iconFromString(String name) {
+    switch (name) {
+      case 'star':
+        return Icons.star;
+      case 'medal':
+        return Icons.emoji_events;
+      case 'flame':
+        return Icons.local_fire_department;
+      case 'rocket':
+        return Icons.rocket_launch;
+      default:
+        return Icons.military_tech;
+    }
   }
 }
 
