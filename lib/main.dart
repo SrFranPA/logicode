@@ -28,9 +28,23 @@ import 'presentation/screens/home/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  // Inicializa Firebase una sola vez y maneja el caso de apps duplicadas (hot reload/restart)
+  try {
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    } else {
+      Firebase.app();
+    }
+  } on FirebaseException catch (e) {
+    if (e.code == 'duplicate-app') {
+      // Ya existe una instancia creada, reutilizamos la default
+      Firebase.app();
+    } else {
+      rethrow;
+    }
+  }
 
   final firestore = FirebaseFirestore.instance;
 

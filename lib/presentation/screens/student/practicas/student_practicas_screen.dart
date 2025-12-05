@@ -5,9 +5,143 @@ class StudentPracticasScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final items = [
+      _PracticaData(
+        titulo: 'Laboratorio 1',
+        descripcion: 'Variables y tipos con desafios guiados.',
+        dificultad: 'Basico',
+        color: const Color(0xFF1BB1E6),
+      ),
+      _PracticaData(
+        titulo: 'Laboratorio 2',
+        descripcion: 'Condicionales y flujo de decisiones.',
+        dificultad: 'Intermedio',
+        color: const Color(0xFF0E6BA8),
+      ),
+      _PracticaData(
+        titulo: 'Laboratorio 3',
+        descripcion: 'Bucles y patrones recurrentes.',
+        dificultad: 'Intermedio',
+        color: const Color(0xFF65D6FF),
+      ),
+    ];
+
     return Scaffold(
-      appBar: AppBar(backgroundColor: Colors.orange, title: const Text("Prácticas")),
-      body: const Center(child: Text("Pantalla de Prácticas")),
+      backgroundColor: const Color(0xFFE9F3FF),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF0E6BA8),
+        title: const Text(
+          'Practicas',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+        ),
+        iconTheme: const IconThemeData(color: Colors.white),
+        elevation: 0,
+      ),
+      body: ListView.builder(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+        itemCount: items.length,
+        itemBuilder: (context, i) => _PracticaCard(data: items[i]),
+      ),
+    );
+  }
+}
+
+class _PracticaData {
+  final String titulo;
+  final String descripcion;
+  final String dificultad;
+  final Color color;
+
+  _PracticaData({
+    required this.titulo,
+    required this.descripcion,
+    required this.dificultad,
+    required this.color,
+  });
+}
+
+class _PracticaCard extends StatelessWidget {
+  final _PracticaData data;
+
+  const _PracticaCard({required this.data});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: data.color.withOpacity(0.25)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: data.color.withOpacity(0.14),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  data.dificultad,
+                  style: TextStyle(
+                    color: data.color,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+              const Spacer(),
+              const Icon(Icons.play_circle_fill, color: Color(0xFF4A6275)),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            data.titulo,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF12314D),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            data.descripcion,
+            style: const TextStyle(
+              color: Color(0xFF4A6275),
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Icon(Icons.science_rounded, color: data.color, size: 18),
+              const SizedBox(width: 6),
+              const Text(
+                'Entrar al laboratorio',
+                style: TextStyle(
+                  color: Color(0xFF12314D),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                ),
+              ),
+              const Spacer(),
+              const Icon(Icons.arrow_forward_ios, size: 14, color: Color(0xFF4A6275)),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
