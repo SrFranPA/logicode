@@ -16,6 +16,7 @@ class UserService {
       "email": email,
       "edad": edad,
       "rol": rol,
+      "activo": true,
 
       // ✔️ Tus valores iniciales
       "division_actual": "explorador_1",

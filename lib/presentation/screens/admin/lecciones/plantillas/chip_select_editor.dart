@@ -1,8 +1,6 @@
-import 'dart:io';
-import 'package:flutter/material.dart';
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
 
 class ChipSelectEditor extends StatefulWidget {
   final String preguntaId;
@@ -15,19 +13,17 @@ class ChipSelectEditor extends StatefulWidget {
 
 class _ChipSelectEditorState extends State<ChipSelectEditor> {
   final _db = FirebaseFirestore.instance;
-  final _storage = FirebaseStorage.instance;
 
-  final tituloCtrl = TextEditingController();
-  final feedbackCorrectoCtrl = TextEditingController();
-  final feedbackIncorrectoCtrl = TextEditingController();
+  final enunciadoCtrl = TextEditingController();
+  final feedbackCtrl = TextEditingController();
 
-  bool cargando = true;
+  List<TextEditingController> _opcionesCtrl = [];
+  String? _respuestaCorrecta;
 
-  File? imagenPregunta;
-  String? urlImagenPregunta;
+  bool _cargando = true;
 
-  List<Map<String, dynamic>> opciones = [];
-  String? respuestaCorrecta;
+  /// 🔥 Nuevo: mensaje de error amigable
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -36,183 +32,146 @@ class _ChipSelectEditorState extends State<ChipSelectEditor> {
   }
 
   Future<void> _cargarDatos() async {
-    final doc = await _db.collection("banco_preguntas").doc(widget.preguntaId).get();
+    try {
+      final doc =
+          await _db.collection("banco_preguntas").doc(widget.preguntaId).get();
 
-    if (doc.exists) {
-      tituloCtrl.text = doc["enunciado"] ?? "";
-
-      if (doc.data()!.containsKey("contenido")) {
-        final c = doc["contenido"];
-
-        urlImagenPregunta = c["imagen_pregunta"];
-
-        opciones = List<Map<String, dynamic>>.from(
-          c["opciones"]?.map((e) => Map<String, dynamic>.from(e)) ?? [],
-        );
-
-        respuestaCorrecta = c["respuesta_correcta"];
-
-        feedbackCorrectoCtrl.text = c["feedback_correcto"] ?? "";
-        feedbackIncorrectoCtrl.text = c["feedback_incorrecto"] ?? "";
+      if (!doc.exists) {
+        setState(() => _cargando = false);
+        return;
       }
-    }
 
-    setState(() => cargando = false);
-  }
+      final data = doc.data()!;
+      enunciadoCtrl.text = data["enunciado"] ?? "";
 
-  Future<String?> _subirImagen(File file, String nombre) async {
-    final ref = _storage.ref().child("preguntas/${widget.preguntaId}/$nombre");
-    await ref.putFile(file);
-    return await ref.getDownloadURL();
-  }
+      final rawJson = data["archivo_url"];
 
-  Future<void> _guardar() async {
-    if (tituloCtrl.text.trim().isEmpty) {
-      _msg("El enunciado no puede estar vacío");
-      return;
-    }
-    if (opciones.length < 2) {
-      _msg("Debes ingresar al menos 2 opciones");
-      return;
-    }
-    if (respuestaCorrecta == null) {
-      _msg("Marca la respuesta correcta");
-      return;
-    }
+      if (rawJson != null && rawJson.toString().trim().isNotEmpty) {
+        final jsonData = jsonDecode(rawJson);
 
-    String? imagenPrincipalUrl = urlImagenPregunta;
+        final opciones = List<String>.from(jsonData["opciones"] ?? []);
+        _opcionesCtrl =
+            opciones.map((t) => TextEditingController(text: t)).toList();
 
-    if (imagenPregunta != null) {
-      imagenPrincipalUrl = await _subirImagen(imagenPregunta!, "imagen_pregunta.png");
-    }
-
-    await _db.collection("banco_preguntas").doc(widget.preguntaId).update({
-      "enunciado": tituloCtrl.text.trim(),
-      "contenido": {
-        "imagen_pregunta": imagenPrincipalUrl,
-        "opciones": opciones,
-        "respuesta_correcta": respuestaCorrecta,
-        "feedback_correcto": feedbackCorrectoCtrl.text.trim(),
-        "feedback_incorrecto": feedbackIncorrectoCtrl.text.trim(),
+        _respuestaCorrecta = jsonData["respuesta_correcta"];
+        feedbackCtrl.text = jsonData["feedback"] ?? "";
       }
-    });
 
-    _msg("Guardado correctamente ✔");
-  }
-
-  void _msg(String txt) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(txt)));
+      if (_opcionesCtrl.isEmpty) {
+        _agregarOpcion();
+        _agregarOpcion();
+      }
+    } catch (e) {
+      _showError("Ocurrió un error al cargar la pregunta.");
+    } finally {
+      if (mounted) setState(() => _cargando = false);
+    }
   }
 
   void _agregarOpcion() {
-    final textoCtrl = TextEditingController();
-    File? img;
+    setState(() {
+      _opcionesCtrl.add(TextEditingController());
+    });
+  }
 
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Nueva opción"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(controller: textoCtrl, decoration: const InputDecoration(labelText: "Texto")),
-
-            const SizedBox(height: 10),
-
-            ElevatedButton(
-              onPressed: () async {
-                final picker = ImagePicker();
-                final p = await picker.pickImage(source: ImageSource.gallery);
-
-                if (p != null) {
-                  img = File(p.path);
-                }
-              },
-              child: const Text("Seleccionar imagen (opcional)"),
-            )
-          ],
+  /// 🔥 Nuevo: widget de error amigable
+  Widget _errorBox(String msg) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.red.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.red.shade300),
+      ),
+      child: Text(
+        msg,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: Colors.red.shade700,
+          fontWeight: FontWeight.w600,
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancelar")),
-          ElevatedButton(
-            onPressed: () async {
-              String? url;
-
-              if (img != null) {
-                url = await _subirImagen(img!, "opcion_${DateTime.now()}.png");
-              }
-
-              setState(() {
-                opciones.add({
-                  "texto": textoCtrl.text,
-                  "img": url,
-                });
-              });
-
-              Navigator.pop(context);
-            },
-            child: const Text("Agregar"),
-          ),
-        ],
       ),
     );
   }
 
-  Future<void> _seleccionarImagenPrincipal() async {
-    final picker = ImagePicker();
-    final p = await picker.pickImage(source: ImageSource.gallery);
+  /// 🔥 Nuevo: acepta null
+  void _showError(String? msg) {
+    setState(() => _errorMessage = msg);
+  }
 
-    if (p != null) {
-      setState(() => imagenPregunta = File(p.path));
+  Future<void> _guardar() async {
+    final opciones = _opcionesCtrl.map((c) => c.text.trim()).toList();
+
+    if (enunciadoCtrl.text.trim().isEmpty) {
+      return _showError("Por favor escribe el enunciado antes de continuar 😊");
+    }
+    if (opciones.where((o) => o.isNotEmpty).length < 2) {
+      return _showError("Necesitas al menos 2 opciones para crear la pregunta 👍");
+    }
+    if (_respuestaCorrecta == null) {
+      return _showError("Debes seleccionar cuál opción es la correcta ✨");
+    }
+    if (feedbackCtrl.text.trim().isEmpty) {
+      return _showError("Agrega una retroalimentación para ayudar al estudiante 🧠💡");
+    }
+
+    try {
+      final jsonData = {
+        "tipo": "chip_select",
+        "opciones": opciones,
+        "respuesta_correcta": _respuestaCorrecta,
+        "feedback": feedbackCtrl.text.trim(),
+      };
+
+      await _db.collection("banco_preguntas").doc(widget.preguntaId).update({
+        "enunciado": enunciadoCtrl.text.trim(),
+        "archivo_url": jsonEncode(jsonData),
+      });
+
+      _showError(null);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Guardado correctamente ✔")),
+      );
+
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) Navigator.pop(context);
+      });
+    } catch (e) {
+      _showError("No se pudo guardar la pregunta. Intenta nuevamente 🙏");
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (cargando) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (_cargando) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
     }
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF7F0FF),
       appBar: AppBar(
-        leading: BackButton(color: Colors.white),
-        title: const Text("Editor: Chip Select"),
         backgroundColor: Colors.orange,
+        leading: const BackButton(color: Colors.white),
+        title: const Text("Editor: Chip Select",
+            style: TextStyle(color: Colors.white)),
       ),
-
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
+            /// 🔥 Mostrar error arriba del formulario
+            if (_errorMessage != null) _errorBox(_errorMessage!),
+
             TextField(
-              controller: tituloCtrl,
-              decoration: const InputDecoration(labelText: "Enunciado de la pregunta"),
+              controller: enunciadoCtrl,
+              decoration: const InputDecoration(labelText: "Enunciado"),
+              onChanged: (_) => _showError(null),
             ),
-
-            const SizedBox(height: 20),
-
-            Row(
-              children: [
-                const Text("Imagen principal: "),
-                ElevatedButton(
-                  onPressed: _seleccionarImagenPrincipal,
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-                  child: const Text("Subir imagen"),
-                ),
-              ],
-            ),
-
-            if (urlImagenPregunta != null)
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Image.network(urlImagenPregunta!, height: 100),
-              ),
-
-            if (imagenPregunta != null)
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Image.file(imagenPregunta!, height: 100),
-              ),
 
             const SizedBox(height: 20),
 
@@ -221,10 +180,16 @@ class _ChipSelectEditorState extends State<ChipSelectEditor> {
                 const Text("Opciones:"),
                 const SizedBox(width: 10),
                 ElevatedButton(
-                  onPressed: _agregarOpcion,
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-                  child: const Text("Agregar opción"),
-                )
+                  onPressed: () {
+                    _agregarOpcion();
+                    _showError(null);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                  ),
+                  child: const Text("Agregar opción",
+                      style: TextStyle(color: Colors.white)),
+                ),
               ],
             ),
 
@@ -232,23 +197,34 @@ class _ChipSelectEditorState extends State<ChipSelectEditor> {
 
             Expanded(
               child: ListView.builder(
-                itemCount: opciones.length,
+                itemCount: _opcionesCtrl.length,
                 itemBuilder: (_, i) {
-                  final op = opciones[i];
-
                   return ListTile(
-                    leading: Radio(
-                      value: op["texto"],
-                      groupValue: respuestaCorrecta,
-                      onChanged: (v) => setState(() => respuestaCorrecta = v),
+                    title: TextField(
+                      controller: _opcionesCtrl[i],
+                      decoration:
+                          InputDecoration(labelText: "Opción ${i + 1}"),
+                      onChanged: (_) => _showError(null),
                     ),
-                    title: Text(op["texto"]),
-                    subtitle: op["img"] != null
-                        ? Image.network(op["img"], height: 50)
-                        : null,
+                    leading: Radio<String>(
+                      value: _opcionesCtrl[i].text,
+                      groupValue: _respuestaCorrecta,
+                      onChanged: (v) {
+                        _showError(null);
+                        setState(() => _respuestaCorrecta = v);
+                      },
+                    ),
                     trailing: IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => setState(() => opciones.removeAt(i)),
+                      onPressed: () {
+                        _showError(null);
+                        setState(() {
+                          if (_opcionesCtrl[i].text == _respuestaCorrecta) {
+                            _respuestaCorrecta = null;
+                          }
+                          _opcionesCtrl.removeAt(i);
+                        });
+                      },
                     ),
                   );
                 },
@@ -256,26 +232,32 @@ class _ChipSelectEditorState extends State<ChipSelectEditor> {
             ),
 
             const SizedBox(height: 20),
-            const Text("Retroalimentación correcta"),
-            TextField(
-              controller: feedbackCorrectoCtrl,
-              maxLines: 2,
-            ),
 
-            const SizedBox(height: 12),
-            const Text("Retroalimentación incorrecta"),
+            const Text("Retroalimentación:"),
             TextField(
-              controller: feedbackIncorrectoCtrl,
-              maxLines: 2,
+              controller: feedbackCtrl,
+              maxLines: 3,
+              onChanged: (_) => _showError(null),
             ),
 
             const SizedBox(height: 20),
 
-            ElevatedButton(
-              onPressed: _guardar,
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-              child: const Text("Guardar"),
-            )
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: _guardar,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                child: const Text("Guardar",
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+            ),
           ],
         ),
       ),

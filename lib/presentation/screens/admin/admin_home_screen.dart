@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'cursos/admin_cursos_screen.dart';
 import 'lecciones/admin_lecciones_screen.dart';
+import 'students/admin_students_screen.dart';
 import 'ajustes/admin_settings_screen.dart';
 
 class AdminHomeScreen extends StatefulWidget {
@@ -16,6 +17,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   final List<Widget> _screens = const [
     AdminCursosScreen(),
     AdminLeccionesScreen(),
+    AdminStudentsScreen(),
     AdminSettingsScreen(),
   ];
 
@@ -63,6 +65,10 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.view_list),
             label: "Lecciones",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.group),
+            label: "Estudiantes",
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
