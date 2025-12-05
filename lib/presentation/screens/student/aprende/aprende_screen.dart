@@ -65,9 +65,9 @@ class AprendeScreen extends StatelessWidget {
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFFFF3E0),
+                                  color: const Color(0xFFFFF2DC),
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: const Color(0xFFFFA726)),
+                                  border: Border.all(color: const Color(0xFFF2A03A)),
                                 ),
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -91,7 +91,7 @@ class AprendeScreen extends StatelessWidget {
                               width: double.infinity,
                               child: ElevatedButton.icon(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF0E6BA8),
+                                  backgroundColor: const Color(0xFFF2A03A),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
@@ -124,8 +124,8 @@ class AprendeScreen extends StatelessWidget {
                       padding: const EdgeInsets.fromLTRB(16, 8, 16, 42),
                       sliver: SliverGrid(
                         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.82,
+                          crossAxisCount: 1,
+                          childAspectRatio: 3.2,
                           crossAxisSpacing: 14,
                           mainAxisSpacing: 14,
                         ),
@@ -152,8 +152,9 @@ class AprendeScreen extends StatelessWidget {
                                 if (!unlocked) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content:
-                                          Text('Completa el test inicial para desbloquear los cursos.'),
+                                      content: Text(
+                                        'Antes debes realizar el test inicial para desbloquear los cursos.',
+                                      ),
                                     ),
                                   );
                                   return;
@@ -247,10 +248,12 @@ class _CourseCardState extends State<_CourseCard> with SingleTickerProviderState
     final colors = palettes[widget.index % palettes.length];
     Color colorA = colors[0];
     Color colorB = colors[1];
+    final Color accent = colorA;
+    final Color accentDark = Color.lerp(colorA, Colors.black, 0.35)!;
 
     if (!widget.unlocked) {
-      colorA = Color.lerp(colorA, const Color(0xFF9DAEC6), 0.5)!;
-      colorB = Color.lerp(colorB, const Color(0xFFB7C5D9), 0.5)!;
+      colorA = const Color(0xFF2F343B);
+      colorB = const Color(0xFF2F343B);
     }
 
     return GestureDetector(
@@ -266,154 +269,92 @@ class _CourseCardState extends State<_CourseCard> with SingleTickerProviderState
           scale: 1 - _controller.value,
           child: child,
         ),
-        child: Stack(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [colorA, colorB],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: widget.unlocked ? Colors.white.withOpacity(0.18) : Colors.white54,
-                  width: widget.highlight ? 2.2 : 1.4,
-                ),
-                boxShadow: widget.unlocked
-                    ? [
-                        BoxShadow(
-                          color: Colors.blue.withOpacity(0.18),
-                          blurRadius: 14,
-                          offset: const Offset(0, 8),
-                        ),
-                      ]
-                    : [],
+        child: Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF2B2F35),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: const Color(0xFF3A4048),
+              width: 1.2,
+            ),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x33000000),
+                blurRadius: 10,
+                offset: Offset(0, 4),
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(18),
-                child: Stack(
+            ],
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: const BoxDecoration(
+                  color: Color(0xFF3A4048),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  widget.unlocked ? _iconForTitle(widget.title) : Icons.lock,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Positioned(
-                      top: -12,
-                      right: -6,
-                      child: Container(
-                        width: 86,
-                        height: 86,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.10),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: -14,
-                      left: -6,
-                      child: Container(
-                        width: 72,
-                        height: 72,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.08),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 12,
-                      right: 12,
-                      child: Icon(
-                        widget.unlocked ? _iconForTitle(widget.title) : Icons.lock,
+                    Text(
+                      widget.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
                         color: Colors.white,
-                        size: 26,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.2,
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(14, 16, 14, 14),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.16),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              children: const [
-                                Icon(Icons.science_outlined, size: 14, color: Colors.white),
-                                SizedBox(width: 6),
-                                Text(
-                                  'Paraciencia',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            widget.title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            widget.description,
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 12,
-                              height: 1.4,
-                            ),
-                          ),
-                          const Spacer(),
-                          Row(
-                            children: [
-                              Icon(
-                                widget.unlocked ? Icons.science_rounded : Icons.lock,
-                                color: Colors.white,
-                                size: 18,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                widget.unlocked ? 'Entrar' : 'Bloqueado',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 12,
-                                ),
-                              ),
-                              const Spacer(),
-                              const Icon(Icons.arrow_forward_ios_rounded,
-                                  size: 14, color: Colors.white),
-                            ],
-                          ),
-                        ],
+                    const SizedBox(height: 4),
+                    Text(
+                      widget.description,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.75),
+                        fontSize: 12,
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-            if (!widget.unlocked)
-              Positioned.fill(
-                child: Container(
+              const SizedBox(width: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.18),
-                    borderRadius: BorderRadius.circular(18),
+                    color: widget.unlocked ? accent : const Color(0xFFF2A03A),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x33000000),
+                        blurRadius: 8,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    widget.unlocked ? 'Entrar' : 'Bloqueado',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );

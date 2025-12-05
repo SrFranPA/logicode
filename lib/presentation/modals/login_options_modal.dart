@@ -73,7 +73,7 @@ class _LoginOptionsModalState extends State<LoginOptionsModal> {
               Text(
                 isRegisterMode
                     ? "Tu cuenta se vinculará con los datos ingresados."
-                    : "Inicia sesión o crea una cuenta para guardar tu progreso",
+                    : "Inicia sesión o crea una cuenta",
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 15, color: Colors.black54),
               ),
@@ -418,3 +418,4 @@ class _LoginOptionsModalState extends State<LoginOptionsModal> {
     );
   }
 }
+

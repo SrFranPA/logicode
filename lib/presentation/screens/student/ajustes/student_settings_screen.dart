@@ -51,7 +51,7 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
           ),
           _settingTile(
             title: 'Recordatorios diarios',
-            subtitle: 'Resumen rapido de tu progreso cada dia.',
+            subtitle: 'Resumen rapido cada dia.',
             value: _recordatorios,
             onChanged: (v) => setState(() => _recordatorios = v),
           ),

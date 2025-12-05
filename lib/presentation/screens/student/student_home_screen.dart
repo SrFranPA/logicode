@@ -28,7 +28,6 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
       icon: Icons.school_outlined,
       activeIcon: Icons.school,
       label: 'Aprende',
-      showProgress: true,
     ),
     _NavItem(
       screen: DivisionesScreen(),
@@ -38,8 +37,8 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     ),
     _NavItem(
       screen: StudentPracticasScreen(),
-      icon: Icons.bubble_chart_outlined,
-      activeIcon: Icons.bubble_chart,
+      icon: Icons.fact_check_outlined,
+      activeIcon: Icons.fact_check,
       label: 'Practicas',
     ),
     _NavItem(
@@ -59,20 +58,18 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFE9F3FF),
+      backgroundColor: const Color(0xFFF6F6F6),
       body: DecoratedBox(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFE9F3FF), Color(0xFFF5F9FF)],
+            colors: [Color(0xFFF6F6F6), Color(0xFFFAFAFA)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
         ),
         child: Column(
           children: [
-            _StudentHud(
-              showProgress: _items[_currentIndex].showProgress, // Solo muestra barra donde aplica
-            ),
+            const _StudentHud(),
             const SizedBox(height: 8),
             Expanded(
               child: _items[_currentIndex].screen,
@@ -80,22 +77,55 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        backgroundColor: const Color(0xFF0E6BA8),
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white70,
-        type: BottomNavigationBarType.fixed,
-        onTap: (i) => setState(() => _currentIndex = i),
-        items: _items
-            .map(
-              (item) => BottomNavigationBarItem(
-                icon: Icon(item.icon),
-                activeIcon: Icon(item.activeIcon),
-                label: item.label,
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(18),
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFFF2A03A),
+              border: Border.all(color: Colors.white.withOpacity(0.10)),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x33000000),
+                  blurRadius: 12,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: BottomNavigationBar(
+              currentIndex: _currentIndex,
+              backgroundColor: const Color(0xFFF2A03A),
+              elevation: 0,
+              selectedItemColor: Colors.white,
+              unselectedItemColor: Colors.white70,
+              selectedIconTheme: const IconThemeData(size: 26, color: Colors.white),
+              unselectedIconTheme: IconThemeData(
+                size: 22,
+                color: Colors.white.withOpacity(0.8),
               ),
-            )
-            .toList(),
+              selectedLabelStyle: const TextStyle(
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.2,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontWeight: FontWeight.w500,
+                letterSpacing: 0.1,
+              ),
+              type: BottomNavigationBarType.fixed,
+              onTap: (i) => setState(() => _currentIndex = i),
+              items: _items
+                  .map(
+                    (item) => BottomNavigationBarItem(
+                      icon: Icon(item.icon),
+                      activeIcon: Icon(item.activeIcon),
+                      label: item.label,
+                    ),
+                  )
+                  .toList(),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -106,14 +136,12 @@ class _NavItem {
   final IconData icon;
   final IconData activeIcon;
   final String label;
-  final bool showProgress;
 
   const _NavItem({
     required this.screen,
     required this.icon,
     required this.activeIcon,
     required this.label,
-    this.showProgress = false,
   });
 }
 
@@ -122,9 +150,7 @@ class _NavItem {
 // ===================================================================
 
 class _StudentHud extends StatefulWidget {
-  final bool showProgress;
-
-  const _StudentHud({required this.showProgress});
+  const _StudentHud();
 
   @override
   State<_StudentHud> createState() => _StudentHudState();
@@ -212,7 +238,6 @@ class _StudentHudState extends State<_StudentHud> {
 
         final data = snap.data!.data() ?? {};
         final nombre = (data['nombre'] ?? 'Estudiante').toString();
-        final xp = (data['xp_acumulada'] as num?)?.toDouble() ?? 0;
         final racha = (data['racha'] as num?)?.toInt() ?? 0;
         final vidas = (data['vidas'] as num?)?.toInt() ?? 5;
         final divisionId = (data['division_actual'] ?? '').toString();
@@ -231,19 +256,12 @@ class _StudentHudState extends State<_StudentHud> {
               ? db.collection('divisiones').doc(divisionId).get()
               : Future.value(null),
           builder: (context, divSnap) {
-            double xpMin = 0;
-            double xpMax = 500;
             String divisionNombre = 'Explorador';
 
             if (divSnap.hasData && divSnap.data != null && divSnap.data!.data() != null) {
               final div = divSnap.data!.data()!;
-              xpMin = (div['xp_min'] as num?)?.toDouble() ?? 0;
-              xpMax = (div['xp_max'] as num?)?.toDouble() ?? (xpMin + 500);
               divisionNombre = (div['nombre'] ?? divisionNombre).toString();
-              if (xpMax <= xpMin) xpMax = xpMin + 1;
             }
-
-            final progress = ((xp - xpMin) / (xpMax - xpMin)).clamp(0.0, 1.0);
 
             return SafeArea(
               bottom: false,
@@ -252,7 +270,7 @@ class _StudentHudState extends State<_StudentHud> {
                 padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF0E6BA8), Color(0xFF1292D2)],
+                    colors: [Color(0xFFF4B24E), Color(0xFFF2A03A)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -343,7 +361,7 @@ class _StudentHudState extends State<_StudentHud> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.12),
+                            color: const Color(0xFFFFF2DC),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(
@@ -354,7 +372,7 @@ class _StudentHudState extends State<_StudentHud> {
                                 child: Icon(
                                   Icons.favorite_rounded,
                                   size: 18,
-                                  color: isFilled ? const Color(0xFFFF8A3D) : Colors.white30,
+                                  color: isFilled ? const Color(0xFFB71C1C) : Colors.white30,
                                 ),
                               );
                             }),
@@ -364,19 +382,21 @@ class _StudentHudState extends State<_StudentHud> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.12),
+                            color: const Color(0xFFF2A03A),
                             borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFDA8216)),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.rocket_launch, size: 16, color: Colors.white),
+                              const Icon(Icons.rocket_launch, size: 16, color: Color(0xFF4A2600)),
                               const SizedBox(width: 6),
                               Text(
                                 divisionNombre,
                                 style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF4A2600),
+                                  fontWeight: FontWeight.w800,
                                   fontSize: 13,
+                                  letterSpacing: 0.2,
                                 ),
                               ),
                             ],
@@ -391,7 +411,7 @@ class _StudentHudState extends State<_StudentHud> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.12),
+                              color: const Color(0xFFFFF2DC),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Row(
@@ -412,37 +432,6 @@ class _StudentHudState extends State<_StudentHud> {
                         ],
                       ),
                     ],
-                    const SizedBox(height: 14),
-                    if (widget.showProgress)
-                      _XpCard(
-                        xpActual: xp,
-                        xpMin: xpMin,
-                        xpMax: xpMax,
-                        progress: progress,
-                      )
-                    else
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.10),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.rocket_launch, size: 18, color: Colors.white),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Division: $divisionNombre',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
                   ],
                 ),
               ),
@@ -450,94 +439,6 @@ class _StudentHudState extends State<_StudentHud> {
           },
         );
       },
-    );
-  }
-}
-
-// Tarjeta de XP con estilo de laboratorio
-class _XpCard extends StatelessWidget {
-  final double xpActual;
-  final double xpMin;
-  final double xpMax;
-  final double progress;
-
-  const _XpCard({
-    required this.xpActual,
-    required this.xpMin,
-    required this.xpMax,
-    required this.progress,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1BB1E6), Color(0xFF0E6BA8)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Tu progreso',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 17,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            'Acumula XP para subir de division.',
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 12,
-            ),
-          ),
-          const SizedBox(height: 12),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(999),
-            child: LinearProgressIndicator(
-              minHeight: 12,
-              value: progress,
-              backgroundColor: Colors.white.withOpacity(0.24),
-              valueColor: const AlwaysStoppedAnimation<Color>(
-                Color(0xFFB2F2FF),
-              ),
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            '${xpActual.toInt()} XP   -   Siguiente division: ${xpMax.toInt()} XP',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Te faltan ${(xpMax - xpActual).clamp(0, double.infinity).toInt()} XP para el siguiente salto.',
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 11,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
