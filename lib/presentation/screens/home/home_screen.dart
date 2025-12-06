@@ -196,13 +196,13 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.all(10),
-                          child: ClipOval(
-                            child: Image.asset(
-                              '../../../../assets/images/mascota.png',
-                              fit: BoxFit.cover,
-                            ),
+                        padding: const EdgeInsets.all(10),
+                        child: ClipOval(
+                          child: Image.asset(
+                            'assets/images/logo.png',
+                            fit: BoxFit.cover,
                           ),
+                        ),
                         ),
                       ),
                       const SizedBox(height: 18),
@@ -313,4 +313,3 @@ class _FeatureRow extends StatelessWidget {
     );
   }
 }
-
