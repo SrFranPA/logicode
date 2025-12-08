@@ -12,9 +12,7 @@ class AdminPreguntasCubit extends Cubit<AdminPreguntasState> {
 
   AdminPreguntasCubit(this.repo) : super(AdminPreguntasLoading()) {
     _sub = repo.watchPreguntas().listen(
-      (preguntas) {
-        emit(AdminPreguntasLoaded(preguntas));
-      },
+      (preguntas) => emit(AdminPreguntasLoaded(preguntas)),
       onError: (e) => emit(AdminPreguntasError(e.toString())),
     );
   }
@@ -42,6 +40,16 @@ class AdminPreguntasCubit extends Cubit<AdminPreguntasState> {
       await repo.deletePregunta(id);
     } catch (e) {
       emit(AdminPreguntasError('Error eliminando pregunta: $e'));
+    }
+  }
+
+  void refrescar() {
+    final s = state;
+
+    if (s is AdminPreguntasLoaded) {
+      emit(AdminPreguntasLoaded(List.from(s.preguntas)));
+    } else {
+      emit(AdminPreguntasLoading());
     }
   }
 

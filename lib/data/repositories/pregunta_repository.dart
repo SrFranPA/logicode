@@ -25,10 +25,11 @@ class PreguntaRepository {
       'tipo': tipo,
       'dificultad': dificultad,
       'enunciado': '',
-      'contenido': {},        // los editores llenan esto
+      'contenido': {},
       'fecha_creacion': DateTime.now(),
       'archivo_url': null,
     });
+
     return ref.id;
   }
 
