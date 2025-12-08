@@ -25,6 +25,28 @@ class AdminLeccionesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFDF7E2),
+
+      // ⭐ FAB EXACTAMENTE COMO EN GESTIÓN DE CURSOS ⭐
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: SizedBox(
+        width: 65,
+        height: 65,
+        child: FloatingActionButton(
+          backgroundColor: const Color(0xFFFFA200),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(50),
+          ),
+          onPressed: () => _openCreateDialog(context),
+          child: const Icon(
+            Icons.add,
+            size: 30,
+            color: Colors.white,
+          ),
+        ),
+      ),
+
+
+
       appBar: AppBar(
         backgroundColor: Colors.orange,
         title: const Text(
@@ -32,11 +54,7 @@ class AdminLeccionesScreen extends StatelessWidget {
           style: TextStyle(color: Colors.white),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.orange,
-        child: const Icon(Icons.add, color: Colors.white),
-        onPressed: () => _openCreateDialog(context),
-      ),
+
       body: BlocBuilder<AdminPreguntasCubit, AdminPreguntasState>(
         builder: (_, state) {
           if (state is AdminPreguntasLoading) {
@@ -51,7 +69,7 @@ class AdminLeccionesScreen extends StatelessWidget {
             }
 
             return ListView.builder(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.only(left: 12, right: 12, top: 12, bottom: 100),
               itemCount: preguntas.length,
               itemBuilder: (_, i) {
                 final p = preguntas[i];
@@ -81,8 +99,7 @@ class AdminLeccionesScreen extends StatelessWidget {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) =>
-                                        ChipSelectEditor(preguntaId: p.id),
+                                    builder: (_) => ChipSelectEditor(preguntaId: p.id),
                                   ),
                                 );
                                 break;
@@ -91,8 +108,7 @@ class AdminLeccionesScreen extends StatelessWidget {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) =>
-                                        SortEditor(preguntaId: p.id),
+                                    builder: (_) => SortEditor(preguntaId: p.id),
                                   ),
                                 );
                                 break;
@@ -101,8 +117,7 @@ class AdminLeccionesScreen extends StatelessWidget {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) =>
-                                        FillBlankEditor(preguntaId: p.id),
+                                    builder: (_) => FillBlankEditor(preguntaId: p.id),
                                   ),
                                 );
                                 break;
@@ -128,7 +143,7 @@ class AdminLeccionesScreen extends StatelessWidget {
   }
 
   // =======================================================
-  // IMPORTAR JSON — FINAL SIN CONTENIDO
+  // IMPORTAR JSON FINAL
   // =======================================================
   Future<void> _importFromJson(BuildContext context) async {
     try {
@@ -144,12 +159,7 @@ class AdminLeccionesScreen extends StatelessWidget {
 
       final cleaned = _sanitizeJson(utf8.decode(file.bytes!));
 
-      dynamic parsed;
-      try {
-        parsed = jsonDecode(cleaned);
-      } catch (e) {
-        throw Exception("JSON inválido: $e");
-      }
+      dynamic parsed = jsonDecode(cleaned);
 
       if (parsed is! List) {
         throw Exception("El archivo debe ser una LISTA de preguntas.");
@@ -227,7 +237,7 @@ class AdminLeccionesScreen extends StatelessWidget {
   // ERROR INDIVIDUAL
   // =======================================================
   void _mostrarErrorPregunta(
-      BuildContext context, Map<dynamic, dynamic> pregunta, String mensaje) {
+      BuildContext context, Map pregunta, String mensaje) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -259,7 +269,7 @@ class AdminLeccionesScreen extends StatelessWidget {
   }
 
   // =======================================================
-  // CREAR NUEVA PREGUNTA
+  // CREAR PREGUNTA
   // =======================================================
   void _openCreateDialog(BuildContext context) {
     showDialog(

@@ -3,16 +3,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/pregunta_model.dart';
 
 class PreguntaRepository {
-  final FirebaseFirestore _db;
+  final FirebaseFirestore db;
 
-  PreguntaRepository(this._db);
+  PreguntaRepository(this.db);
 
   Stream<List<Pregunta>> watchPreguntas() {
-    return _db
-        .collection('banco_preguntas')
-        .orderBy('fecha_creacion', descending: true)
+    return db
+        .collection("banco_preguntas")
+        .orderBy("fecha_creacion", descending: true)
         .snapshots()
-        .map((snap) => snap.docs.map((d) => Pregunta.fromDoc(d)).toList());
+        .map(
+          (snap) => snap.docs.map((doc) => Pregunta.fromDoc(doc)).toList(),
+        );
   }
 
   Future<String> createPregunta({
@@ -20,20 +22,21 @@ class PreguntaRepository {
     required String tipo,
     required String dificultad,
   }) async {
-    final ref = await _db.collection('banco_preguntas').add({
-      'cursoId': cursoId,
-      'tipo': tipo,
-      'dificultad': dificultad,
-      'enunciado': '',
-      'contenido': {},
-      'fecha_creacion': DateTime.now(),
-      'archivo_url': null,
+    final now = DateTime.now();
+
+    final ref = await db.collection("banco_preguntas").add({
+      "cursoId": cursoId,
+      "tipo": tipo,
+      "dificultad": dificultad,
+      "enunciado": "",
+      "fecha_creacion": now,
+      "archivo_url": "",
     });
 
     return ref.id;
   }
 
   Future<void> deletePregunta(String id) async {
-    await _db.collection('banco_preguntas').doc(id).delete();
+    await db.collection("banco_preguntas").doc(id).delete();
   }
 }
