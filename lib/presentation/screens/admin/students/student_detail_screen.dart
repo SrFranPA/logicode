@@ -1,5 +1,3 @@
-// lib/presentation/screens/admin/students/student_detail_screen.dart
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -29,9 +27,7 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
     setState(() => cargando = false);
   }
 
-  // ============================================================
-  // 🔥 MODAL: EDITAR CAMPO
-  // ============================================================
+  // Modal: editar campo
   void showEditModal({
     required String fieldName,
     required String label,
@@ -55,7 +51,9 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
         return Padding(
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(context).viewInsets.bottom,
-            left: 20, right: 20, top: 25,
+            left: 20,
+            right: 20,
+            top: 25,
           ),
           child: FutureBuilder<List<Map<String, String>>>(
             future: isDropdown ? fetchOptions!() : Future.value([]),
@@ -65,51 +63,60 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
               return Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text("Editar $label",
-                      style: const TextStyle(
-                          fontSize: 22, fontWeight: FontWeight.bold)),
+                  Text(
+                    "Editar $label",
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 20),
-
                   if (!isDropdown)
                     TextField(
                       controller: ctrl,
                       decoration: InputDecoration(
                         labelText: label,
                         border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
-
                   if (isDropdown)
                     DropdownButtonFormField<String>(
                       value: initialValue?.toString(),
-                      decoration: const InputDecoration(labelText: "Seleccione"),
+                      decoration:
+                          const InputDecoration(labelText: "Seleccione"),
                       items: options
-                          .map((opt) => DropdownMenuItem(
-                                value: opt["id"],
-                                child: Text(opt["nombre"]!),
-                              ))
+                          .map(
+                            (opt) => DropdownMenuItem(
+                              value: opt["id"],
+                              child: Text(opt["nombre"]!),
+                            ),
+                          )
                           .toList(),
-                      onChanged: (v) => ctrl.text = v!,
+                      onChanged: (v) => ctrl.text = v ?? "",
                     ),
-
                   const SizedBox(height: 30),
-
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       TextButton(
-                        child: const Text("Cancelar",
-                            style: TextStyle(color: Colors.red)),
+                        child: const Text(
+                          "Cancelar",
+                          style: TextStyle(color: Colors.red),
+                        ),
                         onPressed: () => Navigator.pop(context),
                       ),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.orange,
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 12),
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                         onPressed: () async {
                           await _db
@@ -120,8 +127,10 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
                           Navigator.pop(context);
                           loadUser();
                         },
-                        child: const Text("Guardar",
-                            style: TextStyle(color: Colors.white)),
+                        child: const Text(
+                          "Guardar",
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
                     ],
                   ),
@@ -135,9 +144,6 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
     );
   }
 
-  // ============================================================
-  // 🔥 MODAL: DESACTIVAR
-  // ============================================================
   void showDeactivateModal() {
     showModalBottomSheet(
       context: context,
@@ -151,27 +157,34 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text("Desactivar estudiante",
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+              const Text(
+                "Desactivar estudiante",
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 12),
               const Text(
-                "Esto desactivará al estudiante, pero NO eliminará sus datos.",
+                "Esto desactivará al estudiante, pero no eliminará sus datos.",
               ),
               const SizedBox(height: 25),
-
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   TextButton(
-                      child: const Text("Cancelar"),
-                      onPressed: () => Navigator.pop(context)),
+                    child: const Text("Cancelar"),
+                    onPressed: () => Navigator.pop(context),
+                  ),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 12)),
-                    child: const Text("Desactivar",
-                        style: TextStyle(color: Colors.white)),
+                      backgroundColor: Colors.red,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                    ),
+                    child: const Text(
+                      "Desactivar",
+                      style: TextStyle(color: Colors.white),
+                    ),
                     onPressed: () async {
                       await _db
                           .collection("usuarios")
@@ -191,9 +204,6 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
     );
   }
 
-  // ============================================================
-  // 🔥 MODAL: REACTIVAR
-  // ============================================================
   void showReactivateModal() {
     showModalBottomSheet(
       context: context,
@@ -207,27 +217,32 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text("Reactivar estudiante",
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 12),
               const Text(
-                "El estudiante podrá volver a acceder a la plataforma.",
+                "Reactivar estudiante",
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
+              const SizedBox(height: 12),
+              const Text("El estudiante podrá volver a acceder."),
               const SizedBox(height: 25),
-
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   TextButton(
-                      child: const Text("Cancelar"),
-                      onPressed: () => Navigator.pop(context)),
+                    child: const Text("Cancelar"),
+                    onPressed: () => Navigator.pop(context),
+                  ),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 12)),
-                    child: const Text("Reactivar",
-                        style: TextStyle(color: Colors.white)),
+                      backgroundColor: Colors.green,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                    ),
+                    child: const Text(
+                      "Reactivar",
+                      style: TextStyle(color: Colors.white),
+                    ),
                     onPressed: () async {
                       await _db
                           .collection("usuarios")
@@ -247,162 +262,389 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
     );
   }
 
-  // ============================================================
-  // WIDGET INFO ITEM
-  // ============================================================
-  Widget infoItem({
-    required String label,
-    required String? value,
-    bool editable = true,
-    VoidCallback? onEdit,
-  }) {
+  @override
+  Widget build(BuildContext context) {
+    if (cargando) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    final u = userData ?? {};
+    final nombre = (u["nombre"] ?? "") as String;
+    final email = (u["email"] ?? "") as String;
+    final division = (u["division_actual"] ?? "") as String;
+    final curso = (u["curso_actual"] ?? "") as String;
+    final rol = (u["rol"] ?? "") as String;
+    final racha = u["racha"]?.toString() ?? "0";
+    final activo = u["activo"] == true;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8EEDA),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF1D2034),
+        title: const Text(
+          "Detalle del estudiante",
+          style: TextStyle(color: Colors.white),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFF8EEDA), Color(0xFFF2DFBF)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+          children: [
+            _headerCard(nombre, email, rol, activo),
+            const SizedBox(height: 16),
+            _infoGrid(division, curso, racha),
+            const SizedBox(height: 16),
+            _editableSection(u),
+            const SizedBox(height: 18),
+            _statusAction(activo),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _headerCard(String nombre, String email, String rol, bool activo) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF7F2FD),
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 14,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Row(
         children: [
+          _avatar(nombre),
+          const SizedBox(width: 14),
           Expanded(
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                Text(label,
-                    style: TextStyle(
-                        color: Colors.grey[700],
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  nombre.isNotEmpty ? nombre : "Sin nombre",
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.black87,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text(value ?? "—",
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.w600)),
-              ])),
-          if (editable)
-            IconButton(
-                onPressed: onEdit,
-                icon: const Icon(Icons.edit, color: Colors.orange))
+                Text(
+                  email.isNotEmpty ? email : "Sin correo",
+                  style: const TextStyle(
+                    color: Colors.black54,
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
+                  children: [
+                    _pill("Rol: ${rol.isEmpty ? 'N/D' : rol}"),
+                    _pill(activo ? "Activo" : "Inactivo",
+                        color: activo
+                            ? const Color(0xFFE3F7E5)
+                            : const Color(0xFFFFE4E4),
+                        textColor: activo
+                            ? const Color(0xFF2D8A47)
+                            : const Color(0xFFB83A3A)),
+                  ],
+                )
+              ],
+            ),
+          )
         ],
       ),
     );
   }
 
-  // ============================================================
-  // UI PRINCIPAL
-  // ============================================================
-  @override
-  Widget build(BuildContext context) {
-    if (cargando) {
-      return const Scaffold(
-          body: Center(child: CircularProgressIndicator()));
-    }
+  Widget _infoGrid(String division, String curso, String racha) {
+    return Row(
+      children: [
+        Expanded(
+          child: _infoTile(
+            icon: Icons.account_tree,
+            label: "División",
+            value: division.isEmpty ? "No asignada" : division,
+            onEdit: () => showEditModal(
+              fieldName: "division_actual",
+              label: "División",
+              initialValue: division,
+              isDropdown: true,
+              fetchOptions: () async {
+                final snap =
+                    await _db.collection("divisiones").orderBy("nombre").get();
+                return snap.docs
+                    .map((d) => {
+                          "id": d.id.toString(),
+                          "nombre": d["nombre"].toString()
+                        })
+                    .toList();
+              },
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _infoTile(
+            icon: Icons.school,
+            label: "Curso",
+            value: curso.isEmpty ? "No asignado" : curso,
+            editable: false,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _infoTile(
+            icon: Icons.local_fire_department,
+            label: "Racha",
+            value: "$racha días",
+            editable: false,
+          ),
+        ),
+      ],
+    );
+  }
 
-    final u = userData!;
+  Widget _editableSection(Map<String, dynamic> u) {
+    return Column(
+      children: [
+        _fieldCard(
+          label: "Nombre",
+          value: u["nombre"] ?? "",
+          onEdit: () => showEditModal(
+            fieldName: "nombre",
+            label: "Nombre",
+            initialValue: u["nombre"],
+            isDropdown: false,
+          ),
+        ),
+        _fieldCard(
+          label: "Email",
+          value: u["email"] ?? "",
+          editable: false,
+        ),
+        _fieldCard(
+          label: "Rol",
+          value: u["rol"] ?? "",
+          onEdit: () => showEditModal(
+            fieldName: "rol",
+            label: "Rol",
+            initialValue: u["rol"],
+            isDropdown: true,
+            fetchOptions: () async => [
+              {"id": "estudiante", "nombre": "Estudiante"},
+              {"id": "admin", "nombre": "Administrador"},
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF1ECEF),
-      appBar: AppBar(
-        backgroundColor: Colors.orange,
-        title: const Text("Detalle del estudiante",
-            style: TextStyle(color: Colors.white)),
+  Widget _fieldCard({
+    required String label,
+    required String value,
+    bool editable = true,
+    VoidCallback? onEdit,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: ListView(
-          children: [
-            infoItem(
-              label: "Nombre:",
-              value: u["nombre"],
-              onEdit: () => showEditModal(
-                fieldName: "nombre",
-                label: "Nombre",
-                initialValue: u["nombre"],
-                isDropdown: false,
-              ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: Colors.black.withOpacity(0.6),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value.isNotEmpty ? value : "No definido",
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
             ),
-
-            infoItem(
-              label: "Email:",
-              value: u["email"],
-              editable: false,
+          ),
+          if (editable)
+            IconButton(
+              icon: const Icon(Icons.edit, color: Color(0xFFFFA200)),
+              onPressed: onEdit,
             ),
+        ],
+      ),
+    );
+  }
 
-            infoItem(
-              label: "División actual:",
-              value: u["division_actual"],
-              onEdit: () => showEditModal(
-                fieldName: "division_actual",
-                label: "División",
-                initialValue: u["division_actual"],
-                isDropdown: true,
-                fetchOptions: () async {
-                  final snap = await _db
-                      .collection("divisiones")
-                      .orderBy("nombre")
-                      .get();
-
-                  return snap.docs
-                      .map((d) =>
-                          {"id": d.id.toString(), "nombre": d["nombre"].toString()})
-                      .toList();
-                },
-              ),
-            ),
-
-            infoItem(
-              label: "Curso actual:",
-              value: u["curso_actual"],
-              editable: false,
-            ),
-
-            infoItem(
-              label: "Rol:",
-              value: u["rol"],
-              onEdit: () => showEditModal(
-                fieldName: "rol",
-                label: "Rol",
-                initialValue: u["rol"],
-                isDropdown: true,
-                fetchOptions: () async => [
-                  {"id": "estudiante", "nombre": "Estudiante"},
-                  {"id": "admin", "nombre": "Administrador"},
+  Widget _infoTile({
+    required IconData icon,
+    required String label,
+    required String value,
+    bool editable = true,
+    VoidCallback? onEdit,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(icon, color: const Color(0xFFFFA200)),
+                  const SizedBox(width: 8),
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87,
+                    ),
+                  ),
                 ],
               ),
+              if (editable)
+                GestureDetector(
+                  onTap: onEdit,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFE4B8),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Text(
+                      "Editar",
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: Colors.black87,
             ),
+          ),
+        ],
+      ),
+    );
+  }
 
-            infoItem(
-              label: "Racha:",
-              value: u["racha"]?.toString(),
-              editable: false,
-            ),
+  Widget _statusAction(bool activo) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: activo ? Colors.red : Colors.green,
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+      ),
+      onPressed: activo ? showDeactivateModal : showReactivateModal,
+      child: Text(
+        activo ? "Desactivar estudiante" : "Reactivar estudiante",
+        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+      ),
+    );
+  }
 
-            const SizedBox(height: 20),
+  Widget _avatar(String name) {
+    final initials = name.isNotEmpty
+        ? name.trim().split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join()
+        : "?";
+    return Container(
+      height: 52,
+      width: 52,
+      decoration: const BoxDecoration(
+        shape: BoxShape.circle,
+        color: Color(0xFFFFA200),
+      ),
+      child: Center(
+        child: Text(
+          initials.toUpperCase(),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w800,
+            fontSize: 18,
+          ),
+        ),
+      ),
+    );
+  }
 
-            // 🔥 BOTÓN DINÁMICO
-            if (u["activo"] == true)
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14))),
-                onPressed: showDeactivateModal,
-                child: const Text("Desactivar estudiante",
-                    style: TextStyle(color: Colors.white)),
-              )
-            else
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14))),
-                onPressed: showReactivateModal,
-                child: const Text("Reactivar estudiante",
-                    style: TextStyle(color: Colors.white)),
-              ),
-          ],
+  Widget _pill(String text, {Color color = const Color(0xFFF2F4F8), Color textColor = Colors.black87}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.black.withOpacity(0.04)),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: textColor,
+          fontWeight: FontWeight.w700,
+          fontSize: 12,
         ),
       ),
     );

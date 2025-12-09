@@ -1,10 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../blocs/admin_cursos/admin_cursos_cubit.dart';
+import 'ajustes/admin_settings_screen.dart';
 import 'cursos/admin_cursos_screen.dart';
 import 'lecciones/admin_lecciones_screen.dart';
 import 'students/admin_students_screen.dart';
-import 'ajustes/admin_settings_screen.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({super.key});
@@ -15,6 +17,7 @@ class AdminHomeScreen extends StatefulWidget {
 
 class _AdminHomeScreenState extends State<AdminHomeScreen> {
   int _selectedIndex = 0;
+  late final ValueNotifier<bool> _viewAdminsNotifier;
 
   final List<_NavItem> _navItems = const [
     _NavItem(icon: Icons.folder_copy_rounded, label: "Cursos"),
@@ -23,12 +26,25 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     _NavItem(icon: Icons.settings_rounded, label: "Ajustes"),
   ];
 
-  final List<Widget> _screens = const [
-    AdminCursosScreen(),
-    AdminLeccionesScreen(),
-    AdminStudentsScreen(),
-    AdminSettingsScreen(),
-  ];
+  late final List<Widget> _screens;
+
+  @override
+  void initState() {
+    super.initState();
+    _viewAdminsNotifier = ValueNotifier(false);
+    _screens = [
+      const AdminCursosScreen(),
+      const AdminLeccionesScreen(),
+      AdminStudentsScreen(viewAdminsNotifier: _viewAdminsNotifier),
+      const AdminSettingsScreen(),
+    ];
+  }
+
+  @override
+  void dispose() {
+    _viewAdminsNotifier.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -122,7 +138,9 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   }
 
   Widget _sectionHeader(String label) {
-    final isCursos = label.toLowerCase() == "cursos";
+    final normalized = label.toLowerCase();
+    final isCursos = normalized == "cursos";
+    final isEstudiantes = normalized == "estudiantes";
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -141,21 +159,31 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           ),
         ],
       ),
-      child: Row(
-        children: [
-          const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 18),
-          const SizedBox(width: 10),
-          Text(
-            "Gestión de ${label.toLowerCase()}",
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w800,
-              fontSize: 16,
-            ),
-          ),
-          const Spacer(),
-          if (isCursos) _coursesTotalBadge(),
-        ],
+      child: ValueListenableBuilder<bool>(
+        valueListenable: _viewAdminsNotifier,
+        builder: (_, viewingAdmins, __) {
+          final showAdminsCount = isEstudiantes && viewingAdmins;
+          return Row(
+            children: [
+              const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 18),
+              const SizedBox(width: 10),
+              Text(
+                "Gestion de ${label.toLowerCase()}",
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 16,
+                ),
+              ),
+              const Spacer(),
+              if (isCursos) _coursesTotalBadge(),
+              if (isEstudiantes)
+                showAdminsCount
+                    ? _adminTotalBadge()
+                    : _studentsTotalBadge(),
+            ],
+          );
+        },
       ),
     );
   }
@@ -174,6 +202,62 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           ),
           child: Text(
             total != null ? "$total cursos" : "Cargando...",
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _studentsTotalBadge() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection("usuarios")
+          .where("rol", isEqualTo: "estudiante")
+          .snapshots(),
+      builder: (context, snapshot) {
+        final total = snapshot.hasData ? snapshot.data!.docs.length : null;
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.14),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withOpacity(0.18)),
+          ),
+          child: Text(
+            total != null ? "$total estudiantes" : "Cargando...",
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _adminTotalBadge() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection("usuarios")
+          .where("rol", isEqualTo: "admin")
+          .snapshots(),
+      builder: (context, snapshot) {
+        final total = snapshot.hasData ? snapshot.data!.docs.length : null;
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.14),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withOpacity(0.18)),
+          ),
+          child: Text(
+            total != null ? "$total administradores" : "Cargando...",
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w700,
