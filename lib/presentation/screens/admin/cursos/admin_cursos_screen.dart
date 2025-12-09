@@ -9,14 +9,12 @@ import '../../../../data/models/curso_model.dart';
 class AdminCursosScreen extends StatelessWidget {
   const AdminCursosScreen({super.key});
 
-  // ====================================================
-  // CONFIRMACIÓN DE ELIMINAR (DISEÑO MODERNO)
-  // ====================================================
+  // Confirmación de eliminar
   Future<bool> mostrarConfirmacionEliminar(BuildContext context) async {
     return await showDialog<bool>(
           context: context,
           builder: (_) => AlertDialog(
-            backgroundColor: const Color(0xFFF4EEF8), // Lavanda suave
+            backgroundColor: const Color(0xFFF4EEF8),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(26),
             ),
@@ -42,21 +40,19 @@ class AdminCursosScreen extends StatelessWidget {
                 child: const Text(
                   "Cancelar",
                   style: TextStyle(
-                    color: Color(0xFF6A4BC3), // Morado suave
+                    color: Color(0xFF6A4BC3),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
-
-              // Botón Eliminar moderno
               ElevatedButton(
                 onPressed: () => Navigator.pop(context, true),
                 style: ElevatedButton.styleFrom(
                   elevation: 0,
                   backgroundColor: Colors.white,
                   foregroundColor: const Color(0xFF6A4BC3),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 18, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                     side: const BorderSide(
@@ -79,9 +75,7 @@ class AdminCursosScreen extends StatelessWidget {
         false;
   }
 
-  // ====================================================
-  // MODAL CREAR / EDITAR CURSO
-  // ====================================================
+  // Modal crear / editar
   void abrirModalCurso(BuildContext context, {CursoModel? curso}) {
     final idCtrl = TextEditingController(text: curso?.id ?? '');
     final nombreCtrl = TextEditingController(text: curso?.nombre ?? '');
@@ -117,8 +111,6 @@ class AdminCursosScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-
-              // ID
               TextField(
                 controller: idCtrl,
                 enabled: !esEdicion,
@@ -130,8 +122,6 @@ class AdminCursosScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-
-              // Nombre
               TextField(
                 controller: nombreCtrl,
                 decoration: InputDecoration(
@@ -142,8 +132,6 @@ class AdminCursosScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-
-              // Descripción
               TextField(
                 controller: descCtrl,
                 decoration: InputDecoration(
@@ -155,8 +143,6 @@ class AdminCursosScreen extends StatelessWidget {
                 maxLines: 2,
               ),
               const SizedBox(height: 12),
-
-              // Orden
               TextField(
                 controller: ordenCtrl,
                 keyboardType: TextInputType.number,
@@ -167,10 +153,7 @@ class AdminCursosScreen extends StatelessWidget {
                   ),
                 ),
               ),
-
               const SizedBox(height: 20),
-
-              // Botón guardar
               SizedBox(
                 width: double.infinity,
                 height: 55,
@@ -217,97 +200,198 @@ class AdminCursosScreen extends StatelessWidget {
     );
   }
 
-  // ====================================================
-  // ITEM LISTA CURSO
-  // ====================================================
-  Widget _itemCurso(BuildContext context, CursoModel curso) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: ListTile(
-        title: Text(curso.nombre),
-        subtitle: Text("Orden: ${curso.orden}"),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.edit, color: Colors.blue),
-              onPressed: () => abrirModalCurso(context, curso: curso),
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: () async {
-                final confirmar = await mostrarConfirmacionEliminar(context);
-                if (confirmar) {
-                  context.read<AdminCursosCubit>().eliminarCurso(curso.id);
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFFF8EEDA), Color(0xFFF2DFBF)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
+      child: Column(
+        children: [
+          Expanded(
+            child: BlocBuilder<AdminCursosCubit, AdminCursosState>(
+              builder: (_, state) {
+                if (state is AdminCursosLoading) {
+                  return const Center(child: CircularProgressIndicator());
                 }
+
+                if (state is AdminCursosLoaded) {
+                  final cursos = state.cursos;
+
+                  if (cursos.isEmpty) {
+                    return const Center(child: Text("Sin datos"));
+                  }
+
+                  return ListView.separated(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    itemCount: cursos.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    itemBuilder: (_, i) => _itemCurso(context, cursos[i]),
+                  );
+                }
+
+                return const Center(child: Text("Sin datos"));
               },
             ),
-          ],
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 6, 16, 18),
+            child: SizedBox(
+              width: double.infinity,
+              height: 54,
+              child: ElevatedButton.icon(
+                onPressed: () => abrirModalCurso(context),
+                style: ElevatedButton.styleFrom(
+                  elevation: 4,
+                  backgroundColor: const Color(0xFFFFA200),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                icon: const Icon(Icons.add, color: Colors.white),
+                label: const Text(
+                  "Agregar curso",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _itemCurso(BuildContext context, CursoModel curso) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFFBF5EA),
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                height: 42,
+                width: 42,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0xFFFFA200),
+                ),
+                child: const Icon(Icons.menu_book, color: Colors.white),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      curso.nombre,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      curso.descripcion,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.black54,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        _chip("Orden ${curso.orden}"),
+                        const SizedBox(width: 8),
+                        _chip("ID ${curso.id}", color: const Color(0xFFE9ECF3)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  _circleBtn(
+                    icon: Icons.edit,
+                    color: const Color(0xFF6A7FDB),
+                    onTap: () => abrirModalCurso(context, curso: curso),
+                  ),
+                  const SizedBox(height: 10),
+                  _circleBtn(
+                    icon: Icons.delete,
+                    color: const Color(0xFFE57373),
+                    onTap: () async {
+                      final confirmar = await mostrarConfirmacionEliminar(context);
+                      if (confirmar) {
+                        context.read<AdminCursosCubit>().eliminarCurso(curso.id);
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _chip(String text, {Color color = const Color(0xFFFFE4B8)}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Colors.black87,
+          fontWeight: FontWeight.w700,
+          fontSize: 12,
         ),
       ),
     );
   }
 
-  // ====================================================
-  // PANTALLA PRINCIPAL
-  // ====================================================
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFDF7E2),
-      appBar: AppBar(
-        backgroundColor: Colors.orange,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+  Widget _circleBtn(
+      {required IconData icon, required Color color, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 34,
+        width: 34,
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.16),
+          shape: BoxShape.circle,
         ),
-        title: const Text(
-          "Gestión de cursos",
-          style: TextStyle(color: Colors.white),
-        ),
-      ),
-
-      // BODY
-      body: BlocBuilder<AdminCursosCubit, AdminCursosState>(
-        builder: (_, state) {
-          if (state is AdminCursosLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (state is AdminCursosLoaded) {
-            final cursos = state.cursos;
-
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 90),
-              child: ListView.builder(
-                itemCount: cursos.length,
-                itemBuilder: (_, i) => _itemCurso(context, cursos[i]),
-              ),
-            );
-          }
-
-          return const Center(child: Text("Sin datos"));
-        },
-      ),
-
-      // BOTÓN FLOTANTE CENTRADO
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: SizedBox(
-        width: 65,
-        height: 65,
-        child: FloatingActionButton(
-          backgroundColor: const Color(0xFFFFA200),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(50),
-          ),
-          onPressed: () => abrirModalCurso(context),
-          child: const Icon(
-            Icons.add,
-            size: 30,
-            color: Colors.white,
-          ),
-        ),
+        child: Icon(icon, size: 18, color: color),
       ),
     );
   }
