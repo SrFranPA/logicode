@@ -1,4 +1,4 @@
-// lib/data/models/pregunta_model.dart
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Pregunta {
@@ -30,9 +30,8 @@ class Pregunta {
       dificultad: data['dificultad'] ?? '',
       enunciado: data['enunciado'] ?? '',
       archivoUrl: data['archivo_url'],
-      fechaCreacion:
-          (data['fecha_creacion'] as Timestamp?)?.toDate() ??
-              DateTime.fromMillisecondsSinceEpoch(0),
+      fechaCreacion: (data['fecha_creacion'] as Timestamp?)?.toDate() ??
+          DateTime.fromMillisecondsSinceEpoch(0),
     );
   }
 
@@ -45,5 +44,11 @@ class Pregunta {
       'fecha_creacion': Timestamp.fromDate(fechaCreacion),
       'archivo_url': archivoUrl,
     };
+  }
+
+  /// Convierte archivo_url JSON → Map
+  Map<String, dynamic> decodeArchivo() {
+    if (archivoUrl == null || archivoUrl!.trim().isEmpty) return {};
+    return jsonDecode(archivoUrl!);
   }
 }

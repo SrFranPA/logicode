@@ -1,4 +1,3 @@
-// lib/data/repositories/pregunta_repository.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/pregunta_model.dart';
 
@@ -38,5 +37,16 @@ class PreguntaRepository {
 
   Future<void> deletePregunta(String id) async {
     await db.collection("banco_preguntas").doc(id).delete();
+  }
+
+  /// PRETEST: obtener 10 preguntas MUY DIFÍCILES de TODOS los cursos
+  Future<List<Pregunta>> cargarPreguntasPretest() async {
+    final snap = await db
+        .collection("banco_preguntas")
+        .where("dificultad", isEqualTo: "Muy difícil")
+        .limit(10)
+        .get();
+
+    return snap.docs.map((e) => Pregunta.fromDoc(e)).toList();
   }
 }

@@ -1,3 +1,5 @@
+// lib/presentation/screens/student/aprende/aprende_screen.dart
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +21,10 @@ class AprendeScreen extends StatelessWidget {
 
         final user = userSnap.data?.data() ?? <String, dynamic>{};
         final cursoActualId = (user['curso_actual'] ?? '').toString();
-        final testAprobado = (user['test_aprobado'] as bool?) ?? false;
+
+        // NUEVOS CAMPOS DEL PRETEST
+        final pretestEstado = (user['pretest_estado'] ?? 'pendiente').toString();
+        final bool testAprobado = pretestEstado == 'aprobado';
 
         return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
           stream: db.collection('cursos').orderBy('orden').snapshots(),
@@ -52,31 +57,35 @@ class AprendeScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'Elige un curso y avanza en tu laboratorio. Cada modulo desbloquea el siguiente.',
+                              'Elige un curso y avanza en tu laboratorio. Cada módulo desbloquea el siguiente.',
                               style: TextStyle(
                                 fontSize: 13,
                                 color: Color(0xFF4A6275),
                               ),
                             ),
                             const SizedBox(height: 12),
+
+                            // TARJETA DE ADVERTENCIA SI NO HA HECHO O APROBADO EL PRETEST
                             if (!testAprobado)
                               Container(
                                 margin: const EdgeInsets.only(bottom: 12),
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 10),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFFFF2DC),
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: const Color(0xFFF2A03A)),
+                                  border: Border.all(
+                                      color: const Color(0xFFF2A03A)),
                                 ),
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: const [
-                                    Icon(Icons.error_outline, color: Color(0xFFFF7043)),
+                                    Icon(Icons.error_outline,
+                                        color: Color(0xFFFF7043)),
                                     SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
-                                        'Realiza el test para desbloquear los cursos.',
+                                        'Realiza el test inicial para desbloquear los cursos.',
                                         style: TextStyle(
                                           color: Color(0xFF8A5A2F),
                                           fontWeight: FontWeight.w600,
@@ -87,6 +96,7 @@ class AprendeScreen extends StatelessWidget {
                                   ],
                                 ),
                               ),
+
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton.icon(
@@ -95,17 +105,15 @@ class AprendeScreen extends StatelessWidget {
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  padding:
-                                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 14, vertical: 12),
                                 ),
                                 onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Iniciar test (pendiente).'),
-                                    ),
-                                  );
+                                  Navigator.of(context).pushNamed('/pretest');
                                 },
-                                icon: const Icon(Icons.assignment_turned_in, color: Colors.white),
+                                icon: const Icon(
+                                    Icons.assignment_turned_in,
+                                    color: Colors.white),
                                 label: const Text(
                                   'Realizar test',
                                   style: TextStyle(
@@ -115,15 +123,19 @@ class AprendeScreen extends StatelessWidget {
                                 ),
                               ),
                             ),
+
                             const SizedBox(height: 14),
                           ],
                         ),
                       ),
                     ),
+
+                    // GRID DE CURSOS
                     SliverPadding(
                       padding: const EdgeInsets.fromLTRB(16, 8, 16, 42),
                       sliver: SliverGrid(
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 1,
                           childAspectRatio: 3.2,
                           crossAxisSpacing: 14,
@@ -133,11 +145,15 @@ class AprendeScreen extends StatelessWidget {
                           (context, index) {
                             final doc = cursos[index];
                             final data = doc.data();
-                            final nombreCurso = (data['nombre'] ?? 'Curso').toString();
-                            final descripcion = (data['descripcion'] ?? '').toString();
-                            final orden = (data['orden'] as num?)?.toInt() ?? 1;
+                            final nombreCurso =
+                                (data['nombre'] ?? 'Curso').toString();
+                            final descripcion =
+                                (data['descripcion'] ?? '').toString();
+                            final orden =
+                                (data['orden'] as num?)?.toInt() ?? 1;
 
-                            final unlocked = testAprobado && orden <= unlockedUntilOrder;
+                            final unlocked =
+                                testAprobado && orden <= unlockedUntilOrder;
                             final isCurrent = doc.id == cursoActualId;
 
                             return _CourseCard(
@@ -153,7 +169,7 @@ class AprendeScreen extends StatelessWidget {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text(
-                                        'Antes debes realizar el test inicial para desbloquear los cursos.',
+                                        'Debes completar el test inicial antes de acceder al curso.',
                                       ),
                                     ),
                                   );
@@ -162,7 +178,8 @@ class AprendeScreen extends StatelessWidget {
 
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text('Abrir curso: $nombreCurso (pendiente)'),
+                                    content: Text(
+                                        'Abrir curso: $nombreCurso (pendiente)'),
                                   ),
                                 );
                               },
@@ -204,7 +221,8 @@ class _CourseCard extends StatefulWidget {
   State<_CourseCard> createState() => _CourseCardState();
 }
 
-class _CourseCardState extends State<_CourseCard> with SingleTickerProviderStateMixin {
+class _CourseCardState extends State<_CourseCard>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
   @override
@@ -238,18 +256,17 @@ class _CourseCardState extends State<_CourseCard> with SingleTickerProviderState
   @override
   Widget build(BuildContext context) {
     const palettes = [
-      [Color(0xFF0E6BA8), Color(0xFF1BB1E6)], // azul ciencia
-      [Color(0xFF1D6FB2), Color(0xFF36A7E2)], // azul medio
-      [Color(0xFF1C9A9E), Color(0xFF3EC8B7)], // teal laboratorio
-      [Color(0xFFFF8A3D), Color(0xFFFF7043)], // acento naranja
-      [Color(0xFF7C5DFA), Color(0xFF9E7BFF)], // violeta tecnico
+      [Color(0xFF0E6BA8), Color(0xFF1BB1E6)],
+      [Color(0xFF1D6FB2), Color(0xFF36A7E2)],
+      [Color(0xFF1C9A9E), Color(0xFF3EC8B7)],
+      [Color(0xFFFF8A3D), Color(0xFFFF7043)],
+      [Color(0xFF7C5DFA), Color(0xFF9E7BFF)],
     ];
 
     final colors = palettes[widget.index % palettes.length];
     Color colorA = colors[0];
     Color colorB = colors[1];
     final Color accent = colorA;
-    final Color accentDark = Color.lerp(colorA, Colors.black, 0.35)!;
 
     if (!widget.unlocked) {
       colorA = const Color(0xFF2F343B);
@@ -310,7 +327,7 @@ class _CourseCardState extends State<_CourseCard> with SingleTickerProviderState
                       widget.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
@@ -331,28 +348,29 @@ class _CourseCardState extends State<_CourseCard> with SingleTickerProviderState
                 ),
               ),
               const SizedBox(width: 12),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: widget.unlocked ? accent : const Color(0xFFF2A03A),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x33000000),
-                        blurRadius: 8,
-                        offset: Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Text(
-                    widget.unlocked ? 'Entrar' : 'Bloqueado',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: widget.unlocked ? accent : const Color(0xFFF2A03A),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x33000000),
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
                     ),
+                  ],
+                ),
+                child: Text(
+                  widget.unlocked ? 'Entrar' : 'Bloqueado',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
+              ),
             ],
           ),
         ),

@@ -1,6 +1,6 @@
 // lib/presentation/screens/admin/lecciones/admin_lecciones_screen.dart
-import 'dart:convert';
 
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -15,18 +15,29 @@ import 'plantillas/fill_blank_editor.dart';
 
 /// Limpia JSON quitando comentarios //
 String _sanitizeJson(String input) {
-  return input.replaceAll(RegExp(r'^\s*//.*$', multiLine: true), '').trim();
+  return input.replaceAll(RegExp(r'^\s*//.*$', multiLine: true), '');
 }
 
-class AdminLeccionesScreen extends StatelessWidget {
+class AdminLeccionesScreen extends StatefulWidget {
   const AdminLeccionesScreen({super.key});
+
+  @override
+  State<AdminLeccionesScreen> createState() => _AdminLeccionesScreenState();
+}
+
+class _AdminLeccionesScreenState extends State<AdminLeccionesScreen> {
+  // 🔎 VARIABLES DE FILTRO
+  String filtroTexto = "";
+  String filtroCurso = "Todos";
+  String filtroDificultad = "Todos";
+  String filtroTipo = "Todos";
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFDF7E2),
 
-      // ⭐ FAB EXACTAMENTE COMO EN GESTIÓN DE CURSOS ⭐
+      // ⭐ FAB EXACTAMENTE COMO EN CURSOS
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: SizedBox(
         width: 65,
@@ -37,15 +48,9 @@ class AdminLeccionesScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(50),
           ),
           onPressed: () => _openCreateDialog(context),
-          child: const Icon(
-            Icons.add,
-            size: 30,
-            color: Colors.white,
-          ),
+          child: const Icon(Icons.add, size: 30, color: Colors.white),
         ),
       ),
-
-
 
       appBar: AppBar(
         backgroundColor: Colors.orange,
@@ -68,71 +73,49 @@ class AdminLeccionesScreen extends StatelessWidget {
               return const Center(child: Text("Aún no existen preguntas"));
             }
 
-            return ListView.builder(
-              padding: const EdgeInsets.only(left: 12, right: 12, top: 12, bottom: 100),
-              itemCount: preguntas.length,
-              itemBuilder: (_, i) {
-                final p = preguntas[i];
+            // Extraer cursos disponibles
+            final cursosDisponibles =
+                preguntas.map((p) => p.cursoId).toSet().toList()..sort();
 
-                return Card(
-                  child: ListTile(
-                    title: Text(
-                      p.enunciado,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    subtitle: Text(
-                      "Curso: ${p.cursoId}\n"
-                      "Tipo: ${p.tipo}\n"
-                      "Dificultad: ${p.dificultad}",
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit, color: Colors.blue),
-                          onPressed: () {
-                            switch (p.tipo) {
-                              case "seleccion_chips":
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => ChipSelectEditor(preguntaId: p.id),
-                                  ),
-                                );
-                                break;
+            // APLICAR FILTROS
+            final filtradas = preguntas.where((p) {
+              final t = filtroTexto.toLowerCase();
 
-                              case "ordenar":
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => SortEditor(preguntaId: p.id),
-                                  ),
-                                );
-                                break;
+              final matchTexto =
+                  t.isEmpty || p.enunciado.toLowerCase().contains(t);
 
-                              case "completa_espacio":
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => FillBlankEditor(preguntaId: p.id),
-                                  ),
-                                );
-                                break;
-                            }
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () => _confirmDelete(context, p.id),
-                        ),
-                      ],
+              final matchCurso =
+                  filtroCurso == "Todos" || filtroCurso == p.cursoId;
+
+              final matchDif =
+                  filtroDificultad == "Todos" || filtroDificultad == p.dificultad;
+
+              final matchTipo =
+                  filtroTipo == "Todos" || filtroTipo == p.tipo;
+
+              return matchTexto && matchCurso && matchDif && matchTipo;
+            }).toList();
+
+            return ListView(
+              padding: const EdgeInsets.only(bottom: 100),
+              children: [
+                const SizedBox(height: 10),
+
+                // ⭐⭐ NUEVA BARRA DE FILTROS (ESTILO B)
+                _barraFiltros(cursosDisponibles),
+
+                const SizedBox(height: 10),
+
+                if (filtradas.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Center(
+                      child: Text("No hay resultados con los filtros aplicados"),
                     ),
                   ),
-                );
-              },
+
+                ...filtradas.map(_itemPregunta),
+              ],
             );
           }
 
@@ -143,7 +126,171 @@ class AdminLeccionesScreen extends StatelessWidget {
   }
 
   // =======================================================
-  // IMPORTAR JSON FINAL
+  // ⭐ WIDGET DE LA BARRA DE FILTROS (ESTILO TARJETA BONITA)
+  // =======================================================
+  Widget _barraFiltros(List<String> cursos) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF8E7),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.07),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          )
+        ],
+      ),
+
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // === FILA SUPERIOR: CURSO + DIFICULTAD + TIPO
+          Row(
+            children: [
+              // CURSO
+              Expanded(
+                child: DropdownButtonFormField(
+                  value: filtroCurso,
+                  decoration:
+                      const InputDecoration(labelText: "Curso"),
+                  items: ["Todos", ...cursos]
+                      .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                      .toList(),
+                  onChanged: (v) => setState(() => filtroCurso = v!),
+                ),
+              ),
+              const SizedBox(width: 8),
+
+              // DIFICULTAD
+              Expanded(
+                child: DropdownButtonFormField(
+                  value: filtroDificultad,
+                  decoration:
+                      const InputDecoration(labelText: "Dificultad"),
+                  items: [
+                    "Todos",
+                    "Muy fácil",
+                    "Fácil",
+                    "Medio",
+                    "Difícil",
+                    "Muy difícil"
+                  ].map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
+                  onChanged: (v) => setState(() => filtroDificultad = v!),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          // === FILA INFERIOR: TIPO + BUSCADOR
+          Row(
+            children: [
+              Expanded(
+                flex: 1,
+                child: DropdownButtonFormField(
+                  value: filtroTipo,
+                  decoration: const InputDecoration(labelText: "Tipo"),
+                  items: const [
+                    "Todos",
+                    "seleccion_chips",
+                    "ordenar",
+                    "completa_espacio",
+                  ].map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
+                  onChanged: (v) => setState(() => filtroTipo = v!),
+                ),
+              ),
+
+              const SizedBox(width: 12),
+
+              // 🔍 BUSCADOR GRANDE DERECHA
+              Expanded(
+                flex: 2,
+                child: TextField(
+                  decoration: InputDecoration(
+                    labelText: "Buscar enunciado...",
+                    suffixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onChanged: (v) => setState(() => filtroTexto = v),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // =======================================================
+  // ITEM DE LA LISTA
+  // =======================================================
+  Widget _itemPregunta(p) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      child: ListTile(
+        title: Text(
+          p.enunciado,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text(
+          "Curso: ${p.cursoId}\n"
+          "Tipo: ${p.tipo}\n"
+          "Dificultad: ${p.dificultad}",
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.edit, color: Colors.blue),
+              onPressed: () {
+                switch (p.tipo) {
+                  case "seleccion_chips":
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ChipSelectEditor(preguntaId: p.id),
+                      ),
+                    );
+                    break;
+
+                  case "ordenar":
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => SortEditor(preguntaId: p.id),
+                      ),
+                    );
+                    break;
+
+                  case "completa_espacio":
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => FillBlankEditor(preguntaId: p.id),
+                      ),
+                    );
+                    break;
+                }
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.red),
+              onPressed: () => _confirmDelete(context, p.id),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // =======================================================
+  // IMPORTAR JSON
   // =======================================================
   Future<void> _importFromJson(BuildContext context) async {
     try {
@@ -158,7 +305,6 @@ class AdminLeccionesScreen extends StatelessWidget {
       if (file.bytes == null) throw Exception("Archivo vacío");
 
       final cleaned = _sanitizeJson(utf8.decode(file.bytes!));
-
       dynamic parsed = jsonDecode(cleaned);
 
       if (parsed is! List) {
@@ -209,17 +355,13 @@ class AdminLeccionesScreen extends StatelessWidget {
           exitos++;
         } catch (e) {
           fallos++;
-          _mostrarErrorPregunta(
-            context,
-            p,
-            "Error al guardar: $e",
-          );
+          _mostrarErrorPregunta(context, p, "Error al guardar: $e");
         }
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Importación completa ✔   Éxitos: $exitos   Fallos: $fallos"),
+          content: Text("Importación completa ✔  Éxitos: $exitos  Fallos: $fallos"),
           backgroundColor: Colors.green,
         ),
       );
@@ -250,10 +392,13 @@ class AdminLeccionesScreen extends StatelessWidget {
               children: [
                 Text(mensaje, style: const TextStyle(color: Colors.red)),
                 const SizedBox(height: 12),
-                const Text("Pregunta:", style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text("Pregunta:",
+                    style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
-                Text(const JsonEncoder.withIndent('  ').convert(pregunta),
-                    style: const TextStyle(fontSize: 12)),
+                Text(
+                  const JsonEncoder.withIndent('  ').convert(pregunta),
+                  style: const TextStyle(fontSize: 12),
+                ),
               ],
             ),
           ),
@@ -317,8 +462,7 @@ class AdminLeccionesScreen extends StatelessWidget {
                             value: "seleccion_chips",
                             child: Text("Selección única (chips)")),
                         DropdownMenuItem(
-                            value: "ordenar",
-                            child: Text("Ordenar elementos")),
+                            value: "ordenar", child: Text("Ordenar elementos")),
                         DropdownMenuItem(
                             value: "completa_espacio",
                             child: Text("Completar espacio")),
@@ -328,7 +472,8 @@ class AdminLeccionesScreen extends StatelessWidget {
                     const SizedBox(height: 12),
                     DropdownButtonFormField(
                       value: dificultad,
-                      decoration: const InputDecoration(labelText: "Dificultad"),
+                      decoration:
+                          const InputDecoration(labelText: "Dificultad"),
                       items: const [
                         DropdownMenuItem(
                             value: "Muy fácil", child: Text("Muy fácil")),
@@ -368,7 +513,6 @@ class AdminLeccionesScreen extends StatelessWidget {
                 if (curso == null) return;
 
                 final cubit = context.read<AdminPreguntasCubit>();
-
                 final id = await cubit.crearPregunta(
                   cursoId: curso!,
                   tipo: tipo,
@@ -385,7 +529,8 @@ class AdminLeccionesScreen extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => ChipSelectEditor(preguntaId: id),
+                          builder: (_) =>
+                              ChipSelectEditor(preguntaId: id),
                         ),
                       );
                       break;
@@ -403,7 +548,8 @@ class AdminLeccionesScreen extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => FillBlankEditor(preguntaId: id),
+                          builder: (_) =>
+                              FillBlankEditor(preguntaId: id),
                         ),
                       );
                       break;
@@ -426,7 +572,8 @@ class AdminLeccionesScreen extends StatelessWidget {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text("Confirmar eliminación"),
-        content: const Text("¿Seguro que deseas eliminar esta pregunta?"),
+        content:
+            const Text("¿Seguro que deseas eliminar esta pregunta?"),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -434,7 +581,9 @@ class AdminLeccionesScreen extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () async {
-              await context.read<AdminPreguntasCubit>().eliminarPregunta(id);
+              await context
+                  .read<AdminPreguntasCubit>()
+                  .eliminarPregunta(id);
               Navigator.pop(context);
             },
             child: const Text("Eliminar"),
