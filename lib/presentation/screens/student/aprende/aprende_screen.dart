@@ -265,12 +265,12 @@ class _CourseCardState extends State<_CourseCard>
 
     final colors = palettes[widget.index % palettes.length];
     Color colorA = colors[0];
-    Color colorB = colors[1];
+    //Color colorB = colors[1];
     final Color accent = colorA;
 
     if (!widget.unlocked) {
       colorA = const Color(0xFF2F343B);
-      colorB = const Color(0xFF2F343B);
+      //colorB = const Color(0xFF2F343B);
     }
 
     return GestureDetector(

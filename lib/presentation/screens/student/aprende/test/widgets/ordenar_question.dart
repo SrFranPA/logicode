@@ -1,10 +1,11 @@
+// lib/presentation/screens/student/aprende/test/widgets/ordenar_question.dart
+
 import 'package:flutter/material.dart';
 
 class OrdenarQuestionWidget extends StatefulWidget {
   final String enunciado;
   final List<String> elementos;
   final String retroalimentacion;
-
   final Function(bool, String) onResult;
 
   const OrdenarQuestionWidget({
@@ -20,27 +21,48 @@ class OrdenarQuestionWidget extends StatefulWidget {
 }
 
 class _OrdenarQuestionWidgetState extends State<OrdenarQuestionWidget> {
-  late List<String> current;
+  late List<String> desordenados;
+  late List<String> correctos;
 
-  bool locked = false;
+  bool locked = false; // Una vez respondido, ya no se puede mover
+  bool moved = false;  // Para activar el botón "Comprobar"
 
   @override
   void initState() {
     super.initState();
-    current = List<String>.from(widget.elementos);
+    correctos = List<String>.from(widget.elementos);
+    desordenados = List<String>.from(widget.elementos)..shuffle();
   }
 
-  void evaluar() {
+  void _onReorder(int oldIndex, int newIndex) {
     if (locked) return;
 
-    final correcta =
-        List.generate(widget.elementos.length,
-            (i) => widget.elementos[i] == current[i])
-            .every((x) => x);
+    // FIX: esto habilita "Comprobar"
+    setState(() => moved = true);
 
-    widget.onResult(correcta, widget.retroalimentacion);
+    if (newIndex > oldIndex) newIndex--;
+    final item = desordenados.removeAt(oldIndex);
+    desordenados.insert(newIndex, item);
+  }
 
-    setState(() => locked = true);
+  void _comprobar() {
+    if (locked) return;
+
+    final correcto = _listasIguales(desordenados, correctos);
+
+    setState(() {
+      locked = true;
+    });
+
+    widget.onResult(correcto, widget.retroalimentacion);
+  }
+
+  bool _listasIguales(List<String> a, List<String> b) {
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
   }
 
   @override
@@ -48,61 +70,60 @@ class _OrdenarQuestionWidgetState extends State<OrdenarQuestionWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(widget.enunciado,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 12),
+        Text(
+          widget.enunciado,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+        ),
+
+        const SizedBox(height: 16),
 
         ReorderableListView(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          onReorder: (oldIndex, newIndex) {
-            if (locked) return;
-
-            if (newIndex > oldIndex) newIndex--;
-            final item = current.removeAt(oldIndex);
-            current.insert(newIndex, item);
-            setState(() {});
-          },
+          onReorder: _onReorder,
           children: [
-            for (int i = 0; i < current.length; i++)
+            for (int i = 0; i < desordenados.length; i++)
               Container(
-                key: ValueKey(current[i]),
+                key: ValueKey(desordenados[i]),
                 margin: const EdgeInsets.symmetric(vertical: 6),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: locked ? Colors.grey.shade300 : Colors.white,
                   borderRadius: BorderRadius.circular(12),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 4,
-                      offset: Offset(0, 2),
-                    )
-                  ],
+                  border: Border.all(color: Colors.orange.shade300),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.drag_indicator),
-                    const SizedBox(width: 8),
-                    Expanded(child: Text(current[i])),
+                    const Icon(Icons.drag_handle),
+                    const SizedBox(width: 10),
+                    Expanded(child: Text(desordenados[i])),
                   ],
                 ),
-              ),
+              )
           ],
         ),
 
-        const SizedBox(height: 18),
+        const SizedBox(height: 20),
 
         Center(
           child: ElevatedButton(
-            onPressed: locked ? null : evaluar,
+            onPressed: (!locked && moved) ? _comprobar : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: locked ? Colors.grey : Colors.orange,
+              backgroundColor: (!locked && moved)
+                  ? Colors.orange
+                  : Colors.grey.shade400,
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
             ),
-            child: const Text("Comprobar", style: TextStyle(color: Colors.white)),
+            child: const Text(
+              "Comprobar",
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
           ),
-        )
+        ),
       ],
     );
   }
