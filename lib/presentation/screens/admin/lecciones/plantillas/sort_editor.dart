@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -19,6 +20,7 @@ class _SortEditorState extends State<SortEditor> {
 
   List<TextEditingController> listElements = [];
   bool cargando = true;
+  String? _error;
 
   @override
   void initState() {
@@ -26,9 +28,6 @@ class _SortEditorState extends State<SortEditor> {
     _load();
   }
 
-  // ============================================================
-  // CARGAR
-  // ============================================================
   Future<void> _load() async {
     try {
       final doc =
@@ -49,7 +48,6 @@ class _SortEditorState extends State<SortEditor> {
             .toList();
       }
 
-      // 3 elementos por defecto, PERO VACÍOS (solo guía visual)
       if (listElements.isEmpty) {
         listElements = [
           TextEditingController(),
@@ -58,7 +56,7 @@ class _SortEditorState extends State<SortEditor> {
         ];
       }
     } catch (_) {
-      // Silencioso
+      _error = "No se pudo cargar la pregunta.";
     }
 
     if (mounted) {
@@ -66,9 +64,6 @@ class _SortEditorState extends State<SortEditor> {
     }
   }
 
-  // ============================================================
-  // GUARDAR
-  // ============================================================
   Future<void> _guardar() async {
     final enunciado = enunciadoCtrl.text.trim();
     final retro = retroCtrl.text.trim();
@@ -78,13 +73,13 @@ class _SortEditorState extends State<SortEditor> {
         .toList();
 
     if (enunciado.isEmpty) {
-      return _msg("El enunciado no puede estar vacío.");
+      return _msg("El enunciado no puede estar vacio.");
     }
     if (elementos.length < 2) {
-      return _msg("Agrega al menos 2 elementos válidos.");
+      return _msg("Agrega al menos 2 elementos validos.");
     }
     if (retro.isEmpty) {
-      return _msg("La retroalimentación es obligatoria.");
+      return _msg("La retroalimentacion es obligatoria.");
     }
 
     final jsonData = {
@@ -98,31 +93,24 @@ class _SortEditorState extends State<SortEditor> {
       "archivo_url": jsonEncode(jsonData),
     });
 
-    _msg("Guardado correctamente ✔");
+    if (!mounted) return;
+    _msg("Guardado correctamente");
 
-    if (mounted) {
-      Future.delayed(const Duration(milliseconds: 400), () {
-        Navigator.pop(context);
-      });
-    }
+    Future.delayed(const Duration(milliseconds: 400), () {
+      if (mounted) Navigator.pop(context);
+    });
   }
 
-  // ============================================================
-  // SNACKBAR
-  // ============================================================
   void _msg(String t) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        backgroundColor: Colors.grey[800],
+        backgroundColor: Colors.grey[850],
         content: Text(t),
         duration: const Duration(seconds: 2),
       ),
     );
   }
 
-  // ============================================================
-  // ITEM DE LA LISTA
-  // ============================================================
   Widget _buildItem(int index) {
     final controller = listElements[index];
 
@@ -131,12 +119,18 @@ class _SortEditorState extends State<SortEditor> {
       margin: const EdgeInsets.symmetric(vertical: 6),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFFF6F0E8),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          // Handler para arrastrar (puntos a la izquierda)
           MouseRegion(
             cursor: SystemMouseCursors.click,
             child: ReorderableDragStartListener(
@@ -147,22 +141,18 @@ class _SortEditorState extends State<SortEditor> {
               ),
             ),
           ),
-
           const SizedBox(width: 12),
-
-          // Texto del elemento (GUÍA, NO TEXTO FIJO)
           Expanded(
             child: TextField(
               controller: controller,
               decoration: const InputDecoration(
-                hintText: "Elemento", // ← guía, no texto que borrar
+                hintText: "Elemento",
                 border: InputBorder.none,
                 isCollapsed: true,
               ),
+              onChanged: (_) => setState(() {}),
             ),
           ),
-
-          // Botón eliminar
           IconButton(
             icon: const Icon(Icons.delete, color: Colors.red),
             onPressed: () {
@@ -178,9 +168,54 @@ class _SortEditorState extends State<SortEditor> {
     );
   }
 
-  // ============================================================
-  // UI
-  // ============================================================
+  Widget _sectionCard({
+    required String title,
+    String? subtitle,
+    required Widget child,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: Colors.black87,
+            ),
+          ),
+          if (subtitle != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              style: TextStyle(
+                color: Colors.black.withOpacity(0.65),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+          const SizedBox(height: 10),
+          child,
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (cargando) {
@@ -190,141 +225,157 @@ class _SortEditorState extends State<SortEditor> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFDF7E2),
+      backgroundColor: const Color(0xFFFCF8F2),
       appBar: AppBar(
-        backgroundColor: Colors.orange,
+        backgroundColor: const Color(0xFF1D2034),
         title: const Text(
           "Ordenar elementos",
           style: TextStyle(color: Colors.white),
         ),
         leading: const BackButton(color: Colors.white),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: ListView(
-          children: [
-            // ====== ENUNCIADO (ESTILO SIMPLE CON LÍNEA) ======
-            const Text("Enunciado", style: TextStyle(fontSize: 16)),
-            const SizedBox(height: 6),
-            Container(
-              decoration: const BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: Colors.grey),
-                ),
-              ),
-              child: TextField(
-                controller: enunciadoCtrl,
-                maxLines: 2,
-                decoration: const InputDecoration(
-                  border: InputBorder.none,
-                  isCollapsed: true,
-                  contentPadding: EdgeInsets.symmetric(vertical: 8),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            const Text(
-              "Elementos (arrastra para ordenar)",
-              style: TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 10),
-
-            // Lista reordenable
-            ReorderableListView(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              buildDefaultDragHandles: false,
-              onReorder: (oldIndex, newIndex) {
-                setState(() {
-                  if (newIndex > oldIndex) newIndex--;
-                  final item = listElements.removeAt(oldIndex);
-                  listElements.insert(newIndex, item);
-                });
-              },
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFFCF8F2), Color(0xFFEFE3CF)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                for (int i = 0; i < listElements.length; i++) _buildItem(i),
+                if (_error != null)
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.red.shade300),
+                    ),
+                    child: Text(
+                      _error!,
+                      style: TextStyle(
+                        color: Colors.red.shade700,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                _sectionCard(
+                  title: "Enunciado",
+                  subtitle: "Define la instruccion para ordenar.",
+                  child: TextField(
+                    controller: enunciadoCtrl,
+                    maxLines: 2,
+                    decoration: const InputDecoration(
+                      hintText: "Ej: Ordena los pasos del algoritmo...",
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                      ),
+                    ),
+                    onChanged: (_) => setState(() {}),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _sectionCard(
+                  title: "Elementos",
+                  subtitle: "Arrastra para reordenar y agrega los que necesites.",
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ReorderableListView(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        buildDefaultDragHandles: false,
+                        onReorder: (oldIndex, newIndex) {
+                          setState(() {
+                            if (newIndex > oldIndex) newIndex--;
+                            final item = listElements.removeAt(oldIndex);
+                            listElements.insert(newIndex, item);
+                          });
+                        },
+                        children: [
+                          for (int i = 0; i < listElements.length; i++) _buildItem(i),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            setState(() {
+                              listElements.add(TextEditingController());
+                            });
+                          },
+                          icon: const Icon(Icons.add, color: Colors.white),
+                          label: const Text(
+                            "Agregar elemento",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFFFA200),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _sectionCard(
+                  title: "Retroalimentacion",
+                  subtitle: "Mensaje que veran al finalizar.",
+                  child: TextField(
+                    controller: retroCtrl,
+                    maxLines: 3,
+                    decoration: const InputDecoration(
+                      hintText: "Ej: Revisa el orden de las etapas...",
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    onChanged: (_) => setState(() {}),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _guardar,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFFA200),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 28,
+                        vertical: 14,
+                      ),
+                    ),
+                    child: const Text(
+                      "Guardar",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
-
-            const SizedBox(height: 10),
-
-            // Botón agregar elemento (nuevo vacío)
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  setState(() {
-                    listElements.add(TextEditingController());
-                  });
-                },
-                icon: const Icon(Icons.add, color: Colors.white),
-                label: const Text(
-                  "Agregar elemento",
-                  style: TextStyle(color: Colors.white),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Retroalimentación (igual que te gustaba)
-            Center(
-              child: Text(
-                "Retroalimentación:",
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[800],
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              decoration: const BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: Colors.grey),
-                ),
-              ),
-              child: TextField(
-                controller: retroCtrl,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  border: InputBorder.none,
-                  isCollapsed: true,
-                  contentPadding: EdgeInsets.symmetric(vertical: 8),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                onPressed: _guardar,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-                child: const Text(
-                  "Guardar",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

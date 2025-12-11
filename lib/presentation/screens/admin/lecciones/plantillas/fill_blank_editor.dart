@@ -1,6 +1,7 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 
 class FillBlankEditor extends StatefulWidget {
   final String preguntaId;
@@ -16,8 +17,7 @@ class _FillBlankEditorState extends State<FillBlankEditor> {
 
   final _enunciadoCtrl = TextEditingController();
   final List<TextEditingController> _blanks = [];
-
-  final retroCtrl = TextEditingController(); // Único campo de retroalimentación
+  final retroCtrl = TextEditingController();
 
   bool loading = true;
   int _cantidadEspacios = 0;
@@ -28,9 +28,6 @@ class _FillBlankEditorState extends State<FillBlankEditor> {
     _loadData();
   }
 
-  // ---------------------------------------------------------
-  // CARGAR DATOS DESDE Firestore
-  // ---------------------------------------------------------
   Future<void> _loadData() async {
     final doc = await _db.collection("banco_preguntas").doc(widget.preguntaId).get();
 
@@ -39,33 +36,25 @@ class _FillBlankEditorState extends State<FillBlankEditor> {
       _enunciadoCtrl.text = data["enunciado"] ?? "";
 
       final rawJson = data["archivo_url"];
-
       if (rawJson != null && rawJson.toString().trim().isNotEmpty) {
         final decoded = jsonDecode(rawJson);
-
         final blanksList = List<String>.from(decoded["blanks"] ?? []);
         for (final word in blanksList) {
           _blanks.add(TextEditingController(text: word));
         }
-
         retroCtrl.text = decoded["retroalimentacion"] ?? "";
       }
     }
 
     _detectarEspacios();
-
-    setState(() => loading = false);
+    if (mounted) setState(() => loading = false);
   }
 
-  // ---------------------------------------------------------
-  // DETECTAR "__" EN EL ENUNCIADO
-  // ---------------------------------------------------------
   void _detectarEspacios() {
     final matches = RegExp(r'__+').allMatches(_enunciadoCtrl.text);
     final cantidad = matches.length;
     _cantidadEspacios = cantidad;
 
-    // Ajustar lista de blanks
     if (_blanks.length < cantidad) {
       for (int i = 0; i < (cantidad - _blanks.length); i++) {
         _blanks.add(TextEditingController());
@@ -77,16 +66,12 @@ class _FillBlankEditorState extends State<FillBlankEditor> {
     setState(() {});
   }
 
-  // ---------------------------------------------------------
-  // GUARDAR EN Firestore
-  // ---------------------------------------------------------
   Future<void> _save() async {
     final enunciado = _enunciadoCtrl.text.trim();
     final retro = retroCtrl.text.trim();
 
-    // ------------ VALIDACIONES ------------
     if (enunciado.isEmpty) {
-      return _error("El enunciado no puede estar vacío.");
+      return _error("El enunciado no puede estar vacio.");
     }
 
     if (_cantidadEspacios == 0) {
@@ -98,15 +83,14 @@ class _FillBlankEditorState extends State<FillBlankEditor> {
 
     if (blanksValues.length != _cantidadEspacios) {
       return _error(
-        "Debes completar las ${_cantidadEspacios} palabras correspondientes a los espacios.",
+        "Debes completar las $_cantidadEspacios palabras correspondientes a los espacios.",
       );
     }
 
     if (retro.isEmpty) {
-      return _error("La retroalimentación no puede estar vacía.");
+      return _error("La retroalimentacion no puede estar vacia.");
     }
 
-    // ------------ JSON EXACTO SEGÚN TU MODELO ------------
     final jsonData = {
       "tipo": "completa_espacio",
       "blanks": blanksValues,
@@ -116,149 +100,220 @@ class _FillBlankEditorState extends State<FillBlankEditor> {
     await _db.collection("banco_preguntas").doc(widget.preguntaId).update({
       "tipo": "completa_espacio",
       "enunciado": enunciado,
-      "archivo_url": jsonEncode(jsonData), // ← SE GUARDA AQUÍ
+      "archivo_url": jsonEncode(jsonData),
       "fecha_edicion": DateTime.now(),
     });
 
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Guardado ✔")),
-      );
-      Navigator.pop(context);
-    }
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Guardado")),
+    );
+    Navigator.pop(context);
   }
 
-  // ---------------------------------------------------------
   void _error(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(msg)),
     );
   }
 
-  // ---------------------------------------------------------
-  // UI
-  // ---------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7EFFA),
+      backgroundColor: const Color(0xFFFCF8F2),
       appBar: AppBar(
-        backgroundColor: Colors.orange,
-        title: const Text("Editor: Fill Blank",
-            style: TextStyle(color: Colors.white)),
+        backgroundColor: const Color(0xFF1D2034),
+        title: const Text(
+          "Editor: Completa el espacio",
+          style: TextStyle(color: Colors.white),
+        ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: loading
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // --------------------------------------------------
-                  // ENUNCIADO
-                  // --------------------------------------------------
-                  const Text(
-                    "Enunciado (usa __ para marcar los espacios):",
-                    style:
-                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  TextField(
-                    controller: _enunciadoCtrl,
-                    decoration: const InputDecoration(
-                      hintText:
-                          "Ej: El valor de X es __ cuando Y es __.",
-                    ),
-                    onChanged: (_) => _detectarEspacios(),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  Text(
-                    "Espacios detectados: $_cantidadEspacios",
-                    style: const TextStyle(
-                        fontSize: 15, fontWeight: FontWeight.w600),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // --------------------------------------------------
-                  // PALABRAS CORRECTAS
-                  // --------------------------------------------------
-                  const Text(
-                    "Palabras correctas (en orden):",
-                    style:
-                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: _blanks.length,
-                      itemBuilder: (_, i) {
-                        return ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: Colors.orange,
-                            child: Text("${i + 1}",
-                                style: const TextStyle(color: Colors.white)),
-                          ),
-                          title: TextField(
-                            controller: _blanks[i],
-                            decoration: InputDecoration(
-                              labelText:
-                                  "Palabra para espacio ${i + 1}",
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFFCF8F2), Color(0xFFEFE3CF)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: loading
+            ? const Center(child: CircularProgressIndicator())
+            : SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _cardSection(
+                        title: "Enunciado",
+                        subtitle: "Usa __ para marcar los espacios en blanco.",
+                        child: TextField(
+                          controller: _enunciadoCtrl,
+                          decoration: const InputDecoration(
+                            hintText: "Ej: El valor de X es __ cuando Y es __.",
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(12)),
                             ),
                           ),
-                        );
-                      },
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // --------------------------------------------------
-                  // RETROALIMENTACIÓN
-                  // --------------------------------------------------
-                  const Text(
-                    "Retroalimentación:",
-                    style:
-                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  TextField(
-                    controller: retroCtrl,
-                    maxLines: 3,
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // --------------------------------------------------
-                  // BOTÓN GUARDAR
-                  // --------------------------------------------------
-                  Center(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 40, vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          maxLines: 3,
+                          onChanged: (_) => _detectarEspacios(),
                         ),
                       ),
-                      onPressed: _save,
-                      child: const Text(
-                        "Guardar",
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
+                      const SizedBox(height: 12),
+                      _cardSection(
+                        title: "Espacios detectados",
+                        subtitle: _cantidadEspacios > 0
+                            ? "Completa cada espacio en el orden correcto."
+                            : "Agrega '__' en el enunciado para crear espacios.",
+                        child: Column(
+                          children: List.generate(_blanks.length, (i) {
+                            return Container(
+                              margin: EdgeInsets.only(top: i == 0 ? 0 : 10),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: Colors.black.withOpacity(0.06),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    height: 32,
+                                    width: 32,
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFFFFA200),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        "${i + 1}",
+                                        style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w800),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: TextField(
+                                      controller: _blanks[i],
+                                      decoration: InputDecoration(
+                                        labelText: "Palabra para espacio ${i + 1}",
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(10),
+                                          borderSide: BorderSide.none,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 12),
+                      _cardSection(
+                        title: "Retroalimentacion",
+                        subtitle: "Mensaje que veran al responder.",
+                        child: TextField(
+                          controller: retroCtrl,
+                          maxLines: 3,
+                          decoration: InputDecoration(
+                            hintText: "Ej: Recuerda que...",
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFFFA200),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 28, vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          onPressed: _save,
+                          child: const Text(
+                            "Guardar",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
+                ),
+              ),
+      ),
+    );
+  }
 
-                  const SizedBox(height: 10),
-                ],
+  Widget _cardSection({
+    required String title,
+    String? subtitle,
+    required Widget child,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: Colors.black87,
+            ),
+          ),
+          if (subtitle != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              style: TextStyle(
+                color: Colors.black.withOpacity(0.65),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
               ),
             ),
+          ],
+          const SizedBox(height: 10),
+          child,
+        ],
+      ),
     );
   }
 }

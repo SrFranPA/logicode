@@ -14,7 +14,7 @@ class AdminCursosScreen extends StatelessWidget {
     return await showDialog<bool>(
           context: context,
           builder: (_) => AlertDialog(
-            backgroundColor: const Color(0xFFF4EEF8),
+            backgroundColor: const Color.fromARGB(255, 255, 255, 255),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(26),
             ),
@@ -273,7 +273,7 @@ class AdminCursosScreen extends StatelessWidget {
   Widget _itemCurso(BuildContext context, CursoModel curso) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFFBF5EA),
+        color: const Color.fromARGB(255, 255, 255, 254),
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(

@@ -17,7 +17,8 @@ class AdminHomeScreen extends StatefulWidget {
 
 class _AdminHomeScreenState extends State<AdminHomeScreen> {
   int _selectedIndex = 0;
-  late final ValueNotifier<bool> _viewAdminsNotifier;
+  final ValueNotifier<bool> _viewAdminsNotifier = ValueNotifier(false);
+  final ValueNotifier<int?> _lessonCountNotifier = ValueNotifier<int?>(0);
 
   final List<_NavItem> _navItems = const [
     _NavItem(icon: Icons.folder_copy_rounded, label: "Cursos"),
@@ -31,10 +32,9 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   @override
   void initState() {
     super.initState();
-    _viewAdminsNotifier = ValueNotifier(false);
     _screens = [
       const AdminCursosScreen(),
-      const AdminLeccionesScreen(),
+      AdminLeccionesScreen(lessonCountNotifier: _lessonCountNotifier),
       AdminStudentsScreen(viewAdminsNotifier: _viewAdminsNotifier),
       const AdminSettingsScreen(),
     ];
@@ -43,6 +43,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   @override
   void dispose() {
     _viewAdminsNotifier.dispose();
+    _lessonCountNotifier.dispose();
     super.dispose();
   }
 
@@ -51,54 +52,60 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     const accent = Color(0xFFFFA200);
     const darkBar = Color(0xFF131421);
 
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFFFCF8F2), Color(0xFFEFE3CF)],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(94),
-          child: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF1D2034), Color(0xFF121425)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+    return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(94),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF1D2034), Color(0xFF121425)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-            child: SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-                child: Row(
-                  children: [
-                    IconButton(
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                      onPressed: () => Navigator.of(context).maybePop(),
-                    ),
-                    const SizedBox(width: 10),
-                    const Text(
-                      "Panel administrador",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 20,
+          ),
+          child: SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+              child: Row(
+                children: [
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    onPressed: () => Navigator.of(context).maybePop(),
+                  ),
+                  const SizedBox(width: 10),
+                  Row(
+                    children: const [
+                      Icon(Icons.shield_outlined, color: Colors.white, size: 20),
+                      SizedBox(width: 8),
+                      Text(
+                        "Panel administrador",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 20,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),
         ),
-        body: Padding(
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFFCF8F2), Color(0xFFEFE3CF)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Padding(
           padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -132,8 +139,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             ],
           ),
         ),
-        bottomNavigationBar: _bottomNav(accent, darkBar),
       ),
+      bottomNavigationBar: _bottomNav(accent, darkBar),
     );
   }
 
@@ -141,6 +148,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     final normalized = label.toLowerCase();
     final isCursos = normalized == "cursos";
     final isEstudiantes = normalized == "estudiantes";
+    final isLecciones = normalized == "lecciones";
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -181,6 +189,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                 showAdminsCount
                     ? _adminTotalBadge()
                     : _studentsTotalBadge(),
+              if (isLecciones) _lessonsTotalBadge(),
             ],
           );
         },
@@ -269,14 +278,38 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     );
   }
 
+  Widget _lessonsTotalBadge() {
+    return ValueListenableBuilder<int?>(
+      valueListenable: _lessonCountNotifier,
+      builder: (_, total, __) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.14),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withOpacity(0.18)),
+          ),
+          child: Text(
+            total != null && total > 0 ? "$total preguntas" : "Sin preguntas",
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _bottomNav(Color accent, Color darkBar) {
     return SafeArea(
-      minimum: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+      minimum: EdgeInsets.zero,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
           color: darkBar,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(0),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.25),
