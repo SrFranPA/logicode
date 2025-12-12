@@ -3,6 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'curso_screen.dart';
 
 class AprendeScreen extends StatelessWidget {
   const AprendeScreen({super.key});
@@ -250,9 +251,15 @@ class AprendeScreen extends StatelessWidget {
                                     return;
                                   }
 
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('Abrir curso: $nombreCurso (pendiente)'),
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => CursoScreen(
+                                        cursoId: doc.id,
+                                        cursoNombre: nombreCurso,
+                                        descripcion: descripcion.isEmpty
+                                            ? 'Conceptos clave y ejercicios interactivos.'
+                                            : descripcion,
+                                      ),
                                     ),
                                   );
                                 },
@@ -328,19 +335,20 @@ class _CourseCardState extends State<_CourseCard> with SingleTickerProviderState
   @override
   Widget build(BuildContext context) {
     const palettes = [
-      [Color(0xFF0E6BA8), Color(0xFF1BB1E6)],
-      [Color(0xFF1D6FB2), Color(0xFF36A7E2)],
-      [Color(0xFF1C9A9E), Color(0xFF3EC8B7)],
-      [Color(0xFFFF8A3D), Color(0xFFFF7043)],
-      [Color(0xFF7C5DFA), Color(0xFF9E7BFF)],
+      [Color(0xFFF3A45C), Color(0xFFFECF9C)],
+      [Color(0xFF6CC5B8), Color(0xFFB5F2E2)],
+      [Color(0xFF7D8BFF), Color(0xFFB6C3FF)],
+      [Color(0xFFE57373), Color(0xFFF6B1B1)],
+      [Color(0xFFF4C95D), Color(0xFFFFE4A1)],
     ];
 
     final colors = palettes[widget.index % palettes.length];
     Color colorA = colors[0];
-    final Color accent = colorA;
+    Color colorB = colors[1];
 
     if (!widget.unlocked) {
-      colorA = const Color(0xFF2F343B);
+      colorA = const Color(0xFFE8E8E8);
+      colorB = const Color(0xFFF6F6F6);
     }
 
     return GestureDetector(
@@ -358,32 +366,35 @@ class _CourseCardState extends State<_CourseCard> with SingleTickerProviderState
         ),
         child: Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF2B2F35),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: const Color(0xFF3A4048),
-              width: 1.2,
+            gradient: LinearGradient(
+              colors: [colorA, colorB],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
+            borderRadius: BorderRadius.circular(18),
             boxShadow: const [
               BoxShadow(
-                color: Color(0x33000000),
+                color: Color(0x22000000),
                 blurRadius: 10,
-                offset: Offset(0, 4),
+                offset: Offset(0, 6),
               ),
             ],
+            border: Border.all(
+              color: Colors.white.withOpacity(0.35),
+            ),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           child: Row(
             children: [
               Container(
                 padding: const EdgeInsets.all(10),
-                decoration: const BoxDecoration(
-                  color: Color(0xFF3A4048),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.28),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   widget.unlocked ? _iconForTitle(widget.title) : Icons.lock,
-                  color: Colors.white,
+                  color: widget.unlocked ? const Color(0xFF1F2A44) : const Color(0xFF8B8B8B),
                   size: 20,
                 ),
               ),
@@ -397,10 +408,10 @@ class _CourseCardState extends State<_CourseCard> with SingleTickerProviderState
                       widget.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
+                      style: TextStyle(
+                        color: const Color(0xFF1F2A44).withOpacity(widget.unlocked ? 0.95 : 0.6),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
                         letterSpacing: 0.2,
                       ),
                     ),
@@ -410,7 +421,7 @@ class _CourseCardState extends State<_CourseCard> with SingleTickerProviderState
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.75),
+                        color: const Color(0xFF1F2A44).withOpacity(widget.unlocked ? 0.75 : 0.55),
                         fontSize: 12,
                       ),
                     ),
@@ -419,24 +430,24 @@ class _CourseCardState extends State<_CourseCard> with SingleTickerProviderState
               ),
               const SizedBox(width: 12),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: widget.unlocked ? accent : const Color(0xFFF2A03A),
-                  borderRadius: BorderRadius.circular(16),
+                  color: widget.unlocked ? Colors.white.withOpacity(0.82) : Colors.white70,
+                  borderRadius: BorderRadius.circular(14),
                   boxShadow: const [
                     BoxShadow(
-                      color: Color(0x33000000),
-                      blurRadius: 8,
-                      offset: Offset(0, 4),
+                      color: Color(0x22000000),
+                      blurRadius: 6,
+                      offset: Offset(0, 3),
                     ),
                   ],
                 ),
                 child: Text(
                   widget.unlocked ? 'Entrar' : 'Bloqueado',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
+                  style: TextStyle(
+                    color: widget.unlocked ? const Color(0xFF1F2A44) : const Color(0xFF8B8B8B),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
               ),
