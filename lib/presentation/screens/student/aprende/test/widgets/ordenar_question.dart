@@ -21,23 +21,25 @@ class OrdenarQuestionWidget extends StatefulWidget {
 }
 
 class _OrdenarQuestionWidgetState extends State<OrdenarQuestionWidget> {
-  late List<String> desordenados;
-  late List<String> correctos;
+  late List<_OrdenItem> correctos;
+  late List<_OrdenItem> desordenados;
 
   bool locked = false; // Una vez respondido, ya no se puede mover
-  bool moved = false;  // Para activar el botón "Comprobar"
+  bool moved = false;  // Para activar el boton "Comprobar"
 
   @override
   void initState() {
     super.initState();
-    correctos = List<String>.from(widget.elementos);
-    desordenados = List<String>.from(widget.elementos)..shuffle();
+    correctos = List.generate(
+      widget.elementos.length,
+      (i) => _OrdenItem(id: 'item_$i', texto: widget.elementos[i]),
+    );
+    desordenados = List<_OrdenItem>.from(correctos)..shuffle();
   }
 
   void _onReorder(int oldIndex, int newIndex) {
     if (locked) return;
 
-    // FIX: esto habilita "Comprobar"
     setState(() => moved = true);
 
     if (newIndex > oldIndex) newIndex--;
@@ -57,10 +59,10 @@ class _OrdenarQuestionWidgetState extends State<OrdenarQuestionWidget> {
     widget.onResult(correcto, widget.retroalimentacion);
   }
 
-  bool _listasIguales(List<String> a, List<String> b) {
+  bool _listasIguales(List<_OrdenItem> a, List<_OrdenItem> b) {
     if (a.length != b.length) return false;
     for (int i = 0; i < a.length; i++) {
-      if (a[i] != b[i]) return false;
+      if (a[i].id != b[i].id) return false;
     }
     return true;
   }
@@ -77,30 +79,51 @@ class _OrdenarQuestionWidgetState extends State<OrdenarQuestionWidget> {
 
         const SizedBox(height: 16),
 
-        ReorderableListView(
+        ReorderableListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
+          buildDefaultDragHandles: false,
           onReorder: _onReorder,
-          children: [
-            for (int i = 0; i < desordenados.length; i++)
-              Container(
-                key: ValueKey(desordenados[i]),
-                margin: const EdgeInsets.symmetric(vertical: 6),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                decoration: BoxDecoration(
-                  color: locked ? Colors.grey.shade300 : Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.orange.shade300),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.drag_handle),
-                    const SizedBox(width: 10),
-                    Expanded(child: Text(desordenados[i])),
-                  ],
-                ),
-              )
-          ],
+          itemCount: desordenados.length,
+          itemBuilder: (context, i) {
+            final item = desordenados[i];
+            return Container(
+              key: ValueKey(item.id),
+              margin: const EdgeInsets.symmetric(vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+              decoration: BoxDecoration(
+                color: locked ? Colors.grey.shade200 : Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFF2B46D)),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x14000000),
+                    blurRadius: 6,
+                    offset: Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  ReorderableDragStartListener(
+                    index: i,
+                    child: const Icon(Icons.drag_handle, color: Color(0xFFE07A1E)),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      item.texto,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF1F2A44),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
         ),
 
         const SizedBox(height: 20),
@@ -109,9 +132,8 @@ class _OrdenarQuestionWidgetState extends State<OrdenarQuestionWidget> {
           child: ElevatedButton(
             onPressed: (!locked && moved) ? _comprobar : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: (!locked && moved)
-                  ? Colors.orange
-                  : Colors.grey.shade400,
+              backgroundColor:
+                  (!locked && moved) ? const Color(0xFFE07A1E) : Colors.grey.shade400,
               padding:
                   const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
               shape: RoundedRectangleBorder(
@@ -127,4 +149,11 @@ class _OrdenarQuestionWidgetState extends State<OrdenarQuestionWidget> {
       ],
     );
   }
+}
+
+class _OrdenItem {
+  final String id;
+  final String texto;
+
+  const _OrdenItem({required this.id, required this.texto});
 }

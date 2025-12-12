@@ -21,8 +21,6 @@ class AprendeScreen extends StatelessWidget {
 
         final user = userSnap.data?.data() ?? <String, dynamic>{};
         final cursoActualId = (user['curso_actual'] ?? '').toString();
-
-        // NUEVOS CAMPOS DEL PRETEST
         final pretestEstado = (user['pretest_estado'] ?? 'pendiente').toString();
         final bool testAprobado = pretestEstado == 'aprobado';
 
@@ -44,7 +42,7 @@ class AprendeScreen extends StatelessWidget {
             }
 
             return Container(
-              color: const Color(0xFFE9F3FF),
+              color: const Color(0xFFFEF6ED),
               width: double.infinity,
               child: SafeArea(
                 top: false,
@@ -53,142 +51,217 @@ class AprendeScreen extends StatelessWidget {
                     SliverToBoxAdapter(
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Elige un curso y avanza en tu laboratorio. Cada módulo desbloquea el siguiente.',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Color(0xFF4A6275),
-                              ),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFFFFFFF), Color(0xFFF7F1E3)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
                             ),
-                            const SizedBox(height: 12),
-
-                            // TARJETA DE ADVERTENCIA SI NO HA HECHO O APROBADO EL PRETEST
-                            if (!testAprobado)
-                              Container(
-                                margin: const EdgeInsets.only(bottom: 12),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 10),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFFFF2DC),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                      color: const Color(0xFFF2A03A)),
-                                ),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: const [
-                                    Icon(Icons.error_outline,
-                                        color: Color(0xFFFF7043)),
-                                    SizedBox(width: 8),
-                                    Expanded(
+                            borderRadius: BorderRadius.circular(18),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x22000000),
+                                blurRadius: 10,
+                                offset: Offset(0, 6),
+                              ),
+                            ],
+                            border: Border.all(color: const Color(0xFFF2B46D).withOpacity(0.16)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: const [
+                                  CircleAvatar(
+                                    radius: 18,
+                                    backgroundColor: Color(0xFFE38B2F),
+                                    child: Icon(Icons.flag, color: Colors.white, size: 18),
+                                  ),
+                                  SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      'Elige un curso y avanza en tu laboratorio. Cada modulo desbloquea el siguiente.',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        height: 1.3,
+                                        color: Color(0xFF2C3B4A),
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              if (!testAprobado) ...[
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(14),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFFF7E6),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: const Color(0xFFE7C899)),
+                                  ),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFFFD9B3),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: const Icon(Icons.lock_outline, color: Color(0xFFE07A1E)),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    const Expanded(
                                       child: Text(
-                                        'Realiza el test inicial para desbloquear los cursos.',
+                                        'Completa el test inicial para desbloquear tus cursos.',
                                         style: TextStyle(
                                           color: Color(0xFF8A5A2F),
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 13,
                                         ),
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFF2A03A),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 14, vertical: 12),
-                                ),
-                                onPressed: () {
-                                  Navigator.of(context).pushNamed('/pretest');
-                                },
-                                icon: const Icon(
-                                    Icons.assignment_turned_in,
-                                    color: Colors.white),
-                                label: const Text(
-                                  'Realizar test',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                            const SizedBox(height: 14),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    // GRID DE CURSOS
-                    SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 42),
-                      sliver: SliverGrid(
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 1,
-                          childAspectRatio: 3.2,
-                          crossAxisSpacing: 14,
-                          mainAxisSpacing: 14,
-                        ),
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final doc = cursos[index];
-                            final data = doc.data();
-                            final nombreCurso =
-                                (data['nombre'] ?? 'Curso').toString();
-                            final descripcion =
-                                (data['descripcion'] ?? '').toString();
-                            final orden =
-                                (data['orden'] as num?)?.toInt() ?? 1;
-
-                            final unlocked =
-                                testAprobado && orden <= unlockedUntilOrder;
-                            final isCurrent = doc.id == cursoActualId;
-
-                            return _CourseCard(
-                              index: index,
-                              title: nombreCurso,
-                              description: descripcion.isEmpty
-                                  ? 'Conceptos clave y ejercicios interactivos.'
-                                  : descripcion,
-                              unlocked: unlocked,
-                              highlight: isCurrent,
-                              onTap: () {
-                                if (!unlocked) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Debes completar el test inicial antes de acceder al curso.',
+                                const SizedBox(height: 14),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton.icon(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFFE07A1E),
+                                      minimumSize: const Size(double.infinity, 62),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(18),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 18,
+                                        vertical: 16,
+                                      ),
+                                      elevation: 8,
+                                      shadowColor: const Color(0xFFE07A1E).withOpacity(0.35),
+                                    ),
+                                    onPressed: () {
+                                      Navigator.of(context).pushNamed('/pretest');
+                                    },
+                                    icon: const Icon(
+                                      Icons.assignment_turned_in,
+                                      color: Colors.white,
+                                      size: 22,
+                                    ),
+                                    label: const Text(
+                                      'Realizar test',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w900,
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                        letterSpacing: 0.2,
                                       ),
                                     ),
-                                  );
-                                  return;
-                                }
-
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                        'Abrir curso: $nombreCurso (pendiente)'),
                                   ),
-                                );
-                              },
-                            );
-                          },
-                          childCount: cursos.length,
+                                ),
+                                const SizedBox(height: 4),
+                                const Text(
+                                  'Completar el test inicial desbloquea todo el contenido.',
+                                  style: TextStyle(
+                                    color: Color(0xFF6B5332),
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ] else ...[
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEFFBF2),
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: const Color(0xFF8CCFA6).withOpacity(0.5),
+                                  ),
+                                ),
+                                  child: Row(
+                                    children: const [
+                                      Icon(Icons.check_circle, color: Color(0xFF1E88E5)),
+                                      SizedBox(width: 8),
+                                      Expanded(
+                                  child: Text(
+                                    'Test completado. Explora los cursos disponibles.',
+                                    style: TextStyle(
+                                      color: Color(0xFF1E4D2E),
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
+
+                    if (testAprobado)
+                      SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 42),
+                        sliver: SliverGrid(
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 1,
+                            childAspectRatio: 3.2,
+                            crossAxisSpacing: 14,
+                            mainAxisSpacing: 14,
+                          ),
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              final doc = cursos[index];
+                              final data = doc.data();
+                              final nombreCurso = (data['nombre'] ?? 'Curso').toString();
+                              final descripcion = (data['descripcion'] ?? '').toString();
+                              final orden = (data['orden'] as num?)?.toInt() ?? 1;
+
+                              final unlocked = testAprobado && orden <= unlockedUntilOrder;
+                              final isCurrent = doc.id == cursoActualId;
+
+                              return _CourseCard(
+                                index: index,
+                                title: nombreCurso,
+                                description: descripcion.isEmpty
+                                    ? 'Conceptos clave y ejercicios interactivos.'
+                                    : descripcion,
+                                unlocked: unlocked,
+                                highlight: isCurrent,
+                                onTap: () {
+                                  if (!unlocked) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Debes completar el test inicial antes de acceder al curso.',
+                                        ),
+                                      ),
+                                    );
+                                    return;
+                                  }
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Abrir curso: $nombreCurso (pendiente)'),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                            childCount: cursos.length,
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -221,8 +294,7 @@ class _CourseCard extends StatefulWidget {
   State<_CourseCard> createState() => _CourseCardState();
 }
 
-class _CourseCardState extends State<_CourseCard>
-    with SingleTickerProviderStateMixin {
+class _CourseCardState extends State<_CourseCard> with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
   @override
@@ -265,12 +337,10 @@ class _CourseCardState extends State<_CourseCard>
 
     final colors = palettes[widget.index % palettes.length];
     Color colorA = colors[0];
-    //Color colorB = colors[1];
     final Color accent = colorA;
 
     if (!widget.unlocked) {
       colorA = const Color(0xFF2F343B);
-      //colorB = const Color(0xFF2F343B);
     }
 
     return GestureDetector(
@@ -349,8 +419,7 @@ class _CourseCardState extends State<_CourseCard>
               ),
               const SizedBox(width: 12),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
                   color: widget.unlocked ? accent : const Color(0xFFF2A03A),
                   borderRadius: BorderRadius.circular(16),
