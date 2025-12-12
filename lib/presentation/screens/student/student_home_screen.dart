@@ -78,14 +78,17 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
         ),
       ),
       bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: const Color(0xFFF2A03A),
-          border: Border.all(color: Colors.white.withOpacity(0.10)),
-          boxShadow: const [
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF1F2937), Color(0xFF111827)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+          boxShadow: [
             BoxShadow(
-              color: Color(0x33000000),
-              blurRadius: 12,
-              offset: Offset(0, 4),
+              color: Color(0x44000000),
+              blurRadius: 16,
+              offset: Offset(0, -2),
             ),
           ],
         ),
@@ -93,22 +96,22 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
           top: false,
           child: BottomNavigationBar(
             currentIndex: _currentIndex,
-            backgroundColor: const Color(0xFFF2A03A),
+            backgroundColor: Colors.transparent,
             elevation: 0,
-            selectedItemColor: Colors.white,
+            selectedItemColor: const Color(0xFFF2A03A),
             unselectedItemColor: Colors.white70,
-            selectedIconTheme: const IconThemeData(size: 26, color: Colors.white),
-            unselectedIconTheme: IconThemeData(
+            selectedIconTheme: const IconThemeData(size: 26, color: Color(0xFFF2A03A)),
+            unselectedIconTheme: const IconThemeData(
               size: 22,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white70,
             ),
             selectedLabelStyle: const TextStyle(
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.2,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.3,
             ),
             unselectedLabelStyle: const TextStyle(
-              fontWeight: FontWeight.w500,
-              letterSpacing: 0.1,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.2,
             ),
             type: BottomNavigationBarType.fixed,
             onTap: (i) => setState(() => _currentIndex = i),
@@ -116,7 +119,14 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                 .map(
                   (item) => BottomNavigationBarItem(
                     icon: Icon(item.icon),
-                    activeIcon: Icon(item.activeIcon),
+                    activeIcon: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF2A03A).withOpacity(0.16),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(item.activeIcon, color: const Color(0xFFF2A03A)),
+                    ),
                     label: item.label,
                   ),
                 )
@@ -440,4 +450,3 @@ class _StudentHudState extends State<_StudentHud> {
     );
   }
 }
-
