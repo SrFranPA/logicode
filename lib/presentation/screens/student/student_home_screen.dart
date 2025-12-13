@@ -58,11 +58,11 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F7FB),
+      backgroundColor: const Color(0xFFFCF8F2),
       body: DecoratedBox(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFF6F7FB), Color(0xFFEFF2F7)],
+            colors: [Color(0xFFFCF8F2), Color(0xFFEFE3CF)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -75,7 +75,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
               child: _items[_currentIndex].screen,
             ),
           ],
-        ),
+        ), 
       ),
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(

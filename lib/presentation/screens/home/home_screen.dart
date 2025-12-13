@@ -53,7 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFFFFF8EF),
+        backgroundColor: const Color(0xFFFCF8F2),
         body: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
@@ -64,14 +64,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFFF5D6A1), Color(0xFFE9A34F)],
+                      colors: [Color(0xFF1D2034), Color(0xFF121425)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(18),
                     boxShadow: const [
                       BoxShadow(
-                        color: Color(0x22000000),
+                        color: Color(0x33000000),
                         blurRadius: 10,
                         offset: Offset(0, 6),
                       ),
@@ -90,7 +90,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 width: 38,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: Colors.white.withOpacity(0.14),
+                                  color: Colors.white.withOpacity(0.12),
                                 ),
                                 child: Padding(
                                   padding: const EdgeInsets.all(6),
@@ -102,10 +102,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               const SizedBox(width: 10),
                               Container(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.14),
+                                  color: Colors.white.withOpacity(0.10),
                                   borderRadius: BorderRadius.circular(14),
                                 ),
                                 child: Row(
@@ -129,7 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.14),
+                              color: Colors.white.withOpacity(0.10),
                               borderRadius: BorderRadius.circular(14),
                             ),
                             child: Row(
@@ -217,13 +216,13 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                         child: Padding(
-                        padding: const EdgeInsets.all(10),
-                        child: ClipOval(
-                          child: Image.asset(
-                            'assets/images/logo.png',
-                            fit: BoxFit.cover,
+                          padding: const EdgeInsets.all(10),
+                          child: ClipOval(
+                            child: Image.asset(
+                              'assets/images/logo.png',
+                              fit: BoxFit.cover,
+                            ),
                           ),
-                        ),
                         ),
                       ),
                       const SizedBox(height: 18),
@@ -316,16 +315,16 @@ class _FeatureRow extends StatelessWidget {
           width: 34,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: const Color(0xFFE9A34F).withOpacity(0.18),
+            color: const Color(0xFFE9EEF7),
           ),
-          child: Icon(icon, color: const Color(0xFFE9A34F), size: 18),
+          child: Icon(icon, color: const Color(0xFF1E2433), size: 18),
         ),
         const SizedBox(width: 10),
         Expanded(
           child: Text(
             text,
             style: const TextStyle(
-              color: Color(0xFF555B64),
+              color: Color(0xFF1E2433),
               fontWeight: FontWeight.w600,
             ),
           ),

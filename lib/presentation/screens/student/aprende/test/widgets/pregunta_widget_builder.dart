@@ -7,7 +7,6 @@ import 'ordenar_question.dart';
 import 'fill_blank_question.dart';
 import 'chip_select_question.dart';
 
-/// Normaliza cualquier tipo raro a uno de los válidos
 String normalizarTipo(String t) {
   t = t.trim().toLowerCase();
 
@@ -24,18 +23,27 @@ Widget buildQuestionWidget({
   required Pregunta pregunta,
   required Function(bool correcta, String retro) onResult,
 }) {
-  final data = jsonDecode(pregunta.archivoUrl ?? "{}");
+  Map<String, dynamic> data = {};
+  try {
+    final raw = pregunta.archivoUrl ?? "{}";
+    final decoded = jsonDecode(raw);
+    if (decoded is Map<String, dynamic>) {
+      data = decoded;
+    }
+  } catch (_) {
+    data = {};
+  }
 
   final rawTipo = data["tipo"]?.toString() ?? pregunta.tipo;
   final tipo = normalizarTipo(rawTipo);
 
-  print("TIPO RECIBIDO → $rawTipo / NORMALIZADO → $tipo");
+  print("TIPO RECIBIDO -> $rawTipo / NORMALIZADO -> $tipo");
 
   switch (tipo) {
     case "ordenar":
       return OrdenarQuestionWidget(
         enunciado: pregunta.enunciado,
-        elementos: List<String>.from(data["elementos"] ?? []),
+        elementos: _asStringList(data["elementos"]),
         retroalimentacion: data["retroalimentacion"] ?? "",
         onResult: onResult,
       );
@@ -43,7 +51,7 @@ Widget buildQuestionWidget({
     case "completa_espacio":
       return FillBlankQuestionWidget(
         enunciado: pregunta.enunciado,
-        blanks: List<String>.from(data["blanks"] ?? []),
+        blanks: _asStringList(data["blanks"]),
         retroalimentacion: data["retroalimentacion"] ?? "",
         onResult: onResult,
       );
@@ -51,21 +59,45 @@ Widget buildQuestionWidget({
     case "seleccion_chips":
       return ChipSelectQuestionWidget(
         enunciado: pregunta.enunciado,
-        opciones: List<String>.from(data["opciones"] ?? []),
-        correcta: data["respuesta_correcta"] ?? "",
+        opciones: _asStringList(data["opciones"]),
+        correcta: data["respuesta_correcta"]?.toString() ?? "",
         retroalimentacion: data["feedback"] ?? data["retroalimentacion"] ?? "",
         onResult: onResult,
       );
 
     default:
-      return const Padding(
-        padding: EdgeInsets.all(40),
-        child: Center(
+      return _UnsupportedQuestion(onSkip: () => onResult(false, "Tipo no soportado"));
+  }
+}
+
+List<String> _asStringList(dynamic value) {
+  if (value is List) {
+    return value.map((e) => e.toString()).toList();
+  }
+  return <String>[];
+}
+
+class _UnsupportedQuestion extends StatelessWidget {
+  final VoidCallback onSkip;
+  const _UnsupportedQuestion({required this.onSkip});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        const Padding(
+          padding: EdgeInsets.all(24),
           child: Text(
-            "❌ Tipo no soportado",
-            style: TextStyle(fontSize: 20, color: Colors.red),
+            "No se puede mostrar esta pregunta.",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.red),
           ),
         ),
-      );
+        ElevatedButton(
+          onPressed: onSkip,
+          child: const Text("Omitir"),
+        ),
+      ],
+    );
   }
 }

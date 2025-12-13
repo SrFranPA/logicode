@@ -25,7 +25,6 @@ class _OrdenarQuestionWidgetState extends State<OrdenarQuestionWidget> {
   late List<_OrdenItem> desordenados;
 
   bool locked = false; // Una vez respondido, ya no se puede mover
-  bool moved = false;  // Para activar el boton "Comprobar"
 
   @override
   void initState() {
@@ -40,11 +39,10 @@ class _OrdenarQuestionWidgetState extends State<OrdenarQuestionWidget> {
   void _onReorder(int oldIndex, int newIndex) {
     if (locked) return;
 
-    setState(() => moved = true);
-
     if (newIndex > oldIndex) newIndex--;
     final item = desordenados.removeAt(oldIndex);
     desordenados.insert(newIndex, item);
+    setState(() {});
   }
 
   void _comprobar() {
@@ -130,10 +128,10 @@ class _OrdenarQuestionWidgetState extends State<OrdenarQuestionWidget> {
 
         Center(
           child: ElevatedButton(
-            onPressed: (!locked && moved) ? _comprobar : null,
+            onPressed: locked ? null : _comprobar,
             style: ElevatedButton.styleFrom(
               backgroundColor:
-                  (!locked && moved) ? const Color(0xFFE07A1E) : Colors.grey.shade400,
+                  !locked ? const Color(0xFFE07A1E) : Colors.grey.shade400,
               padding:
                   const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
               shape: RoundedRectangleBorder(

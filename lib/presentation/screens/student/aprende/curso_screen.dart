@@ -64,10 +64,10 @@ class _CursoScreenState extends State<CursoScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFEF6ED),
+      backgroundColor: const Color(0xFFFCF8F2),
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: const Color(0xFFE07A1E),
+        backgroundColor: const Color(0xFF283347),
         foregroundColor: Colors.white,
         title: Text(
           widget.cursoNombre,
@@ -77,7 +77,7 @@ class _CursoScreenState extends State<CursoScreen> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFFEF6ED), Color(0xFFE7F2FF)],
+            colors: [Color(0xFFFCF8F2), Color(0xFFEFE3CF)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -92,20 +92,16 @@ class _CursoScreenState extends State<CursoScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFFFE0B8), Color(0xFFE5F4FF)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(18),
-                    boxShadow: const [
+                    boxShadow: [
                       BoxShadow(
-                        color: Color(0x33000000),
+                        color: Colors.black.withOpacity(0.06),
                         blurRadius: 12,
-                        offset: Offset(0, 6),
+                        offset: const Offset(0, 8),
                       ),
                     ],
-                    border: Border.all(color: const Color(0xFFE07A1E).withOpacity(0.25)),
+                    border: Border.all(color: Colors.black.withOpacity(0.03)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -115,10 +111,10 @@ class _CursoScreenState extends State<CursoScreen> {
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.28),
+                              color: const Color(0xFFE9EEF7),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.menu_book, color: Color(0xFFE07A1E)),
+                            child: const Icon(Icons.menu_book, color: Color(0xFF283347)),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -137,7 +133,7 @@ class _CursoScreenState extends State<CursoScreen> {
                       Text(
                         widget.descripcion,
                         style: const TextStyle(
-                          color: Color(0xFF4A3B2D),
+                          color: Color(0xFF5A5248),
                           fontWeight: FontWeight.w700,
                           fontSize: 14,
                           height: 1.3,
@@ -167,7 +163,7 @@ class _CursoScreenState extends State<CursoScreen> {
                 const Text(
                   'Avanza paso a paso. Cada leccion desbloquea la siguiente.',
                   style: TextStyle(
-                    color: Color(0xFF6A5645),
+                    color: Color(0xFF5A5248),
                     fontWeight: FontWeight.w600,
                     fontSize: 12,
                   ),
@@ -179,15 +175,9 @@ class _CursoScreenState extends State<CursoScreen> {
                     separatorBuilder: (_, __) => const SizedBox(height: 12),
                     itemBuilder: (context, i) {
                       final item = lessons[i];
-                      final colors = [
-                        [const Color(0xFFF3A45C), const Color(0xFFFECF9C)],
-                        [const Color(0xFFC4E5FF), const Color(0xFFE3F1FF)],
-                        [const Color(0xFFD8F5E5), const Color(0xFFBCE9D3)],
-                        [const Color(0xFFFFD7C2), const Color(0xFFFFECDD)],
-                      ];
+                      final palette = _lessonPalette(i);
                       final unlocked = i == 0 ? true : _completed[i - 1];
                       final done = _completed[i];
-                      final palette = colors[i % colors.length];
                       return GestureDetector(
                         onTap: () => _openLesson(i),
                         child: Container(
@@ -198,17 +188,17 @@ class _CursoScreenState extends State<CursoScreen> {
                               end: Alignment.bottomRight,
                             ),
                             borderRadius: BorderRadius.circular(16),
-                            boxShadow: const [
+                            boxShadow: [
                               BoxShadow(
-                                color: Color(0x22000000),
-                                blurRadius: 8,
-                                offset: Offset(0, 4),
+                                color: Colors.black.withOpacity(0.06),
+                                blurRadius: 10,
+                                offset: const Offset(0, 6),
                               ),
                             ],
                             border: Border.all(
                               color: unlocked
-                                  ? const Color(0xFFE07A1E).withOpacity(0.16)
-                                  : const Color(0xFFB0B0B0).withOpacity(0.2),
+                                  ? const Color(0xFF283347).withOpacity(0.08)
+                                  : Colors.black.withOpacity(0.05),
                             ),
                           ),
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
@@ -217,16 +207,16 @@ class _CursoScreenState extends State<CursoScreen> {
                               Container(
                                 padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.3),
+                                  color: Colors.white.withOpacity(0.35),
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(Icons.play_arrow_rounded, color: Color(0xFF2C1B0E)),
+                                child: const Icon(Icons.play_arrow_rounded, color: Color(0xFF283347)),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
                                     Row(
                                       children: [
                                         Container(
@@ -259,7 +249,7 @@ class _CursoScreenState extends State<CursoScreen> {
                                     Text(
                                       item.detail,
                                       style: TextStyle(
-                                        color: unlocked ? const Color(0xFF5A4737) : const Color(0xFF7A6A5C),
+                                        color: unlocked ? const Color(0xFF5A5248) : const Color(0xFF7A6A5C),
                                         fontWeight: FontWeight.w600,
                                         fontSize: 13,
                                       ),
@@ -272,13 +262,13 @@ class _CursoScreenState extends State<CursoScreen> {
                                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                 decoration: BoxDecoration(
                                   color: done
-                                      ? const Color(0xFF2E7D32).withOpacity(0.12)
-                                      : Colors.white.withOpacity(0.85),
+                                      ? const Color(0xFFE8F9E5)
+                                      : Colors.white.withOpacity(0.92),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
                                     color: done
-                                        ? const Color(0xFF2E7D32).withOpacity(0.5)
-                                        : const Color(0xFFE07A1E).withOpacity(0.4),
+                                        ? const Color(0xFF3FB07F).withOpacity(0.5)
+                                        : const Color(0xFF283347).withOpacity(0.12),
                                   ),
                                 ),
                                 child: Row(
@@ -330,6 +320,16 @@ class _CursoScreenState extends State<CursoScreen> {
       ),
     );
   }
+
+  List<Color> _lessonPalette(int index) {
+    const palettes = [
+      [Color(0xFFE9EEF7), Color(0xFFD7DFEF)],
+      [Color(0xFFFFF2DC), Color(0xFFEFD7A5)],
+      [Color(0xFFE8F9E5), Color(0xFFD1F1D6)],
+      [Color(0xFFFFE6E6), Color(0xFFFFF0F0)],
+    ];
+    return palettes[index % palettes.length];
+  }
 }
 
 class _Lesson {
@@ -342,19 +342,19 @@ Widget _chip(IconData icon, String text) {
   return Container(
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
     decoration: BoxDecoration(
-      color: const Color(0xFFFEEAD5),
+      color: const Color(0xFFF3F5FA),
       borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: const Color(0xFFE7C899)),
+      border: Border.all(color: Colors.black.withOpacity(0.03)),
     ),
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 16, color: const Color(0xFF8D5722)),
+        Icon(icon, size: 16, color: const Color(0xFF283347)),
         const SizedBox(width: 6),
         Text(
           text,
           style: const TextStyle(
-            color: Color(0xFF8D5722),
+            color: Color(0xFF283347),
             fontWeight: FontWeight.w700,
             fontSize: 12,
           ),

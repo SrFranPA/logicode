@@ -127,10 +127,10 @@ class _PretestScreenState extends State<PretestScreen> {
     final pregunta = preguntas[index];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFEF6ED),
+      backgroundColor: const Color(0xFFFCF8F2),
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: const Color(0xFFE07A1E),
+        backgroundColor: const Color(0xFF2C1B0E),
         leading: const BackButton(color: Colors.white),
         title: const Text(
           "Pretest",
@@ -140,7 +140,7 @@ class _PretestScreenState extends State<PretestScreen> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFFEF6ED), Color(0xFFFFF0DF)],
+            colors: [Color(0xFFFCF8F2), Color(0xFFEFE3CF)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -172,12 +172,12 @@ class _PretestScreenState extends State<PretestScreen> {
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFE07A1E).withOpacity(0.12),
+                              color: const Color(0xFFFFA200).withOpacity(0.16),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(
                               Icons.flag_circle_rounded,
-                              color: Color(0xFFE07A1E),
+                              color: Color(0xFFFFA200),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -197,8 +197,8 @@ class _PretestScreenState extends State<PretestScreen> {
                                 width: 240,
                                 child: LinearProgressIndicator(
                                   value: (index + 1) / preguntas.length,
-                                  backgroundColor: const Color(0xFFE07A1E).withOpacity(0.16),
-                                  color: const Color(0xFFE07A1E),
+                                  backgroundColor: const Color(0xFFFFA200).withOpacity(0.18),
+                                  color: const Color(0xFFFFA200),
                                   minHeight: 8,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -210,11 +210,9 @@ class _PretestScreenState extends State<PretestScreen> {
                       const SizedBox(height: 12),
                       Row(
                         children: [
-                          _badge(Icons.schedule, "Tiempo libre", const Color(0xFF8D5722)),
+                          _badge(Icons.check_circle_outline, "Responde y continua", const Color(0xFF3FB07F)),
                           const SizedBox(width: 10),
-                          _badge(Icons.check_circle_outline, "Responde y continua", const Color(0xFF2E7D32)),
-                          const SizedBox(width: 10),
-                          _badge(Icons.shuffle, "Orden aleatorio", const Color(0xFF7B4A1D)),
+                          _badge(Icons.shuffle, "Orden aleatorio", const Color(0xFFE57373)),
                         ],
                       ),
                     ],
@@ -236,16 +234,19 @@ class _PretestScreenState extends State<PretestScreen> {
                       ),
                     ],
                   ),
-                  child: buildQuestionWidget(
-                    pregunta: pregunta,
-                    onResult: (correcta, r) {
-                      if (!mounted) return;
-                      setState(() {
-                        locked = true;
-                        fueCorrecto = correcta;
-                        retro = r;
-                      });
-                    },
+                  child: KeyedSubtree(
+                    key: ValueKey(pregunta.id ?? index),
+                    child: buildQuestionWidget(
+                      pregunta: pregunta,
+                      onResult: (correcta, r) {
+                        if (!mounted) return;
+                        setState(() {
+                          locked = true;
+                          fueCorrecto = correcta;
+                          retro = r;
+                        });
+                      },
+                    ),
                   ),
                 ),
 
@@ -256,7 +257,7 @@ class _PretestScreenState extends State<PretestScreen> {
                     duration: const Duration(milliseconds: 300),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: fueCorrecto! ? const Color(0xFFE9F8EF) : const Color(0xFFFFEFEF),
+                      color: fueCorrecto! ? const Color(0xFFE8F9E5) : const Color(0xFFFFE6E6),
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
                         color: fueCorrecto! ? const Color(0xFF3FB07F) : const Color(0xFFE57373),
@@ -291,7 +292,7 @@ class _PretestScreenState extends State<PretestScreen> {
                       child: ElevatedButton(
                         onPressed: locked ? _siguiente : null,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: locked ? const Color(0xFFE07A1E) : const Color(0xFFE5C49B),
+                          backgroundColor: locked ? const Color(0xFFFFA200) : const Color(0xFFFFDDAF),
                           minimumSize: const Size(double.infinity, 56),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
@@ -312,7 +313,7 @@ class _PretestScreenState extends State<PretestScreen> {
                     TextButton(
                       onPressed: _siguiente,
                       style: TextButton.styleFrom(
-                        foregroundColor: const Color(0xFF8D5722),
+                        foregroundColor: const Color(0xFF2C1B0E),
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                       ),
                       child: const Text(

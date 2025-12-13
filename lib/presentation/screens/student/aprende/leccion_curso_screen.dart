@@ -99,15 +99,15 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
 
     if (preguntas.isEmpty) {
       return Scaffold(
-        backgroundColor: const Color(0xFF0D1B2A),
+        backgroundColor: const Color(0xFFFCF8F2),
         appBar: AppBar(
-          backgroundColor: const Color(0xFF111827),
+          backgroundColor: const Color(0xFF283347),
           title: Text(widget.leccionTitulo),
         ),
         body: const Center(
           child: Text(
             'No hay preguntas para esta leccion.',
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(color: Color(0xFF2C1B0E)),
           ),
         ),
       );
@@ -117,9 +117,9 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
     final progreso = (index + 1) / preguntas.length;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1B2A),
+      backgroundColor: const Color(0xFFFCF8F2),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF111827),
+        backgroundColor: const Color(0xFF283347),
         elevation: 0,
         title: Text(
           widget.leccionTitulo,
@@ -129,7 +129,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF0D1B2A), Color(0xFF111827)],
+            colors: [Color(0xFFFCF8F2), Color(0xFFEFE3CF)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -150,7 +150,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                           padding: EdgeInsets.only(right: i == 4 ? 0 : 6),
                           child: Icon(
                             Icons.favorite,
-                            color: i < lives ? const Color(0xFFF2A03A) : Colors.white24,
+                            color: i < lives ? const Color(0xFFFFA451) : Colors.black26,
                             size: 22,
                           ),
                         ),
@@ -159,8 +159,8 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                     Text(
                       'Curso: ${widget.cursoId}',
                       style: const TextStyle(
-                        color: Colors.white70,
-                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF5A5248),
+                        fontWeight: FontWeight.w700,
                         fontSize: 12,
                       ),
                     ),
@@ -171,9 +171,16 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF152033),
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: Colors.white.withOpacity(0.08)),
+                    border: Border.all(color: Colors.black.withOpacity(0.04)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.06),
+                        blurRadius: 12,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -181,8 +188,8 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                       Text(
                         'Pregunta ${index + 1} de ${preguntas.length}',
                         style: const TextStyle(
-                          color: Colors.white70,
-                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF2C1B0E),
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -191,8 +198,8 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                         child: LinearProgressIndicator(
                           value: progreso,
                           minHeight: 10,
-                          backgroundColor: Colors.white.withOpacity(0.08),
-                          color: const Color(0xFFF2A03A),
+                          backgroundColor: const Color(0xFFFFA451).withOpacity(0.15),
+                          color: const Color(0xFFFFA451),
                         ),
                       ),
                     ],
@@ -203,13 +210,13 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF152033),
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
-                    boxShadow: const [
+                    boxShadow: [
                       BoxShadow(
-                        color: Color(0x33000000),
-                        blurRadius: 10,
-                        offset: Offset(0, 6),
+                        color: Colors.black.withOpacity(0.06),
+                        blurRadius: 12,
+                        offset: const Offset(0, 8),
                       ),
                     ],
                   ),
@@ -224,17 +231,17 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: correcto ? const Color(0xFF1B4332) : const Color(0xFF4A1C1C),
+                      color: correcto ? const Color(0xFFE8F9E5) : const Color(0xFFFFE6E6),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: correcto ? const Color(0xFF2D6A4F) : const Color(0xFF8A2C2C),
+                        color: correcto ? const Color(0xFF3FB07F) : const Color(0xFFE57373),
                       ),
                     ),
                     child: Row(
                       children: [
                         Icon(
                           correcto ? Icons.check_circle : Icons.error_outline,
-                          color: Colors.white,
+                          color: correcto ? const Color(0xFF2E8E62) : const Color(0xFFB53A3A),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
@@ -242,8 +249,8 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                             retro.isEmpty
                                 ? (correcto ? 'Correcto' : 'Respuesta incorrecta')
                                 : retro,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: correcto ? const Color(0xFF1D6647) : const Color(0xFFB02A2A),
                               fontWeight: FontWeight.w800,
                             ),
                           ),
@@ -258,7 +265,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                   child: ElevatedButton(
                     onPressed: answered ? _siguiente : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: answered ? const Color(0xFFF2A03A) : Colors.white24,
+                      backgroundColor: answered ? const Color(0xFFFFA451) : Colors.black26,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       elevation: answered ? 4 : 0,
                     ),
