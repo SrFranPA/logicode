@@ -1,6 +1,8 @@
 // lib/presentation/screens/student/aprende/curso_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'leccion_curso_screen.dart';
 
 class CursoScreen extends StatefulWidget {
@@ -27,14 +29,40 @@ class _CursoScreenState extends State<CursoScreen> {
   ];
 
   late List<bool> _completed;
+  int _lives = 5;
+  String? _userId;
 
   @override
   void initState() {
     super.initState();
     _completed = List<bool>.filled(lessons.length, false);
+    _userId = FirebaseAuth.instance.currentUser?.uid;
+    _loadLives();
+  }
+
+  Future<void> _loadLives() async {
+    if (_userId == null) return;
+    final snap =
+        await FirebaseFirestore.instance.collection('usuarios').doc(_userId).get();
+    if (!snap.exists) return;
+    final data = snap.data() ?? {};
+    final vidas = (data['vidas'] as num?)?.toInt();
+    if (vidas != null && mounted) {
+      setState(() {
+        _lives = vidas.clamp(0, 5);
+      });
+    }
   }
 
   Future<void> _openLesson(int i) async {
+    if (_lives <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No tienes vidas disponibles. Recarga para continuar.'),
+        ),
+      );
+      return;
+    }
     final unlocked = i == 0 ? true : _completed[i - 1];
     if (!unlocked) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -63,6 +91,9 @@ class _CursoScreenState extends State<CursoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    const tomato = Color(0xFFFF8A3D);
+    final progreso = _completed.where((c) => c).length / lessons.length;
+
     return Scaffold(
       backgroundColor: const Color(0xFFFCF8F2),
       appBar: AppBar(
@@ -114,7 +145,7 @@ class _CursoScreenState extends State<CursoScreen> {
                               color: const Color(0xFFE9EEF7),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.menu_book, color: Color(0xFF283347)),
+                            child: const Icon(Icons.menu_book, color: tomato),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -151,6 +182,82 @@ class _CursoScreenState extends State<CursoScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.06),
+                        blurRadius: 12,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                    border: Border.all(color: Colors.black.withOpacity(0.03)),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              const Text(
+                                'Vidas',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF2C1B0E),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Row(
+                                children: List.generate(
+                                  5,
+                                  (i) => Padding(
+                                    padding: EdgeInsets.only(left: i == 0 ? 0 : 6),
+                                    child: Icon(
+                                      Icons.favorite,
+                                      size: 18,
+                                      color: i < _lives ? tomato : Colors.black26,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              const Text(
+                                'Progreso',
+                                style: TextStyle(
+                                  color: Color(0xFF2C1B0E),
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              SizedBox(
+                                width: 140,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: LinearProgressIndicator(
+                                    value: progreso,
+                                    minHeight: 8,
+                                    backgroundColor: tomato.withOpacity(0.12),
+                                    color: tomato,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
                 const Text(
                   'Lecciones',
                   style: TextStyle(
@@ -210,7 +317,7 @@ class _CursoScreenState extends State<CursoScreen> {
                                   color: Colors.white.withOpacity(0.35),
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(Icons.play_arrow_rounded, color: Color(0xFF283347)),
+                                child: const Icon(Icons.play_arrow_rounded, color: tomato),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
@@ -299,7 +406,7 @@ class _CursoScreenState extends State<CursoScreen> {
                                       color: done
                                           ? const Color(0xFF2E7D32)
                                           : unlocked
-                                              ? const Color(0xFF2C1B0E)
+                                              ? tomato
                                               : const Color(0xFF7A6A5C),
                                       size: 16,
                                     ),
@@ -310,6 +417,32 @@ class _CursoScreenState extends State<CursoScreen> {
                           ),
                         ),
                       );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 18),
+                SizedBox(
+                  width: double.infinity,
+                  height: 54,
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.quiz, color: Colors.white),
+                    label: const Text(
+                      'Test final',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: tomato,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      elevation: 4,
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pushNamed('/pretest');
                     },
                   ),
                 ),
@@ -349,7 +482,7 @@ Widget _chip(IconData icon, String text) {
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 16, color: const Color(0xFF283347)),
+        Icon(icon, size: 16, color: const Color(0xFFFF8A3D)),
         const SizedBox(width: 6),
         Text(
           text,

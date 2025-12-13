@@ -167,6 +167,7 @@ class _StudentHudState extends State<_StudentHud> {
   Timer? _timer;
   DateTime _now = DateTime.now();
   int _tickCounter = 0;
+  bool _notifiedFullLives = false;
 
   @override
   void initState() {
@@ -197,7 +198,17 @@ class _StudentHudState extends State<_StudentHud> {
     final data = snap.data() ?? {};
 
     int vidas = (data['vidas'] as num?)?.toInt() ?? 5;
-    if (vidas >= 5) return;
+    if (vidas >= 5) {
+      if (!_notifiedFullLives && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Vidas recargadas')),
+        );
+        _notifiedFullLives = true;
+      }
+      return;
+    } else {
+      _notifiedFullLives = false;
+    }
 
     final ts = data['ultima_recuperacion_vida'];
     final now = DateTime.now();
@@ -210,9 +221,9 @@ class _StudentHudState extends State<_StudentHud> {
     }
 
     final elapsedSecs = now.difference(last).inSeconds;
-    if (elapsedSecs < 120) return; // menos de 2 min
+    if (elapsedSecs < 60) return; // menos de 1 min
 
-    final cycles = elapsedSecs ~/ 120;
+    final cycles = elapsedSecs ~/ 60;
     final newVidas = (vidas + cycles).clamp(0, 5);
     final newLast = newVidas == 5 ? now : last.add(Duration(minutes: cycles));
 
