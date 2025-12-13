@@ -38,6 +38,7 @@ class _CursoScreenState extends State<CursoScreen> {
     _completed = List<bool>.filled(lessons.length, false);
     _userId = FirebaseAuth.instance.currentUser?.uid;
     _loadLives();
+    _loadProgress();
   }
 
   Future<void> _loadLives() async {
@@ -51,6 +52,48 @@ class _CursoScreenState extends State<CursoScreen> {
       setState(() {
         _lives = vidas.clamp(0, 5);
       });
+    }
+  }
+
+  Future<void> _loadProgress() async {
+    if (_userId == null) return;
+    final snap =
+        await FirebaseFirestore.instance.collection('usuarios').doc(_userId).get();
+    if (!snap.exists) return;
+    final data = snap.data() ?? {};
+    final progreso = (data['progreso'] as Map?) ?? {};
+    final cursoProg = (progreso[widget.cursoId] as Map?) ?? {};
+    final completadas = (cursoProg['completadas'] as List?)?.cast<String>() ?? [];
+
+    if (mounted) {
+      setState(() {
+        _completed = lessons
+            .map((l) => completadas.contains(l.title))
+            .toList(growable: false);
+      });
+    }
+  }
+
+  Future<void> _marcarLeccionCompletada(int indexLesson) async {
+    if (_userId == null) return;
+    final titulo = lessons[indexLesson].title;
+    if (mounted) {
+      setState(() => _completed[indexLesson] = true);
+    }
+    try {
+      await FirebaseFirestore.instance.collection('usuarios').doc(_userId).set(
+        {
+          'progreso': {
+            widget.cursoId: {
+              'completadas': FieldValue.arrayUnion([titulo]),
+              'ultima_actualizacion': FieldValue.serverTimestamp(),
+            },
+          },
+        },
+        SetOptions(merge: true),
+      );
+    } catch (_) {
+      // Si falla, mantenemos el estado local y se reintentara despues.
     }
   }
 
@@ -78,14 +121,13 @@ class _CursoScreenState extends State<CursoScreen> {
         builder: (_) => LeccionCursoScreen(
           cursoId: widget.cursoId,
           leccionTitulo: lessons[i].title,
+          accentColor: _lessonPalette(i).first,
         ),
       ),
     );
 
     if (res == true && mounted) {
-      setState(() {
-        _completed[i] = true;
-      });
+      await _marcarLeccionCompletada(i);
     }
   }
 
@@ -441,8 +483,25 @@ class _CursoScreenState extends State<CursoScreen> {
                       ),
                       elevation: 4,
                     ),
-                    onPressed: () {
-                      Navigator.of(context).pushNamed('/pretest');
+                    onPressed: () async {
+                      if (_lives <= 0) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('No tienes vidas disponibles. Recarga para continuar.'),
+                          ),
+                        );
+                        return;
+                      }
+                      await Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => LeccionCursoScreen(
+                            cursoId: widget.cursoId,
+                            leccionTitulo: 'Test final',
+                            accentColor: tomato,
+                          ),
+                        ),
+                      );
+                      _loadLives();
                     },
                   ),
                 ),

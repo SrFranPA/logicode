@@ -10,6 +10,56 @@ class StudentProfileScreen extends StatefulWidget {
 }
 
 class _StudentProfileScreenState extends State<StudentProfileScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _updateStreak();
+  }
+
+  Future<void> _updateStreak() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    final docRef = FirebaseFirestore.instance.collection('usuarios').doc(user.uid);
+    final snap = await docRef.get();
+    if (!snap.exists) return;
+    final data = snap.data() ?? {};
+
+    int racha = (data['racha'] as num?)?.toInt() ?? 0;
+    final lastTs = data['ultima_racha'];
+    DateTime? last;
+    if (lastTs is Timestamp) {
+      last = lastTs.toDate();
+    }
+
+    final today = DateTime.now();
+    final todayDate = DateTime(today.year, today.month, today.day);
+    final lastDate = (last != null) ? DateTime(last.year, last.month, last.day) : null;
+
+    bool changed = false;
+    if (lastDate == null) {
+      racha = 1;
+      changed = true;
+    } else {
+      final diffDays = todayDate.difference(lastDate).inDays;
+      if (diffDays == 0) {
+        // mismo dia, no cambia
+      } else if (diffDays == 1) {
+        racha += 1;
+        changed = true;
+      } else if (diffDays > 1) {
+        racha = 1;
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      await docRef.update({
+        'racha': racha,
+        'ultima_racha': Timestamp.fromDate(today),
+      });
+    }
+  }
+
   Future<void> _showEditSheet(BuildContext context, String currentName) async {
     final controller = TextEditingController(text: currentName);
     final user = FirebaseAuth.instance.currentUser;
@@ -53,7 +103,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFFA451),
+                    color: const Color(0xFFFFA451),
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: const Icon(Icons.person, color: Colors.white),
@@ -167,50 +217,41 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
     final uid = FirebaseAuth.instance.currentUser!.uid;
     final authUser = FirebaseAuth.instance.currentUser;
 
+    const accent = Color(0xFFFFA451);
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F6F6),
+      backgroundColor: const Color(0xFFFCF8F2),
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: Colors.transparent,
-        elevation: 3,
-        toolbarHeight: 44,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(12)),
-        ),
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFFF5D6A1), Color(0xFFE9A34F)],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Color(0x22000000),
-                blurRadius: 10,
-                offset: Offset(0, 4),
-              ),
-            ],
-          ),
-        ),
+        backgroundColor: const Color(0xFF283347),
+        elevation: 0,
+        toolbarHeight: 46,
         centerTitle: true,
         title: const Text(
           'Perfil',
           style: TextStyle(
             color: Colors.white,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
             fontSize: 18,
             letterSpacing: 0.2,
           ),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-        stream: FirebaseFirestore.instance.collection('usuarios').doc(uid).snapshots(),
-        builder: (context, snap) {
-          if (!snap.hasData || !snap.data!.exists) {
-            return const Center(child: CircularProgressIndicator.adaptive());
-          }
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFFCF8F2), Color(0xFFEFE3CF)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+          stream: FirebaseFirestore.instance.collection('usuarios').doc(uid).snapshots(),
+          builder: (context, snap) {
+            if (!snap.hasData || !snap.data!.exists) {
+              return const Center(child: CircularProgressIndicator.adaptive());
+            }
 
           final data = snap.data!.data() ?? {};
           final nombre = (data['nombre'] ?? authUser?.displayName ?? 'Estudiante').toString();
@@ -225,13 +266,9 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFFFF8EF), Color(0xFFFFEAD3)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Color(0xFFE8B46B).withOpacity(0.22)),
+                  border: Border.all(color: Colors.black.withOpacity(0.03)),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.06),
@@ -248,10 +285,10 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(18),
                         gradient: const LinearGradient(
-                          colors: [Color(0xFFE9A34F), Color(0xFFD9823B)],
+                          colors: [Color(0xFFE9EEF7), Color(0xFFD7DFEF)],
                         ),
                       ),
-                      child: const Icon(Icons.person, color: Colors.white, size: 32),
+                      child: const Icon(Icons.person, color: Color(0xFF283347), size: 32),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
@@ -299,18 +336,21 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                 value: '$racha d',
                 subtitle: 'Dias seguidos aprendiendo',
                 icon: Icons.bolt,
+                accent: accent,
               ),
               _StatTile(
                 title: 'Division actual',
                 value: divisionActual,
                 subtitle: 'Sube con XP y practicas',
                 icon: Icons.rocket_launch,
+                accent: accent,
               ),
               _StatTile(
                 title: 'Total de XP',
                 value: '$xp',
                 subtitle: 'Sumado en cursos y retos',
                 icon: Icons.stacked_bar_chart,
+                accent: accent,
               ),
               const SizedBox(height: 14),
               const Text(
@@ -327,28 +367,24 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFF5D6A1), Color(0xFFE9A34F)],
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                  ),
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(14),
-                  boxShadow: const [
+                  boxShadow: [
                     BoxShadow(
-                      color: Color(0x22000000),
+                      color: Colors.black.withOpacity(0.06),
                       blurRadius: 10,
-                      offset: Offset(0, 4),
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
                 child: Row(
                   children: const [
-                    Icon(Icons.tips_and_updates, color: Colors.white),
+                    Icon(Icons.tips_and_updates, color: Color(0xFF283347)),
                     SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         'Pronto podras editar tu avatar, vincular redes y descargar tu certificado.',
-                        style: TextStyle(color: Colors.white, fontSize: 13),
+                        style: TextStyle(color: Color(0xFF1E2026), fontSize: 13),
                       ),
                     ),
                   ],
@@ -358,7 +394,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
           );
         },
         ),
-      );
+      ),    );
     }
 }
 
@@ -374,13 +410,9 @@ class _AchievementsSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFFF8EF), Color(0xFFFFEAD3)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE8B46B).withOpacity(0.20)),
+        border: Border.all(color: Colors.black.withOpacity(0.04)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
@@ -394,7 +426,7 @@ class _AchievementsSection extends StatelessWidget {
         children: [
           Row(
             children: const [
-              Icon(Icons.emoji_events, color: Color(0xFFE27C1A)),
+              Icon(Icons.emoji_events, color: Color(0xFF283347)),
               SizedBox(width: 8),
               Text(
                 'Logros y medallas',
@@ -479,12 +511,14 @@ class _StatTile extends StatelessWidget {
   final String value;
   final String subtitle;
   final IconData icon;
+  final Color accent;
 
   const _StatTile({
     required this.title,
     required this.value,
     required this.subtitle,
     required this.icon,
+    this.accent = const Color(0xFFFFA451),
   });
 
   @override
@@ -493,13 +527,9 @@ class _StatTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFFF8EF), Color(0xFFFFEAD3)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Color(0xFFE8B46B).withOpacity(0.20)),
+        border: Border.all(color: Colors.black.withOpacity(0.03)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.03),
@@ -515,13 +545,9 @@ class _StatTile extends StatelessWidget {
             width: 40,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: const LinearGradient(
-                colors: [Color(0xFFE9A34F), Color(0xFFD9823B)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              color: accent.withOpacity(0.12),
             ),
-            child: Icon(icon, color: Colors.white),
+            child: Icon(icon, color: accent),
           ),
           const SizedBox(width: 10),
           Expanded(

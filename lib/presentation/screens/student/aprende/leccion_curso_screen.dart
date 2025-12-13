@@ -10,11 +10,13 @@ import 'test/widgets/pregunta_widget_builder.dart';
 class LeccionCursoScreen extends StatefulWidget {
   final String cursoId;
   final String leccionTitulo;
+  final Color accentColor;
 
   const LeccionCursoScreen({
     super.key,
     required this.cursoId,
     required this.leccionTitulo,
+    this.accentColor = const Color(0xFFFFA451),
   });
 
   @override
@@ -31,6 +33,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
   String retro = '';
   String? _userId;
   bool sinVidas = false;
+  int _xpPendiente = 0;
 
   @override
   void initState() {
@@ -75,22 +78,43 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
         data = allSnap.docs.map((e) => Pregunta.fromDoc(e)).toList();
       }
 
-      const ordenDif = {
-        'Muy facil': 0,
-        'Facil': 1,
-        'Medio': 2,
-        'Dificil': 3,
-        'Muy dificil': 4,
+      // Seleccion aleatoria sin repeticion, priorizando variedad de dificultad
+      const niveles = ['Muy facil', 'Facil', 'Medio', 'Dificil', 'Muy dificil'];
+      final Map<String, List<Pregunta>> porNivel = {
+        for (final n in niveles) n: [],
       };
+      for (final p in data) {
+        final d = p.dificultad;
+        if (porNivel.containsKey(d)) {
+          porNivel[d]!.add(p);
+        } else {
+          porNivel.putIfAbsent(d, () => []).add(p);
+        }
+      }
+      // barajar cada nivel
+      for (final list in porNivel.values) {
+        list.shuffle();
+      }
+      final seleccion = <Pregunta>[];
+      // Tomar hasta 2 por nivel en orden de dificultad
+      for (final n in niveles) {
+        final list = porNivel[n] ?? [];
+        seleccion.addAll(list.take(2));
+        if (seleccion.length >= 10) break;
+      }
+      // Rellenar si faltan con el resto mezclado
+      if (seleccion.length < 10) {
+        final restantes = porNivel.values.expand((e) => e).toList();
+        restantes.shuffle();
+        for (final p in restantes) {
+          if (seleccion.length >= 10) break;
+          if (!seleccion.any((sel) => sel.id == p.id)) {
+            seleccion.add(p);
+          }
+        }
+      }
+      seleccion.shuffle();
 
-      data.sort((a, b) {
-        final da = ordenDif[a.dificultad] ?? 99;
-        final db = ordenDif[b.dificultad] ?? 99;
-        if (da != db) return da.compareTo(db);
-        return a.fechaCreacion.compareTo(b.fechaCreacion);
-      });
-
-      final seleccion = data.length > 10 ? data.sublist(0, 10) : data;
       if (!mounted) return;
       setState(() {
         preguntas = seleccion;
@@ -112,25 +136,64 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
     await FirebaseFirestore.instance.collection('usuarios').doc(_userId).update({'vidas': nueva});
   }
 
-  void _onResult(bool isCorrect, String r) {
+  void _onResult(bool isCorrect, String r, Pregunta preguntaActual) {
     if (!mounted) return;
     setState(() {
       answered = true;
       correcto = isCorrect;
       retro = r;
     });
-    if (!isCorrect && lives > 0) {
+    if (isCorrect) {
+      _xpPendiente += _xpPorDificultad(preguntaActual.dificultad);
+    } else if (lives > 0) {
       _consumirVida();
     }
   }
 
-  void _siguiente() {
+  Future<void> _guardarXpPendiente() async {
+    if (_userId == null || _xpPendiente <= 0) return;
+    final pending = _xpPendiente;
+    try {
+      await FirebaseFirestore.instance
+          .collection('usuarios')
+          .doc(_userId)
+          .update({'xp_acumulada': FieldValue.increment(pending)});
+      _xpPendiente = 0;
+    } catch (_) {
+      // Si falla, mantenemos el acumulado para reintentar en la siguiente sesion
+    }
+  }
+
+  Future<void> _marcarLeccionCompletada() async {
+    if (_userId == null) return;
+    try {
+      await FirebaseFirestore.instance.collection('usuarios').doc(_userId).set(
+        {
+          'progreso': {
+            widget.cursoId: {
+              'completadas': FieldValue.arrayUnion([widget.leccionTitulo]),
+              'ultima_actualizacion': FieldValue.serverTimestamp(),
+            },
+          },
+        },
+        SetOptions(merge: true),
+      );
+    } catch (_) {
+      // si falla, no bloqueamos la salida; se puede reintentar en otra sesion
+    }
+  }
+
+  Future<void> _siguiente() async {
     if (lives == 0) {
       Navigator.of(context).pop(false);
       return;
     }
     if (index + 1 >= preguntas.length) {
-      Navigator.of(context).pop(true);
+      await _guardarXpPendiente();
+      await _marcarLeccionCompletada();
+      if (mounted) {
+        Navigator.of(context).pop(true);
+      }
       return;
     }
     setState(() {
@@ -141,8 +204,19 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
     });
   }
 
+  int _xpPorDificultad(String? dif) {
+    final d = (dif ?? '').toLowerCase();
+    if (d.contains('muy dificil')) return 120;
+    if (d.contains('dificil')) return 100;
+    if (d.contains('medio')) return 70;
+    if (d.contains('facil')) return 50;
+    return 30; // muy facil u otro
+  }
+
   @override
   Widget build(BuildContext context) {
+    const tomato = Color(0xFFFFA451);
+
     Future<bool> confirmExit() async {
       return await showDialog<bool>(
             context: context,
@@ -174,7 +248,8 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
       return Scaffold(
         backgroundColor: const Color(0xFFFCF8F2),
         appBar: AppBar(
-          backgroundColor: const Color(0xFF283347),
+        backgroundColor: widget.accentColor,
+        foregroundColor: Colors.white,
           title: Text(widget.leccionTitulo),
         ),
         body: const Center(
@@ -197,7 +272,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
       return Scaffold(
         backgroundColor: const Color(0xFFFCF8F2),
         appBar: AppBar(
-          backgroundColor: const Color(0xFF283347),
+        backgroundColor: const Color(0xFF283347),
           title: Text(widget.leccionTitulo),
         ),
         body: const Center(
@@ -221,19 +296,53 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
       },
       child: Scaffold(
         backgroundColor: const Color(0xFFFCF8F2),
-        appBar: AppBar(
-          backgroundColor: const Color(0xFF283347),
-          elevation: 0,
-          title: Text(
-            widget.leccionTitulo,
-            style: const TextStyle(fontWeight: FontWeight.w800, color: Colors.white),
-          ),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () async {
-              final exit = await confirmExit();
-              if (exit && mounted) Navigator.pop(context);
-            },
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(64),
+          child: AppBar(
+            flexibleSpace: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF283347), Color(0xFF1E2433)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            ),
+            elevation: 0,
+            titleSpacing: 0,
+            title: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: () async {
+                    final exit = await confirmExit();
+                    if (exit && mounted) Navigator.pop(context);
+                  },
+                ),
+                const SizedBox(width: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: widget.accentColor.withOpacity(0.16),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.menu_book, color: Colors.white, size: 18),
+                      const SizedBox(width: 8),
+                      Text(
+                        widget.leccionTitulo,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         body: Container(
@@ -252,7 +361,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                 children: [
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(14),
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
@@ -268,12 +377,12 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                     child: Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(10),
+                          padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFE9EEF7),
+                            color: widget.accentColor.withOpacity(0.14),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.menu_book, color: Color(0xFF283347)),
+                          child: Icon(Icons.menu_book, color: widget.accentColor),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -299,28 +408,15 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                             ],
                           ),
                         ),
-                        Row(
-                          children: List.generate(
-                            5,
-                            (i) => Padding(
-                              padding: EdgeInsets.only(left: i == 0 ? 0 : 6),
-                              child: Icon(
-                                Icons.favorite,
-                                color: i < lives ? const Color(0xFFFFA451) : Colors.black26,
-                                size: 20,
-                              ),
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 12),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(color: Colors.black.withOpacity(0.04)),
                       boxShadow: [
@@ -334,21 +430,30 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Progreso ${((progreso) * 100).round()}%',
-                          style: const TextStyle(
+                        const Text(
+                          'Progreso',
+                          style: TextStyle(
                             color: Color(0xFF2C1B0E),
                             fontWeight: FontWeight.w800,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${((progreso) * 100).round()}% completado',
+                          style: const TextStyle(
+                            color: Color(0xFF5A5248),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
                         ClipRRect(
                           borderRadius: BorderRadius.circular(10),
                           child: LinearProgressIndicator(
                             value: progreso,
                             minHeight: 8,
-                            backgroundColor: const Color(0xFFFFA451).withOpacity(0.15),
-                            color: const Color(0xFFFFA451),
+                            backgroundColor: tomato.withOpacity(0.15),
+                            color: tomato,
                           ),
                         ),
                       ],
@@ -357,43 +462,36 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                   const SizedBox(height: 12),
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(14),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(color: Colors.black.withOpacity(0.04)),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.06),
-                          blurRadius: 12,
-                          offset: const Offset(0, 8),
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 10,
+                          offset: const Offset(0, 6),
                         ),
                       ],
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
                       children: [
-                        Text(
-                          'Pregunta ${index + 1} de ${preguntas.length}',
-                          style: const TextStyle(
-                            color: Color(0xFF2C1B0E),
-                            fontWeight: FontWeight.w800,
-                          ),
+                        _infoChip(
+                          icon: Icons.star_border,
+                          label: '${_xpPorDificultad(pregunta.dificultad)} XP',
+                          color: tomato,
                         ),
-                        const SizedBox(height: 10),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: LinearProgressIndicator(
-                            value: progreso,
-                            minHeight: 10,
-                            backgroundColor: const Color(0xFFFFA451).withOpacity(0.15),
-                            color: const Color(0xFFFFA451),
-                          ),
+                        const SizedBox(width: 10),
+                        _infoChip(
+                          icon: Icons.favorite,
+                          label: '$lives vidas',
+                          color: const Color(0xFFFF6A3D),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 10),
                 Expanded(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.only(top: 4),
@@ -415,7 +513,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                         key: ValueKey(pregunta.id),
                         child: buildQuestionWidget(
                           pregunta: pregunta,
-                          onResult: _onResult,
+                          onResult: (ok, mensaje) => _onResult(ok, mensaje, pregunta),
                         ),
                       ),
                     ),
@@ -463,7 +561,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                   child: ElevatedButton(
                     onPressed: answered ? _siguiente : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: answered ? const Color(0xFFFFA451) : Colors.black26,
+                        backgroundColor: answered ? tomato : Colors.black26,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       elevation: answered ? 3 : 0,
                     ),
@@ -482,6 +580,50 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
           ),
         ),
       ),
+      ),
+    );
+  }
+}
+
+class _infoChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+
+  const _infoChip({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.12),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withOpacity(0.25)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 16),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                label,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: const Color(0xFF2C1B0E),
+                  fontWeight: FontWeight.w800,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
