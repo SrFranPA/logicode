@@ -58,11 +58,11 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8EF),
+      backgroundColor: const Color(0xFFF6F7FB),
       body: DecoratedBox(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFFFF8EF), Color(0xFFFDF2DE)],
+            colors: [Color(0xFFF6F7FB), Color(0xFFEFF2F7)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -80,7 +80,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF1F2937), Color(0xFF111827)],
+            colors: [Color(0xFF1F2533), Color(0xFF141927)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -98,9 +98,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
             currentIndex: _currentIndex,
             backgroundColor: Colors.transparent,
             elevation: 0,
-            selectedItemColor: const Color(0xFFF2A03A),
+            selectedItemColor: const Color(0xFFFFA451),
             unselectedItemColor: Colors.white70,
-            selectedIconTheme: const IconThemeData(size: 26, color: Color(0xFFF2A03A)),
+            selectedIconTheme: const IconThemeData(size: 26, color: Color(0xFFFFA451)),
             unselectedIconTheme: const IconThemeData(
               size: 22,
               color: Colors.white70,
@@ -122,10 +122,10 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                     activeIcon: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF2A03A).withOpacity(0.16),
+                        color: const Color(0xFFFFA451).withOpacity(0.16),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(item.activeIcon, color: const Color(0xFFF2A03A)),
+                      child: Icon(item.activeIcon, color: const Color(0xFFFFA451)),
                     ),
                     label: item.label,
                   ),
@@ -277,7 +277,7 @@ class _StudentHudState extends State<_StudentHud> {
                 padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFFF5D6A1), Color(0xFFE9A34F)],
+                    colors: [Color(0xFF283347), Color(0xFF1E2433)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -332,14 +332,14 @@ class _StudentHudState extends State<_StudentHud> {
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [Color(0xFFFFA726), Color(0xFFFF7043)],
+                              colors: [Color(0xFFFFB35C), Color(0xFFFF8A3D)],
                               begin: Alignment.centerLeft,
                               end: Alignment.centerRight,
                             ),
                             borderRadius: BorderRadius.circular(999),
                             boxShadow: const [
                               BoxShadow(
-                                color: Color(0x33FF7043),
+                                color: Color(0x33FF8A3D),
                                 blurRadius: 6,
                                 offset: Offset(0, 3),
                               ),
@@ -369,7 +369,7 @@ class _StudentHudState extends State<_StudentHud> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFFF4E3),
+                            color: const Color(0xFFE9EEF7),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(
@@ -380,7 +380,7 @@ class _StudentHudState extends State<_StudentHud> {
                                 child: Icon(
                                   Icons.favorite_rounded,
                                   size: 18,
-                                  color: isFilled ? const Color(0xFFE27C1A) : Colors.white30,
+                                  color: isFilled ? const Color(0xFFFF8A3D) : Colors.white38,
                                 ),
                               );
                             }),
@@ -390,18 +390,18 @@ class _StudentHudState extends State<_StudentHud> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF2A03A),
+                            color: const Color(0xFFE8DFF9),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFDA8216)),
+                            border: Border.all(color: const Color(0xFFC8B5F4)),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.rocket_launch, size: 16, color: Color(0xFF7A3F00)),
+                              const Icon(Icons.rocket_launch, size: 16, color: Color(0xFF5C3BB0)),
                               const SizedBox(width: 6),
                               Text(
                                 divisionNombre,
                                 style: const TextStyle(
-                                  color: Color(0xFF7A3F00),
+                                  color: Color(0xFF5C3BB0),
                                   fontWeight: FontWeight.w800,
                                   fontSize: 13,
                                   letterSpacing: 0.2,
@@ -416,22 +416,22 @@ class _StudentHudState extends State<_StudentHud> {
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFF4E3),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE9EEF7),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                             child: Row(
                               children: [
-                                const Icon(Icons.timer, size: 16, color: Colors.white),
+                                const Icon(Icons.timer, size: 16, color: Color(0xFF1E2433)),
                                 const SizedBox(width: 6),
                                 Text(
                                   'Vida en ${_formatDuration(restante)}',
                                   style: const TextStyle(
-                                    color: Colors.white,
+                                    color: Color(0xFF1E2433),
                                     fontSize: 12,
-                                    fontWeight: FontWeight.w600,
+                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
                               ],

@@ -18,6 +18,7 @@ class AdminHomeScreen extends StatefulWidget {
 class _AdminHomeScreenState extends State<AdminHomeScreen> {
   int _selectedIndex = 0;
   final ValueNotifier<bool> _viewAdminsNotifier = ValueNotifier(false);
+  final ValueNotifier<int?> _studentCountNotifier = ValueNotifier<int?>(null);
   final ValueNotifier<int?> _lessonCountNotifier = ValueNotifier<int?>(0);
 
   final List<_NavItem> _navItems = const [
@@ -35,7 +36,10 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     _screens = [
       const AdminCursosScreen(),
       AdminLeccionesScreen(lessonCountNotifier: _lessonCountNotifier),
-      AdminStudentsScreen(viewAdminsNotifier: _viewAdminsNotifier),
+      AdminStudentsScreen(
+        viewAdminsNotifier: _viewAdminsNotifier,
+        studentCountNotifier: _studentCountNotifier,
+      ),
       const AdminSettingsScreen(),
     ];
   }
@@ -43,6 +47,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   @override
   void dispose() {
     _viewAdminsNotifier.dispose();
+    _studentCountNotifier.dispose();
     _lessonCountNotifier.dispose();
     super.dispose();
   }
@@ -176,7 +181,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 18),
               const SizedBox(width: 10),
               Text(
-                "Gestion de ${label.toLowerCase()}",
+                "Gesti\u00f3n de ${label.toLowerCase()}",
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w800,
@@ -223,13 +228,9 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   }
 
   Widget _studentsTotalBadge() {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection("usuarios")
-          .where("rol", isEqualTo: "estudiante")
-          .snapshots(),
-      builder: (context, snapshot) {
-        final total = snapshot.hasData ? snapshot.data!.docs.length : null;
+    return ValueListenableBuilder<int?>(
+      valueListenable: _studentCountNotifier,
+      builder: (context, total, _) {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
@@ -238,7 +239,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             border: Border.all(color: Colors.white.withOpacity(0.18)),
           ),
           child: Text(
-            total != null ? "$total estudiantes" : "Cargando...",
+            total != null ? "$total estudiantes" : "0 estudiantes",
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w700,

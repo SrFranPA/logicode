@@ -80,8 +80,8 @@ class AdminCursosScreen extends StatelessWidget {
     final idCtrl = TextEditingController(text: curso?.id ?? '');
     final nombreCtrl = TextEditingController(text: curso?.nombre ?? '');
     final descCtrl = TextEditingController(text: curso?.descripcion ?? '');
-    final ordenCtrl =
-        TextEditingController(text: curso?.orden.toString() ?? '');
+  final ordenCtrl =
+      TextEditingController(text: curso?.orden.toString() ?? '');
 
     final esEdicion = curso != null;
 
@@ -147,7 +147,7 @@ class AdminCursosScreen extends StatelessWidget {
                 controller: ordenCtrl,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  labelText: "Orden",
+                  labelText: "Orden (no repetir)",
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -167,11 +167,24 @@ class AdminCursosScreen extends StatelessWidget {
                   onPressed: () {
                     final repo = context.read<AdminCursosCubit>();
 
+                    int orden = int.tryParse(ordenCtrl.text.trim()) ?? -1;
+                    final existentes =
+                        (repo.state is AdminCursosLoaded) ? (repo.state as AdminCursosLoaded).cursos : [];
+
+                    // si el orden ya existe y no es el mismo curso, lo movemos al siguiente disponible
+                    final usados = existentes
+                        .where((c) => !esEdicion || c.id != idCtrl.text.trim())
+                        .map((c) => c.orden)
+                        .toSet();
+                    while (orden <= 0 || usados.contains(orden)) {
+                      orden++;
+                    }
+
                     final nuevo = CursoModel(
                       id: idCtrl.text.trim(),
                       nombre: nombreCtrl.text.trim(),
                       descripcion: descCtrl.text.trim(),
-                      orden: int.tryParse(ordenCtrl.text.trim()) ?? 0,
+                      orden: orden,
                     );
 
                     if (esEdicion) {
@@ -205,7 +218,7 @@ class AdminCursosScreen extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFFF8EEDA), Color(0xFFF2DFBF)],
+          colors: [Color(0xFFFCF8F2), Color(0xFFEFE3CF)],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),

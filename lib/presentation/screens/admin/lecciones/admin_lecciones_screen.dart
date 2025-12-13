@@ -34,19 +34,32 @@ class _AdminLeccionesScreenState extends State<AdminLeccionesScreen> {
   String _norm(String input) {
     const map = {
       'á': 'a',
+      'à': 'a',
+      'ä': 'a',
+      'â': 'a',
+      'ã': 'a',
       'é': 'e',
+      'è': 'e',
+      'ë': 'e',
+      'ê': 'e',
       'í': 'i',
+      'ì': 'i',
+      'ï': 'i',
+      'î': 'i',
       'ó': 'o',
+      'ò': 'o',
+      'ö': 'o',
+      'ô': 'o',
+      'õ': 'o',
       'ú': 'u',
-      'Á': 'a',
-      'É': 'e',
-      'Í': 'i',
-      'Ó': 'o',
-      'Ú': 'u',
+      'ù': 'u',
+      'ü': 'u',
+      'û': 'u',
+      'ñ': 'n',
     };
     final buffer = StringBuffer();
-    for (final ch in input.split('')) {
-      buffer.write(map[ch] ?? ch.toLowerCase());
+    for (final ch in input.toLowerCase().split('')) {
+      buffer.write(map[ch] ?? ch);
     }
     return buffer.toString();
   }
@@ -55,19 +68,6 @@ class _AdminLeccionesScreenState extends State<AdminLeccionesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFCF8F2),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: SizedBox(
-        width: 65,
-        height: 65,
-        child: FloatingActionButton(
-          backgroundColor: const Color(0xFFFFA200),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(50),
-          ),
-          onPressed: () => _openCreateDialog(context),
-          child: const Icon(Icons.add, size: 30, color: Colors.white),
-        ),
-      ),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -76,76 +76,105 @@ class _AdminLeccionesScreenState extends State<AdminLeccionesScreen> {
             end: Alignment.bottomCenter,
           ),
         ),
-        child: BlocBuilder<AdminPreguntasCubit, AdminPreguntasState>(
-          builder: (_, state) {
-            if (state is AdminPreguntasLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
+        child: Column(
+          children: [
+            Expanded(
+              child: BlocBuilder<AdminPreguntasCubit, AdminPreguntasState>(
+                builder: (_, state) {
+                  if (state is AdminPreguntasLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-            if (state is AdminPreguntasLoaded) {
-              final preguntas = state.preguntas;
+                  if (state is AdminPreguntasLoaded) {
+                    final preguntas = state.preguntas;
 
-              if (preguntas.isEmpty) {
-                widget.lessonCountNotifier?.value = 0;
-                return const Center(child: Text("Aun no existen preguntas"));
-              }
+                    if (preguntas.isEmpty) {
+                      widget.lessonCountNotifier?.value = 0;
+                      return const Center(child: Text("Aun no existen preguntas"));
+                    }
 
-              final cursosDisponibles =
-                  preguntas.map((p) => p.cursoId).toSet().toList()..sort();
+                    final cursosDisponibles =
+                        preguntas.map((p) => p.cursoId).toSet().toList()..sort();
 
-              final filtradas = preguntas.where((p) {
-                final t = _norm(filtroTexto);
-                final matchTexto =
-                    t.isEmpty || _norm(p.enunciado).contains(t);
-                final matchCurso =
-                    filtroCurso == "Todos" || filtroCurso == p.cursoId;
-                final matchDif =
-                    filtroDificultad == "Todos" ||
-                        _norm(filtroDificultad) ==
-                            _norm((p.dificultad ?? "").toString());
-                final matchTipo =
-                    filtroTipo == "Todos" || filtroTipo == p.tipo;
+                    final filtradas = preguntas.where((p) {
+                      final t = _norm(filtroTexto);
+                      final matchTexto = t.isEmpty || _norm(p.enunciado).contains(t);
+                      final matchCurso = filtroCurso == "Todos" || filtroCurso == p.cursoId;
+                      final matchDif = filtroDificultad == "Todos" ||
+                          _norm(filtroDificultad) == _norm((p.dificultad ?? "").toString());
+                      final matchTipo = filtroTipo == "Todos" || filtroTipo == p.tipo;
+                      return matchTexto && matchCurso && matchDif && matchTipo;
+                    }).toList();
 
-                return matchTexto && matchCurso && matchDif && matchTipo;
-              }).toList();
+                    final totalFiltradas = filtradas.length;
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (widget.lessonCountNotifier?.value != totalFiltradas) {
+                        widget.lessonCountNotifier?.value = totalFiltradas;
+                      }
+                    });
 
-              final totalFiltradas = filtradas.length;
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (widget.lessonCountNotifier?.value != totalFiltradas) {
-                  widget.lessonCountNotifier?.value = totalFiltradas;
-                }
-              });
-
-              return ListView(
-                padding: const EdgeInsets.fromLTRB(12, 14, 12, 100),
-                children: [
-                  _barraFiltros(cursosDisponibles),
-                  const SizedBox(height: 12),
-                  if (filtradas.isEmpty)
-                    Container(
-                      padding: const EdgeInsets.all(22),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 12,
-                            offset: const Offset(0, 8),
+                    return ListView(
+                      padding: const EdgeInsets.fromLTRB(12, 14, 12, 24),
+                      children: [
+                        _barraFiltros(cursosDisponibles),
+                        const SizedBox(height: 12),
+                        _tipoSolo(),
+                        const SizedBox(height: 12),
+                        if (filtradas.isEmpty)
+                          Container(
+                            padding: const EdgeInsets.all(22),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 8),
+                                ),
+                              ],
+                            ),
+                            child: const Center(
+                              child: Text("No hay resultados con los filtros aplicados"),
+                            ),
                           ),
-                        ],
-                      ),
-                      child: const Center(
-                        child: Text("No hay resultados con los filtros aplicados"),
-                      ),
-                    ),
-                  ...filtradas.map(_itemPregunta),
-                ],
-              );
-            }
+                        ...filtradas.map(_itemPregunta),
+                        const SizedBox(height: 12),
+                      ],
+                    );
+                  }
 
-            return const SizedBox.shrink();
-          },
+                  return const SizedBox.shrink();
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 6, 16, 18),
+              child: SizedBox(
+                width: double.infinity,
+                height: 54,
+                child: ElevatedButton.icon(
+                  onPressed: () => _openCreateDialog(context),
+                  style: ElevatedButton.styleFrom(
+                    elevation: 4,
+                    backgroundColor: const Color(0xFFFFA200),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  icon: const Icon(Icons.add, color: Colors.white),
+                  label: const Text(
+                    "Crear nueva pregunta",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -203,37 +232,45 @@ class _AdminLeccionesScreenState extends State<AdminLeccionesScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: DropdownButtonFormField(
-                  value: filtroTipo,
-                  decoration: const InputDecoration(labelText: "Tipo"),
-                  items: const [
-                    "Todos",
-                    "seleccion_chips",
-                    "ordenar",
-                    "completa_espacio",
-                  ].map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
-                  onChanged: (v) => setState(() => filtroTipo = v!),
-                ),
+          TextField(
+            decoration: InputDecoration(
+              labelText: "Buscar enunciado...",
+              suffixIcon: const Icon(Icons.search),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: TextField(
-                  decoration: InputDecoration(
-                    labelText: "Buscar enunciado...",
-                    suffixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  onChanged: (v) => setState(() => filtroTexto = v),
-                ),
-              ),
-            ],
+            ),
+            onChanged: (v) => setState(() => filtroTexto = v),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _tipoSolo() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: DropdownButtonFormField(
+        value: filtroTipo,
+        decoration: const InputDecoration(labelText: "Tipo"),
+        items: const [
+          "Todos",
+          "seleccion_chips",
+          "ordenar",
+          "completa_espacio",
+        ].map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
+        onChanged: (v) => setState(() => filtroTipo = v!),
       ),
     );
   }
@@ -486,8 +523,7 @@ class _AdminLeccionesScreenState extends State<AdminLeccionesScreen> {
     }
   }
 
-  void _mostrarErrorPregunta(
-      BuildContext context, Map pregunta, String mensaje) {
+  void _mostrarErrorPregunta(BuildContext context, Map pregunta, String mensaje) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -500,8 +536,7 @@ class _AdminLeccionesScreenState extends State<AdminLeccionesScreen> {
               children: [
                 Text(mensaje, style: const TextStyle(color: Colors.red)),
                 const SizedBox(height: 12),
-                const Text("Pregunta:",
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text("Pregunta:", style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 Text(
                   const JsonEncoder.withIndent('  ').convert(pregunta),
@@ -560,25 +595,20 @@ class _AdminLeccionesScreenState extends State<AdminLeccionesScreen> {
                     const SizedBox(height: 12),
                     DropdownButtonFormField(
                       value: tipo,
-                      decoration:
-                          const InputDecoration(labelText: "Tipo de pregunta"),
+                      decoration: const InputDecoration(labelText: "Tipo de pregunta"),
                       items: const [
                         DropdownMenuItem(
-                            value: "seleccion_chips",
-                            child: Text("Seleccion unica (chips)")),
+                            value: "seleccion_chips", child: Text("Seleccion unica (chips)")),
+                        DropdownMenuItem(value: "ordenar", child: Text("Ordenar elementos")),
                         DropdownMenuItem(
-                            value: "ordenar", child: Text("Ordenar elementos")),
-                        DropdownMenuItem(
-                            value: "completa_espacio",
-                            child: Text("Completar espacio")),
+                            value: "completa_espacio", child: Text("Completar espacio")),
                       ],
                       onChanged: (v) => tipo = v.toString(),
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField(
                       value: dificultad,
-                      decoration:
-                          const InputDecoration(labelText: "Dificultad"),
+                      decoration: const InputDecoration(labelText: "Dificultad"),
                       items: const [
                         DropdownMenuItem(value: "Muy facil", child: Text("Muy facil")),
                         DropdownMenuItem(value: "Facil", child: Text("Facil")),

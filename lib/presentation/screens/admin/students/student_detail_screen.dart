@@ -27,7 +27,6 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
     setState(() => cargando = false);
   }
 
-  // Modal: editar campo
   void showEditModal({
     required String fieldName,
     required String label,
@@ -59,16 +58,12 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
             future: isDropdown ? fetchOptions!() : Future.value([]),
             builder: (context, snap) {
               final options = snap.data ?? [];
-
               return Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     "Editar $label",
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 20),
                   if (!isDropdown)
@@ -84,8 +79,7 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
                   if (isDropdown)
                     DropdownButtonFormField<String>(
                       value: initialValue?.toString(),
-                      decoration:
-                          const InputDecoration(labelText: "Seleccione"),
+                      decoration: const InputDecoration(labelText: "Seleccione"),
                       items: options
                           .map(
                             (opt) => DropdownMenuItem(
@@ -101,36 +95,23 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       TextButton(
-                        child: const Text(
-                          "Cancelar",
-                          style: TextStyle(color: Colors.red),
-                        ),
+                        child: const Text("Cancelar", style: TextStyle(color: Colors.red)),
                         onPressed: () => Navigator.pop(context),
                       ),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.orange,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 12,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                         onPressed: () async {
-                          await _db
-                              .collection("usuarios")
-                              .doc(widget.userId)
-                              .update({fieldName: ctrl.text.trim()});
-
+                          await _db.collection("usuarios").doc(widget.userId).update({
+                            fieldName: ctrl.text.trim(),
+                          });
                           Navigator.pop(context);
                           loadUser();
                         },
-                        child: const Text(
-                          "Guardar",
-                          style: TextStyle(color: Colors.white),
-                        ),
+                        child: const Text("Guardar", style: TextStyle(color: Colors.white)),
                       ),
                     ],
                   ),
@@ -157,14 +138,10 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                "Desactivar estudiante",
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
+              const Text("Desactivar estudiante",
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
               const SizedBox(height: 12),
-              const Text(
-                "Esto desactivará al estudiante, pero no eliminará sus datos.",
-              ),
+              const Text("Esto desactivará al estudiante, pero no eliminará sus datos."),
               const SizedBox(height: 25),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -176,21 +153,11 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     ),
-                    child: const Text(
-                      "Desactivar",
-                      style: TextStyle(color: Colors.white),
-                    ),
+                    child: const Text("Desactivar", style: TextStyle(color: Colors.white)),
                     onPressed: () async {
-                      await _db
-                          .collection("usuarios")
-                          .doc(widget.userId)
-                          .update({"activo": false});
-
+                      await _db.collection("usuarios").doc(widget.userId).update({"activo": false});
                       Navigator.pop(context);
                       loadUser();
                     },
@@ -217,12 +184,10 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                "Reactivar estudiante",
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
+              const Text("Reactivar estudiante",
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
               const SizedBox(height: 12),
-              const Text("El estudiante podrá volver a acceder."),
+              const Text("Volverás a activar al estudiante."),
               const SizedBox(height: 25),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -234,21 +199,11 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     ),
-                    child: const Text(
-                      "Reactivar",
-                      style: TextStyle(color: Colors.white),
-                    ),
+                    child: const Text("Reactivar", style: TextStyle(color: Colors.white)),
                     onPressed: () async {
-                      await _db
-                          .collection("usuarios")
-                          .doc(widget.userId)
-                          .update({"activo": true});
-
+                      await _db.collection("usuarios").doc(widget.userId).update({"activo": true});
                       Navigator.pop(context);
                       loadUser();
                     },
@@ -278,13 +233,10 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
     final activo = u["activo"] == true;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8EEDA),
+      backgroundColor: const Color(0xFFFCF8F2),
       appBar: AppBar(
         backgroundColor: const Color(0xFF1D2034),
-        title: const Text(
-          "Detalle del estudiante",
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text("Detalle del estudiante", style: TextStyle(color: Colors.white)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
@@ -293,7 +245,7 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFF8EEDA), Color(0xFFF2DFBF)],
+            colors: [Color(0xFFFCF8F2), Color(0xFFEFE3CF)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -304,6 +256,8 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
             _headerCard(nombre, email, rol, activo),
             const SizedBox(height: 16),
             _infoGrid(division, curso, racha),
+            const SizedBox(height: 12),
+            _secondaryInfo(curso, racha),
             const SizedBox(height: 16),
             _editableSection(u),
             const SizedBox(height: 18),
@@ -318,7 +272,11 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFFFBF5), Color(0xFFFDF2DF)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
@@ -327,6 +285,7 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
             offset: const Offset(0, 8),
           ),
         ],
+        border: Border.all(color: const Color(0xFFE6EAF5)),
       ),
       child: Row(
         children: [
@@ -357,14 +316,12 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
                   spacing: 8,
                   runSpacing: 6,
                   children: [
-                    _pill("Rol: ${rol.isEmpty ? 'N/D' : rol}"),
-                    _pill(activo ? "Activo" : "Inactivo",
-                        color: activo
-                            ? const Color(0xFFE3F7E5)
-                            : const Color(0xFFFFE4E4),
-                        textColor: activo
-                            ? const Color(0xFF2D8A47)
-                            : const Color(0xFFB83A3A)),
+                    _pill("Rol: ${rol.isEmpty ? 'N/D' : rol}", color: const Color(0xFFFFE4B8)),
+                    _pill(
+                      activo ? "Activo" : "Inactivo",
+                      color: activo ? const Color(0xFFE3F7E5) : const Color(0xFFFFE4E4),
+                      textColor: activo ? const Color(0xFF2D8A47) : const Color(0xFFB83A3A),
+                    ),
                   ],
                 )
               ],
@@ -376,32 +333,29 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
   }
 
   Widget _infoGrid(String division, String curso, String racha) {
+    return _infoTile(
+      icon: Icons.account_tree,
+      label: "Division",
+      value: division.isEmpty ? "No asignada" : division,
+      highlightValue: true,
+      onEdit: () => showEditModal(
+        fieldName: "division_actual",
+        label: "Division",
+        initialValue: division,
+        isDropdown: true,
+        fetchOptions: () async {
+          final snap = await _db.collection("divisiones").orderBy("nombre").get();
+          return snap.docs
+              .map((d) => {"id": d.id.toString(), "nombre": d["nombre"].toString()})
+              .toList();
+        },
+      ),
+    );
+  }
+
+  Widget _secondaryInfo(String curso, String racha) {
     return Row(
       children: [
-        Expanded(
-          child: _infoTile(
-            icon: Icons.account_tree,
-            label: "División",
-            value: division.isEmpty ? "No asignada" : division,
-            onEdit: () => showEditModal(
-              fieldName: "division_actual",
-              label: "División",
-              initialValue: division,
-              isDropdown: true,
-              fetchOptions: () async {
-                final snap =
-                    await _db.collection("divisiones").orderBy("nombre").get();
-                return snap.docs
-                    .map((d) => {
-                          "id": d.id.toString(),
-                          "nombre": d["nombre"].toString()
-                        })
-                    .toList();
-              },
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
         Expanded(
           child: _infoTile(
             icon: Icons.school,
@@ -415,7 +369,7 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
           child: _infoTile(
             icon: Icons.local_fire_department,
             label: "Racha",
-            value: "$racha días",
+            value: "$racha dias",
             editable: false,
           ),
         ),
@@ -459,6 +413,88 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
     );
   }
 
+  Widget _infoTile({
+    required IconData icon,
+    required String label,
+    required String value,
+    bool editable = true,
+    VoidCallback? onEdit,
+    bool highlightValue = false,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFEFD),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.black.withOpacity(0.03)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(icon, color: const Color(0xFF6A7FDB)),
+                  const SizedBox(width: 8),
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ],
+              ),
+              if (editable)
+                IconButton(
+                  icon: const Icon(Icons.edit, color: Color(0xFF6A7FDB)),
+                  onPressed: onEdit,
+                  tooltip: "Editar",
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          if (highlightValue)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF3E0),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.black.withOpacity(0.04)),
+              ),
+              child: Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black87,
+                ),
+              ),
+            )
+          else
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: Colors.black87,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   Widget _fieldCard({
     required String label,
     required String value,
@@ -469,7 +505,7 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFFFFFEFD),
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
@@ -497,7 +533,7 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
                 Text(
                   value.isNotEmpty ? value : "No definido",
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: Colors.black87,
                   ),
@@ -507,84 +543,9 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
           ),
           if (editable)
             IconButton(
-              icon: const Icon(Icons.edit, color: Color(0xFFFFA200)),
+              icon: const Icon(Icons.edit, color: Color(0xFF6A7FDB)),
               onPressed: onEdit,
             ),
-        ],
-      ),
-    );
-  }
-
-  Widget _infoTile({
-    required IconData icon,
-    required String label,
-    required String value,
-    bool editable = true,
-    VoidCallback? onEdit,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Icon(icon, color: const Color(0xFFFFA200)),
-                  const SizedBox(width: 8),
-                  Text(
-                    label,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black87,
-                    ),
-                  ),
-                ],
-              ),
-              if (editable)
-                GestureDetector(
-                  onTap: onEdit,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFE4B8),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Text(
-                      "Editar",
-                      style: TextStyle(
-                        color: Colors.black87,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-              color: Colors.black87,
-            ),
-          ),
         ],
       ),
     );
@@ -593,7 +554,7 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
   Widget _statusAction(bool activo) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: activo ? Colors.red : Colors.green,
+        backgroundColor: activo ? const Color(0xFFE57373) : const Color(0xFF6A7FDB),
         padding: const EdgeInsets.symmetric(vertical: 14),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
@@ -612,11 +573,15 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
         ? name.trim().split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join()
         : "?";
     return Container(
-      height: 52,
-      width: 52,
+      height: 56,
+      width: 56,
       decoration: const BoxDecoration(
         shape: BoxShape.circle,
-        color: Color(0xFFFFA200),
+        gradient: LinearGradient(
+          colors: [Color(0xFFFFA200), Color(0xFFF36E3E)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
       ),
       child: Center(
         child: Text(

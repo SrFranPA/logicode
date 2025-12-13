@@ -5,7 +5,8 @@ import 'student_detail_screen.dart';
 
 class AdminStudentsScreen extends StatefulWidget {
   final ValueNotifier<bool>? viewAdminsNotifier;
-  const AdminStudentsScreen({super.key, this.viewAdminsNotifier});
+  final ValueNotifier<int?>? studentCountNotifier;
+  const AdminStudentsScreen({super.key, this.viewAdminsNotifier, this.studentCountNotifier});
 
   @override
   State<AdminStudentsScreen> createState() => _AdminStudentsScreenState();
@@ -17,39 +18,6 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
   String? selectedDivision;
   bool showingAdmins = false;
   VoidCallback? _notifierListener;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFFF8EEDA), Color(0xFFF2DFBF)],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 14, 14, 0),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(child: _searchBar()),
-                const SizedBox(width: 10),
-                _roleToggle(),
-              ],
-            ),
-            const SizedBox(height: 12),
-            if (!showingAdmins) ...[
-              _filtersRow(),
-              const SizedBox(height: 12),
-            ],
-            Expanded(child: _buildStudentsList()),
-          ],
-        ),
-      ),
-    );
-  }
 
   @override
   void initState() {
@@ -74,33 +42,51 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     super.dispose();
   }
 
-  Widget _searchBar() {
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: TextField(
-        controller: searchCtrl,
-        decoration: const InputDecoration(
-          border: InputBorder.none,
-          prefixIcon: Icon(Icons.search, color: Colors.black54),
-          hintText: "Buscar estudiante",
-          contentPadding: EdgeInsets.symmetric(vertical: 14),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFFFCF8F2), Color(0xFFEFE3CF)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
         ),
-        onChanged: (_) => setState(() {}),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              _filtersCard(),
+              const SizedBox(height: 12),
+              _buildStudentsList(shrinkWrap: true),
+            ],
+          ),
+        ),
       ),
     );
   }
 
+  Widget _searchBar() {
+    return TextField(
+      controller: searchCtrl,
+      decoration: InputDecoration(
+        labelText: "Buscar estudiante...",
+        suffixIcon: const Icon(Icons.search),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      onChanged: (_) => setState(() {}),
+    );
+  }
+
   Widget _roleToggle() {
+    final toAdmins = !showingAdmins;
+    final Color bg = toAdmins ? const Color(0xFF6A7FDB) : const Color(0xFFFFA200);
+    final IconData icon = toAdmins ? Icons.shield_outlined : Icons.school;
+    final String label = toAdmins ? "Ver administradores" : "Ver estudiantes";
+
     return SizedBox(
       height: 48,
       child: ElevatedButton(
@@ -110,8 +96,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
           widget.viewAdminsNotifier?.value = next;
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor:
-              showingAdmins ? const Color(0xFF6A7FDB) : const Color(0xFFFFA200),
+          backgroundColor: bg,
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
@@ -122,46 +107,26 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(showingAdmins ? Icons.verified_user : Icons.school),
+            Icon(icon),
             const SizedBox(width: 6),
-            Text(showingAdmins ? "Ver admins" : "Ver estudiantes"),
+            Text(label),
           ],
         ),
       ),
     );
   }
 
-  Widget _filtersRow() {
-    return Row(
-      children: [
-        Expanded(child: _buildCursosDropdown()),
-        const SizedBox(width: 12),
-        Expanded(child: _buildDivisionesDropdown()),
-      ],
-    );
-  }
-
   Widget _buildCursosDropdown() {
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection("cursos")
-          .orderBy("orden")
-          .snapshots(),
+      stream: FirebaseFirestore.instance.collection("cursos").orderBy("orden").snapshots(),
       builder: (_, snap) {
         if (!snap.hasData) return const SizedBox();
-
         final items = snap.data!.docs;
-
         return DropdownButtonFormField<String>(
           value: selectedCurso,
           decoration: InputDecoration(
             labelText: "Curso",
-            filled: true,
-            fillColor: Colors.white,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
           items: [
             const DropdownMenuItem(value: null, child: Text("Todos")),
@@ -183,19 +148,12 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
       stream: FirebaseFirestore.instance.collection("divisiones").snapshots(),
       builder: (_, snap) {
         if (!snap.hasData) return const SizedBox();
-
         final items = snap.data!.docs;
-
         return DropdownButtonFormField<String>(
           value: selectedDivision,
           decoration: InputDecoration(
-            labelText: "División",
-            filled: true,
-            fillColor: Colors.white,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
+            labelText: "Division",
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
           items: [
             const DropdownMenuItem(value: null, child: Text("Todas")),
@@ -212,11 +170,62 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     );
   }
 
-  Widget _buildStudentsList() {
+  Widget _filtersCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 14,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: const [
+              Text(
+                "Filtros",
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 14,
+                  color: Color(0xFF2C1B0E),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(child: _searchBar()),
+              const SizedBox(width: 10),
+              _roleToggle(),
+            ],
+          ),
+          if (!showingAdmins) ...[
+            const SizedBox(height: 12),
+            _buildCursosDropdown(),
+            const SizedBox(height: 12),
+            _buildDivisionesDropdown(),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStudentsList({bool shrinkWrap = false}) {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance.collection("usuarios").snapshots(),
       builder: (_, snap) {
         if (!snap.hasData) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            widget.studentCountNotifier?.value = 0;
+          });
           return const Center(child: CircularProgressIndicator());
         }
 
@@ -227,28 +236,34 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
         final filtrados = data.where((doc) {
           final u = doc.data() as Map<String, dynamic>;
 
-          if (u["rol"] != targetRole) return false;
+          final rol = (u["rol"] ?? "").toString().trim().toLowerCase();
+          if (rol != targetRole) return false;
 
           final nombre = (u["nombre"] ?? "").toString().toLowerCase();
-          final curso = u["curso_actual"];
-          final division = u["division_actual"];
+          final curso = (u["curso_actual"] ?? "").toString().trim();
+          final division = (u["division_actual"] ?? "").toString().trim();
 
           if (search.isNotEmpty && !nombre.contains(search)) return false;
           if (!showingAdmins) {
             if (selectedCurso != null && curso != selectedCurso) return false;
-            if (selectedDivision != null && division != selectedDivision) {
-              return false;
-            }
+            if (selectedDivision != null && division != selectedDivision) return false;
           }
-
           return true;
         }).toList();
+
+        if (!showingAdmins) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            widget.studentCountNotifier?.value = filtrados.length;
+          });
+        }
 
         if (filtrados.isEmpty) {
           return const Center(child: Text("No se encontraron estudiantes."));
         }
 
         return ListView.builder(
+          shrinkWrap: shrinkWrap,
+          physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
           itemCount: filtrados.length,
           itemBuilder: (_, index) {
             final doc = filtrados[index];
@@ -303,14 +318,17 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                           spacing: 8,
                           runSpacing: 6,
                           children: [
-                            _pill(
-                                "Rol: ${showingAdmins ? 'Administrador' : 'Estudiante'}"),
+                            _pill("Rol: ${showingAdmins ? 'Administrador' : 'Estudiante'}",
+                                color: const Color(0xFFFFE4B8)),
                             if (!showingAdmins)
-                              _pill(
-                                  "División: ${division.isEmpty ? 'N/D' : division}"),
+                              _pill("Division: ${division.isEmpty ? 'N/D' : division}",
+                                  color: const Color(0xFFE9ECF3)),
                             if (!showingAdmins)
-                              _pill("Curso: ${curso.isEmpty ? 'N/D' : curso}"),
-                            if (!showingAdmins) _pill("Racha: $racha días"),
+                              _pill("Curso: ${curso.isEmpty ? 'N/D' : curso}",
+                                  color: const Color(0xFFFFF3E0)),
+                            if (!showingAdmins)
+                              _pill("Racha: $racha dias",
+                                  color: const Color(0xFFE8F9E5)),
                           ],
                         ),
                       ],
@@ -328,12 +346,27 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                       height: 36,
                       width: 36,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF6A7FDB).withOpacity(0.14),
+                        color: const Color(0xFF6A7FDB).withOpacity(0.16),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.edit, color: Color(0xFF6A7FDB)),
+                      child: const Icon(Icons.edit, color: Color(0xFF6A7FDB), size: 18),
                     ),
                   ),
+                  if (!showingAdmins) ...[
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () => _confirmDelete(context, doc.id),
+                      child: Container(
+                        height: 36,
+                        width: 36,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE57373).withOpacity(0.16),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.delete, color: Color(0xFFE57373), size: 18),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             );
@@ -343,13 +376,32 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     );
   }
 
-  Widget _avatar(String name) {
-    final initials = name.isNotEmpty
-        ? name.trim().split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join()
-        : "?";
+  Widget _pill(String text,
+      {Color color = const Color(0xFFF2F4F8), Color textColor = Colors.black87}) {
     return Container(
-      height: 44,
-      width: 44,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.black.withOpacity(0.04)),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: textColor,
+          fontWeight: FontWeight.w700,
+          fontSize: 12,
+        ),
+      ),
+    );
+  }
+
+  Widget _avatar(String name) {
+    final initials =
+        name.isNotEmpty ? name.trim().split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join() : "?";
+    return Container(
+      height: 46,
+      width: 46,
       decoration: const BoxDecoration(
         shape: BoxShape.circle,
         color: Color(0xFFFFA200),
@@ -360,27 +412,32 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w800,
+            fontSize: 16,
           ),
         ),
       ),
     );
   }
 
-  Widget _pill(String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF2F4F8),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.black.withOpacity(0.06)),
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          color: Colors.black87,
-          fontWeight: FontWeight.w600,
-          fontSize: 12,
-        ),
+  void _confirmDelete(BuildContext context, String userId) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Confirmar eliminacion"),
+        content: const Text("Seguro que deseas eliminar este estudiante?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancelar"),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              await FirebaseFirestore.instance.collection("usuarios").doc(userId).delete();
+              Navigator.pop(context);
+            },
+            child: const Text("Eliminar"),
+          ),
+        ],
       ),
     );
   }
