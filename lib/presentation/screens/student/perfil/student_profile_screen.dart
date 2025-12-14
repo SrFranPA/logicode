@@ -214,30 +214,18 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final uid = FirebaseAuth.instance.currentUser!.uid;
     final authUser = FirebaseAuth.instance.currentUser;
+    if (authUser == null) {
+      return const Scaffold(
+        body: Center(child: Text('Inicia sesion para ver tu perfil')),
+      );
+    }
+    final uid = authUser.uid;
 
     const accent = Color(0xFFFFA451);
 
     return Scaffold(
       backgroundColor: const Color(0xFFFCF8F2),
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: const Color(0xFF283347),
-        elevation: 0,
-        toolbarHeight: 46,
-        centerTitle: true,
-        title: const Text(
-          'Perfil',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w700,
-            fontSize: 18,
-            letterSpacing: 0.2,
-          ),
-        ),
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -253,149 +241,176 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
               return const Center(child: CircularProgressIndicator.adaptive());
             }
 
-          final data = snap.data!.data() ?? {};
-          final nombre = (data['nombre'] ?? authUser?.displayName ?? 'Estudiante').toString();
-          final racha = (data['racha'] as num?)?.toInt() ?? 0;
-          final divisionActual = (data['division_actual'] ?? '-').toString();
-          final xp = (data['xp_acumulada'] as num?)?.toInt() ?? 0;
-          final email = authUser?.email ?? (data['email'] ?? 'Sin correo');
+            final data = snap.data!.data() ?? {};
+            final nombre = (data['nombre'] ?? authUser?.displayName ?? 'Estudiante').toString();
+            final racha = (data['racha'] as num?)?.toInt() ?? 0;
+            final divisionActual = (data['division_actual'] ?? '-').toString();
+            final xp = (data['xp_acumulada'] as num?)?.toInt() ?? 0;
+            final email = authUser?.email ?? (data['email'] ?? 'Sin correo');
 
-          return ListView(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.black.withOpacity(0.03)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.06),
-                      blurRadius: 18,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      height: 64,
-                      width: 64,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(18),
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFE9EEF7), Color(0xFFD7DFEF)],
+            return ListView(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.black.withOpacity(0.03)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.06),
+                        blurRadius: 18,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        height: 64,
+                        width: 64,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(18),
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFE9EEF7), Color(0xFFD7DFEF)],
+                          ),
+                        ),
+                        child: const Icon(Icons.person, color: Color(0xFF283347), size: 32),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              nombre,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF1E2026),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              email,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Color(0xFF555B64),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      child: const Icon(Icons.person, color: Color(0xFF283347), size: 32),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            nombre,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF1E2026),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            email,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: Color(0xFF555B64),
-                            ),
-                          ),
-                        ],
+                      IconButton(
+                        icon: const Icon(Icons.edit, color: Color(0xFF555B64)),
+                        onPressed: () => _showEditSheet(context, nombre),
                       ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.edit, color: Color(0xFF555B64)),
-                      onPressed: () => _showEditSheet(context, nombre),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 18),
-              const Text(
-                'Progreso',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF1E2026),
+                const SizedBox(height: 18),
+                const Text(
+                  'Progreso',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1E2026),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              _StatTile(
-                title: 'Racha activa',
-                value: '$racha d',
-                subtitle: 'Dias seguidos aprendiendo',
-                icon: Icons.bolt,
-                accent: accent,
-              ),
-              _StatTile(
-                title: 'Division actual',
-                value: divisionActual,
-                subtitle: 'Sube con XP y practicas',
-                icon: Icons.rocket_launch,
-                accent: accent,
-              ),
-              _StatTile(
-                title: 'Total de XP',
-                value: '$xp',
-                subtitle: 'Sumado en cursos y retos',
-                icon: Icons.stacked_bar_chart,
-                accent: accent,
-              ),
-              const SizedBox(height: 14),
-              const Text(
-                'Logros',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF1E2026),
+                const SizedBox(height: 10),
+                _StatTile(
+                  title: 'Racha activa',
+                  value: '$racha d',
+                  subtitle: 'Dias seguidos aprendiendo',
+                  icon: Icons.bolt,
+                  accent: accent,
                 ),
-              ),
-              const SizedBox(height: 8),
-              _AchievementsSection(userData: data),
-              const SizedBox(height: 14),
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.06),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+                _StatTile(
+                  title: 'Division actual',
+                  value: divisionActual,
+                  subtitle: 'Sube con XP y practicas',
+                  icon: Icons.rocket_launch,
+                  accent: accent,
                 ),
-                child: Row(
-                  children: const [
-                    Icon(Icons.tips_and_updates, color: Color(0xFF283347)),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'Pronto podras editar tu avatar, vincular redes y descargar tu certificado.',
-                        style: TextStyle(color: Color(0xFF1E2026), fontSize: 13),
+                _StatTile(
+                  title: 'Total de XP',
+                  value: '$xp',
+                  subtitle: 'Sumado en cursos y retos',
+                  icon: Icons.stacked_bar_chart,
+                  accent: accent,
+                ),
+                const SizedBox(height: 14),
+                const Text(
+                  'Logros',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1E2026),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _AchievementsSection(userData: data),
+                const SizedBox(height: 14),
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.06),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                  child: Row(
+                    children: const [
+                      Icon(Icons.tips_and_updates, color: Color(0xFF283347)),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Pronto podras editar tu avatar, vincular redes y descargar tu certificado.',
+                          style: TextStyle(color: Color(0xFF1E2026), fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          );
-        },
+              ],
+            );
+          },
         ),
-      ),    );
-    }
+      ),
+    );
+  }
+}
+
+Color _hexToColor(String hex) {
+  var h = hex.replaceAll('#', '');
+  if (h.length == 6) h = 'FF$h';
+  final intColor = int.tryParse(h, radix: 16) ?? 0xFF0E6BA8;
+  return Color(intColor);
+}
+
+IconData _iconFromString(String name) {
+  switch (name) {
+    case 'star':
+      return Icons.star;
+    case 'medal':
+      return Icons.emoji_events;
+    case 'flame':
+      return Icons.local_fire_department;
+    case 'rocket':
+      return Icons.rocket_launch;
+    case 'shield':
+      return Icons.shield;
+    case 'bolt':
+      return Icons.bolt;
+    default:
+      return Icons.military_tech;
+  }
 }
 
 class _AchievementsSection extends StatelessWidget {
@@ -405,7 +420,59 @@ class _AchievementsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final logros = (userData['logros'] as List?)?.cast<Map?>() ?? [];
+    final logrosData = (userData['logros'] as List?)?.cast<Map?>() ?? [];
+    final List<Map> base = [
+      // Divisiones
+      {
+        'titulo': 'Recolector',
+        'asset': 'assets/images/recolector.png',
+        'color': '#FFA451',
+        'categoria': 'divisiones',
+        'desc': 'Completa retos iniciales de division.'
+      },
+      {
+        'titulo': 'Arquitecto',
+        'asset': 'assets/images/arquitecto.png',
+        'color': '#FF8A3D',
+        'categoria': 'divisiones',
+        'desc': 'Diseña tu ruta y sube de nivel.'
+      },
+      {
+        'titulo': 'Explorador',
+        'asset': 'assets/images/explorador.png',
+        'color': '#4CAF50',
+        'categoria': 'divisiones',
+        'desc': 'Descubre nuevas divisiones.'
+      },
+      // Cursos (curso1-curso9)
+      {'titulo': 'Curso 1', 'asset': 'assets/images/curso1.png', 'color': '#FFB74D', 'categoria': 'cursos', 'desc': 'Completa el curso 1.'},
+      {'titulo': 'Curso 2', 'asset': 'assets/images/curso2.png', 'color': '#FF9800', 'categoria': 'cursos', 'desc': 'Completa el curso 2.'},
+      {'titulo': 'Curso 3', 'asset': 'assets/images/curso3.png', 'color': '#F57C00', 'categoria': 'cursos', 'desc': 'Completa el curso 3.'},
+      {'titulo': 'Curso 4', 'asset': 'assets/images/curso4.png', 'color': '#FB8C00', 'categoria': 'cursos', 'desc': 'Completa el curso 4.'},
+      {'titulo': 'Curso 5', 'asset': 'assets/images/curso5.png', 'color': '#FFB300', 'categoria': 'cursos', 'desc': 'Completa el curso 5.'},
+      {'titulo': 'Curso 6', 'asset': 'assets/images/curso6.png', 'color': '#FFA726', 'categoria': 'cursos', 'desc': 'Completa el curso 6.'},
+      {'titulo': 'Curso 7', 'asset': 'assets/images/curso7.png', 'color': '#FF7043', 'categoria': 'cursos', 'desc': 'Completa el curso 7.'},
+      {'titulo': 'Curso 8', 'asset': 'assets/images/curso8.png', 'color': '#FF6F00', 'categoria': 'cursos', 'desc': 'Completa el curso 8.'},
+      {'titulo': 'Curso 9', 'asset': 'assets/images/curso9.png', 'color': '#F9A825', 'categoria': 'cursos', 'desc': 'Completa el curso 9.'},
+      // Coleccionista
+      {
+        'titulo': 'Rey',
+        'asset': 'assets/images/rey.png',
+        'color': '#FFC107',
+        'categoria': 'coleccion',
+        'desc': 'Colecciona todas las medallas clave.'
+      },
+    ];
+    // siempre mostramos 8 espacios; si hay logros en DB, sobrescriben pero heredan asset/base si no traen.
+    final logros = List<Map>.from(base);
+    for (int i = 0; i < logrosData.length && i < 8; i++) {
+      final m = (logrosData[i] ?? {}) as Map;
+      // Hereda asset/icon/color si no vienen
+      logros[i] = {
+        ...base[i],
+        ...m,
+      };
+    }
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -437,72 +504,33 @@ class _AchievementsSection extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          if (logros.isEmpty)
-            const Text(
-              'Aun no tienes logros. Completa cursos y retos para obtener medallas.',
-              style: TextStyle(color: Color(0xFF555B64), fontSize: 12),
-            )
-          else
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: logros.map((raw) {
-                final logro = (raw ?? {}) as Map;
-                final titulo = (logro['titulo'] ?? 'Logro').toString();
-                final icono = (logro['icono'] ?? 'star').toString();
-                final colorHex = (logro['color'] ?? '#0E6BA8').toString();
-                final color = _hexToColor(colorHex);
-
-                return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: color.withOpacity(0.35)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(_iconFromString(icono), color: color),
-                      const SizedBox(width: 6),
-                      Text(
-                        titulo,
-                        style: TextStyle(
-                          color: color,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
+          const SizedBox(height: 6),
+          const Text(
+            'Desbloquea medallas al completar hitos, mantener rachas y sumar XP.',
+            style: TextStyle(
+              color: Color(0xFF555B64),
+              fontSize: 12,
+              height: 1.3,
             ),
+          ),
+          const SizedBox(height: 8),
+          _CategoryGrid(
+            titulo: 'Divisiones',
+            items: logros.where((m) => (m['categoria'] ?? '') == 'divisiones').take(3).toList(),
+          ),
+          const SizedBox(height: 12),
+          _CategoryGrid(
+            titulo: 'Cursos',
+            items: logros.where((m) => (m['categoria'] ?? '') == 'cursos').take(9).toList(),
+          ),
+          const SizedBox(height: 12),
+          _CategoryGrid(
+            titulo: 'Coleccionista',
+            items: logros.where((m) => (m['categoria'] ?? '') == 'coleccion').take(1).toList(),
+          ),
         ],
       ),
     );
-  }
-
-  Color _hexToColor(String hex) {
-    var h = hex.replaceAll('#', '');
-    if (h.length == 6) h = 'FF$h';
-    final intColor = int.tryParse(h, radix: 16) ?? 0xFF0E6BA8;
-    return Color(intColor);
-  }
-
-  IconData _iconFromString(String name) {
-    switch (name) {
-      case 'star':
-        return Icons.star;
-      case 'medal':
-        return Icons.emoji_events;
-      case 'flame':
-        return Icons.local_fire_department;
-      case 'rocket':
-        return Icons.rocket_launch;
-      default:
-        return Icons.military_tech;
-    }
   }
 }
 
@@ -578,6 +606,106 @@ class _StatTile extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _CategoryGrid extends StatelessWidget {
+  final String titulo;
+  final List<Map> items;
+
+  const _CategoryGrid({required this.titulo, required this.items});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          titulo,
+          style: const TextStyle(
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF1E2026),
+          ),
+        ),
+        const SizedBox(height: 6),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            childAspectRatio: 0.82,
+          ),
+          itemCount: items.length,
+          itemBuilder: (context, index) {
+            final logro = (items[index]) as Map;
+            final titulo = (logro['titulo'] ?? 'Logro').toString();
+            final icono = (logro['icono'] ?? 'star').toString();
+            final asset = (logro['asset'] ?? '').toString();
+            final colorHex = (logro['color'] ?? '#0E6BA8').toString();
+            final color = _hexToColor(colorHex);
+
+            return Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [color.withOpacity(0.12), color.withOpacity(0.32)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: color.withOpacity(0.3)),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withOpacity(0.18),
+                    blurRadius: 10,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 98,
+                    height: 98,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withOpacity(0.88),
+                    ),
+                    child: Center(
+                      child: asset.isNotEmpty
+                          ? ClipOval(
+                              child: Image.asset(
+                                asset,
+                                width: 82,
+                                height: 82,
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                          : Icon(_iconFromString(icono), color: color, size: 28),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: Text(
+                      titulo,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF1E2026),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 }
