@@ -80,6 +80,12 @@ class _DivisionesScreenState extends State<DivisionesScreen> {
       (d) => d.nombre.toLowerCase() == (_divisionActual ?? '').toLowerCase(),
     );
     if (currentIndex == -1) currentIndex = 0;
+    final String? currentAsset =
+        (currentIndex >= 0 && currentIndex < sampleDivisiones.length)
+            ? sampleDivisiones[currentIndex].asset
+            : null;
+    // Asegura mostrar nombres claros de divisiones principales
+    const tituloRuta = 'Divisiones principales';
 
     return Scaffold(
       backgroundColor: const Color(0xFFFCF8F2),
@@ -115,12 +121,21 @@ class _DivisionesScreenState extends State<DivisionesScreen> {
                 child: Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.12),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.flag, color: Colors.white),
+                      child: currentAsset != null
+                          ? ClipOval(
+                              child: Image.asset(
+                                currentAsset,
+                                width: 78,
+                                height: 78,
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                          : const Icon(Icons.flag, color: Colors.white),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -174,7 +189,7 @@ class _DivisionesScreenState extends State<DivisionesScreen> {
               ),
               const SizedBox(height: 18),
               const Text(
-                'Rutas de progresion',
+                'Divisiones principales',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
@@ -508,14 +523,23 @@ class _DivisionCard extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            height: 46,
-            width: 46,
+            height: 78,
+            width: 78,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: data.color.withOpacity(0.18),
               border: Border.all(color: data.color.withOpacity(0.4)),
             ),
-            child: Icon(Icons.rocket_launch, color: dark),
+            child: data.asset != null && data.asset!.isNotEmpty
+                ? ClipOval(
+                    child: Image.asset(
+                      data.asset!,
+                      width: 72,
+                      height: 72,
+                      fit: BoxFit.cover,
+                    ),
+                  )
+                : Icon(Icons.rocket_launch, color: dark),
           ),
           const SizedBox(width: 12),
           Expanded(
