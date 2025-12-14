@@ -259,6 +259,7 @@ class AprendeScreen extends StatelessWidget {
                                         descripcion: descripcion.isEmpty
                                             ? 'Conceptos clave y ejercicios interactivos.'
                                             : descripcion,
+                                        iconPath: 'assets/images/iconos/curso${(index % 9) + 1}.png',
                                       ),
                                     ),
                                   );
@@ -351,6 +352,8 @@ class _CourseCardState extends State<_CourseCard> with SingleTickerProviderState
       colorB = const Color(0xFFF6F6F6);
     }
 
+    final iconPath = 'assets/images/iconos/curso${(widget.index % 9) + 1}.png';
+
     return GestureDetector(
       onTapDown: (_) {
         if (widget.unlocked) _controller.forward();
@@ -383,78 +386,160 @@ class _CourseCardState extends State<_CourseCard> with SingleTickerProviderState
               color: Colors.white.withOpacity(0.35),
             ),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.28),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  widget.unlocked ? _iconForTitle(widget.title) : Icons.lock,
-                  color: widget.unlocked ? const Color(0xFF1F2A44) : const Color(0xFF8B8B8B),
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      widget.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: const Color(0xFF1F2A44).withOpacity(widget.unlocked ? 0.95 : 0.6),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.2,
+         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+         child: Row(
+            children: widget.index.isEven
+                ? [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            widget.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: const Color(0xFF1F2A44)
+                                  .withOpacity(widget.unlocked ? 0.95 : 0.6),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.2,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(widget.unlocked ? 0.22 : 0.18),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: widget.unlocked
+                                    ? const Color(0xFF1F2A44).withOpacity(0.25)
+                                    : const Color(0xFF8B8B8B).withOpacity(0.25),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  widget.unlocked ? Icons.play_circle_fill : Icons.lock_outline,
+                                  size: 16,
+                                  color: widget.unlocked
+                                      ? const Color(0xFF1F2A44)
+                                      : const Color(0xFF8B8B8B),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  widget.unlocked ? 'Disponible' : 'Bloqueado',
+                                  style: TextStyle(
+                                    color: widget.unlocked
+                                        ? const Color(0xFF1F2A44)
+                                        : const Color(0xFF8B8B8B),
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      widget.description,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: const Color(0xFF1F2A44).withOpacity(widget.unlocked ? 0.75 : 0.55),
-                        fontSize: 12,
+                    const SizedBox(width: 12),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.28),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Image.asset(
+                        iconPath,
+                        width: 58,
+                        height: 58,
+                        fit: BoxFit.contain,
+                        opacity: widget.unlocked ? null : const AlwaysStoppedAnimation(0.45),
+                      ),
+                    ),
+                  ]
+                : [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.28),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Image.asset(
+                        iconPath,
+                        width: 58,
+                        height: 58,
+                        fit: BoxFit.contain,
+                        opacity: widget.unlocked ? null : const AlwaysStoppedAnimation(0.45),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            widget.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: const Color(0xFF1F2A44)
+                                  .withOpacity(widget.unlocked ? 0.95 : 0.6),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.2,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(widget.unlocked ? 0.22 : 0.18),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: widget.unlocked
+                                    ? const Color(0xFF1F2A44).withOpacity(0.25)
+                                    : const Color(0xFF8B8B8B).withOpacity(0.25),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  widget.unlocked ? Icons.play_circle_fill : Icons.lock_outline,
+                                  size: 16,
+                                  color: widget.unlocked
+                                      ? const Color(0xFF1F2A44)
+                                      : const Color(0xFF8B8B8B),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  widget.unlocked ? 'Disponible' : 'Bloqueado',
+                                  style: TextStyle(
+                                    color: widget.unlocked
+                                        ? const Color(0xFF1F2A44)
+                                        : const Color(0xFF8B8B8B),
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                        ],
                       ),
                     ),
                   ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: widget.unlocked ? Colors.white.withOpacity(0.82) : Colors.white70,
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x22000000),
-                      blurRadius: 6,
-                      offset: Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Text(
-                  widget.unlocked ? 'Entrar' : 'Bloqueado',
-                  style: TextStyle(
-                    color: widget.unlocked ? const Color(0xFF1F2A44) : const Color(0xFF8B8B8B),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+         ),
+       ),
+     ),
     );
   }
 }

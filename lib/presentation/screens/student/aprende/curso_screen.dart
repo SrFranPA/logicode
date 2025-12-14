@@ -9,13 +9,21 @@ class CursoScreen extends StatefulWidget {
   final String cursoId;
   final String cursoNombre;
   final String descripcion;
+  final String iconPath;
 
   const CursoScreen({
     super.key,
     required this.cursoId,
     required this.cursoNombre,
     required this.descripcion,
+    this.iconPath = 'assets/images/iconos/curso1.png',
   });
+
+  const CursoScreen.placeholder({super.key})
+      : cursoId = '',
+        cursoNombre = 'Curso',
+        descripcion = '',
+        iconPath = 'assets/images/iconos/curso1.png';
 
   @override
   State<CursoScreen> createState() => _CursoScreenState();
@@ -120,6 +128,7 @@ class _CursoScreenState extends State<CursoScreen> {
       MaterialPageRoute(
         builder: (_) => LeccionCursoScreen(
           cursoId: widget.cursoId,
+          cursoNombre: widget.cursoNombre,
           leccionTitulo: lessons[i].title,
           accentColor: _lessonPalette(i).first,
         ),
@@ -185,7 +194,7 @@ class _CursoScreenState extends State<CursoScreen> {
                             width: 78,
                             height: 78,
                             child: Image.asset(
-                              'assets/images/mascota/leccion4.png',
+                              widget.iconPath,
                               fit: BoxFit.contain,
                             ),
                           ),
@@ -279,35 +288,49 @@ class _CursoScreenState extends State<CursoScreen> {
                           child: Row(
                             children: [
                               Container(
-                                padding: const EdgeInsets.all(10),
+                                width: 46,
+                                height: 46,
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.35),
                                   shape: BoxShape.circle,
+                                  color: Colors.white.withOpacity(0.3),
+                                  border: Border.all(
+                                    color: Colors.black.withOpacity(0.05),
+                                  ),
                                 ),
-                                child: const Icon(Icons.play_arrow_rounded, color: tomato),
+                                child: Icon(
+                                  done
+                                      ? Icons.check_circle_rounded
+                                      : unlocked
+                                          ? Icons.play_arrow_rounded
+                                          : Icons.lock_outline,
+                                  color: done
+                                      ? const Color(0xFF2E7D32)
+                                      : unlocked
+                                          ? tomato
+                                          : const Color(0xFF7A6A5C),
+                                  size: 26,
+                                ),
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 14),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Row(
-                                      children: const [
-                                        SizedBox.shrink(),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 6),
                                     Text(
                                       item.title,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(
                                         color: Color(0xFF2C1B0E),
                                         fontWeight: FontWeight.w900,
-                                        fontSize: 15,
+                                        fontSize: 16,
                                       ),
                                     ),
-                                    const SizedBox(height: 4),
+                                    const SizedBox(height: 6),
                                     Text(
                                       item.detail,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
                                         color: unlocked ? const Color(0xFF5A5248) : const Color(0xFF7A6A5C),
                                         fontWeight: FontWeight.w600,
@@ -323,21 +346,22 @@ class _CursoScreenState extends State<CursoScreen> {
                                 decoration: BoxDecoration(
                                   color: done
                                       ? const Color(0xFFE8F9E5)
-                                      : Colors.white.withOpacity(0.92),
+                                      : Colors.white.withOpacity(0.9),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
                                     color: done
-                                        ? const Color(0xFF3FB07F).withOpacity(0.5)
+                                        ? const Color(0xFF3FB07F).withOpacity(0.6)
                                         : const Color(0xFF283347).withOpacity(0.12),
                                   ),
                                 ),
                                 child: Row(
+                                  mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Text(
                                       done
                                           ? 'Completado'
                                           : unlocked
-                                              ? 'Iniciar'
+                                              ? 'Disponible'
                                               : 'Bloqueado',
                                       style: TextStyle(
                                         color: done
@@ -407,6 +431,7 @@ class _CursoScreenState extends State<CursoScreen> {
                         MaterialPageRoute(
                           builder: (_) => LeccionCursoScreen(
                             cursoId: widget.cursoId,
+                            cursoNombre: widget.cursoNombre,
                             leccionTitulo: 'Test final',
                             accentColor: tomato,
                           ),
@@ -425,11 +450,12 @@ class _CursoScreenState extends State<CursoScreen> {
   }
 
   List<Color> _lessonPalette(int index) {
+    // Paleta armonizada con tonos cálidos/crema para las primeras lecciones
     const palettes = [
-      [Color(0xFFE9EEF7), Color(0xFFD7DFEF)],
-      [Color(0xFFFFF2DC), Color(0xFFEFD7A5)],
-      [Color(0xFFE8F9E5), Color(0xFFD1F1D6)],
-      [Color(0xFFFFE6E6), Color(0xFFFFF0F0)],
+      [Color(0xFF1BA6A8), Color(0xFF8FE8EA)], // leccion 1 (turquesa suave)
+      [Color(0xFFFFDFA6), Color(0xFFF6C778)], // leccion 2 (ámbar cálido)
+      [Color(0xFFDDF1C8), Color(0xFFB7E29A)], // leccion 3 (verde suave)
+      [Color(0xFFFFE6E6), Color(0xFFFFF0F0)], // resto
     ];
     return palettes[index % palettes.length];
   }

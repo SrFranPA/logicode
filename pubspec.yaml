@@ -85,6 +85,15 @@ flutter:
     - assets/images/mascota/leccion3.png
     - assets/images/mascota/leccion4.png
     - assets/images/mascota/leccion4.png
+    - assets/images/iconos/curso1.png
+    - assets/images/iconos/curso2.png
+    - assets/images/iconos/curso3.png
+    - assets/images/iconos/curso4.png
+    - assets/images/iconos/curso5.png
+    - assets/images/iconos/curso6.png
+    - assets/images/iconos/curso7.png
+    - assets/images/iconos/curso8.png
+    - assets/images/iconos/curso9.png
     - assets/images/medallas/curso1.png
     - assets/images/medallas/curso2.png
     - assets/images/medallas/curso3.png
@@ -95,6 +104,15 @@ flutter:
     - assets/images/medallas/curso8.png
     - assets/images/medallas/curso9.png
     - assets/images/medallas/rey.png
+    - assets/images/iconos/curso1.png
+    - assets/images/iconos/curso2.png
+    - assets/images/iconos/curso3.png
+    - assets/images/iconos/curso4.png
+    - assets/images/iconos/curso5.png
+    - assets/images/iconos/curso6.png
+    - assets/images/iconos/curso7.png
+    - assets/images/iconos/curso8.png
+    - assets/images/iconos/curso9.png
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

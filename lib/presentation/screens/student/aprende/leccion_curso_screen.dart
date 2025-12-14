@@ -9,12 +9,14 @@ import 'test/widgets/pregunta_widget_builder.dart';
 
 class LeccionCursoScreen extends StatefulWidget {
   final String cursoId;
+  final String cursoNombre;
   final String leccionTitulo;
   final Color accentColor;
 
   const LeccionCursoScreen({
     super.key,
     required this.cursoId,
+    required this.cursoNombre,
     required this.leccionTitulo,
     this.accentColor = const Color(0xFFFFA451),
   });
@@ -27,6 +29,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
   List<Pregunta> preguntas = [];
   int index = 0;
   int lives = 5;
+  int _aciertos = 0;
   bool cargando = true;
   bool answered = false;
   bool correcto = false;
@@ -35,6 +38,8 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
   bool sinVidas = false;
   int _xpPendiente = 0;
   String _leccionImage = 'assets/images/mascota/leccion1.png';
+
+  bool get _esTestFinal => widget.leccionTitulo.toLowerCase().contains('test final');
 
   @override
   void initState() {
@@ -58,7 +63,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
   Future<void> _initData() async {
     await _cargarVidas();
     if (!mounted) return;
-    if (lives <= 0) {
+    if (lives <= 0 && !_esTestFinal) {
       setState(() {
         sinVidas = true;
         cargando = false;
@@ -143,6 +148,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
   }
 
   Future<void> _consumirVida() async {
+    if (_esTestFinal) return;
     if (_userId == null) return;
     final nueva = (lives - 1).clamp(0, 5);
     setState(() => lives = nueva);
@@ -157,8 +163,9 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
       retro = r;
     });
     if (isCorrect) {
+      _aciertos++;
       _xpPendiente += _xpPorDificultad(preguntaActual.dificultad);
-    } else if (lives > 0) {
+    } else if (lives > 0 && !_esTestFinal) {
       _consumirVida();
     }
   }
@@ -197,15 +204,36 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
   }
 
   Future<void> _siguiente() async {
-    if (lives == 0) {
+    if (lives == 0 && !_esTestFinal) {
       Navigator.of(context).pop(false);
       return;
     }
     if (index + 1 >= preguntas.length) {
-      await _guardarXpPendiente();
-      await _marcarLeccionCompletada();
-      if (mounted) {
-        Navigator.of(context).pop(true);
+      final aprobado = !_esTestFinal || _aciertos >= 7;
+      if (aprobado) {
+        await _guardarXpPendiente();
+        await _marcarLeccionCompletada();
+        if (mounted) {
+          Navigator.of(context).pop(true);
+        }
+      } else {
+        if (mounted) {
+          await showDialog<void>(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: const Text('Necesitas 7 aciertos'),
+              content: const Text(
+                'Responde al menos 7 preguntas correctas para pasar al siguiente curso.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Entendido'),
+                ),
+              ],
+            ),
+          );
+        }
       }
       return;
     }
@@ -228,7 +256,8 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const tomato = Color(0xFFFFA451);
+    const Color tomato = Color(0xFFFFA451);
+    final Color accentSoft = widget.accentColor.withOpacity(0.20);
 
     Future<bool> confirmExit() async {
       return await showDialog<bool>(
@@ -350,9 +379,9 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
           ),
         ),
         body: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFFFCF8F2), Color(0xFFEFE3CF)],
+              colors: [accentSoft, const Color(0xFFFCF8F2)],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
@@ -385,7 +414,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                widget.leccionTitulo,
+                                widget.cursoNombre,
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w900,
                                   fontSize: 18,
@@ -394,107 +423,75 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Curso: ${widget.cursoId}',
+                                widget.leccionTitulo,
                                 style: const TextStyle(
-                                  color: Color(0xFF5A5248),
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w600,
                                   fontSize: 13,
+                                  color: Color(0xFF4A3A2A),
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Image.asset(
-                          _leccionImage,
-                          width: 88,
-                          height: 88,
-                          fit: BoxFit.contain,
-                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Image.asset(
+                        _leccionImage,
+                        width: 118,
+                        height: 118,
+                        fit: BoxFit.contain,
+                      ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 12),
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(14),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: Colors.black.withOpacity(0.04)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Progreso',
-                          style: TextStyle(
-                            color: Color(0xFF2C1B0E),
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${((progreso) * 100).round()}% completado',
-                          style: const TextStyle(
-                            color: Color(0xFF5A5248),
-                            fontWeight: FontWeight.w600,
-                            fontSize: 12,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: LinearProgressIndicator(
-                            value: progreso,
-                            minHeight: 5,
-                            backgroundColor: tomato.withOpacity(0.15),
-                            color: tomato,
-                          ),
-                        ),
-                      ],
-                    ),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.black.withOpacity(0.04)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 12),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: Colors.black.withOpacity(0.04)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
-                          blurRadius: 10,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        _infoChip(
-                          icon: Icons.star_border,
-                          label: '${_xpPorDificultad(pregunta.dificultad)} XP',
+                  child: Row(
+                    children: [
+                      Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: LinearProgressIndicator(
+                          value: progreso,
+                          minHeight: 5,
+                          backgroundColor: tomato.withOpacity(0.15),
                           color: tomato,
                         ),
-                        const SizedBox(width: 10),
-                        _infoChip(
-                          icon: Icons.favorite,
-                          label: '$lives vidas',
-                          color: const Color(0xFFFF6A3D),
-                        ),
-                      ],
+                      ),
                     ),
+                    if (!_esTestFinal) ...[
+                      const SizedBox(width: 10),
+                      Row(
+                        children: List.generate(
+                          5,
+                          (i) => Padding(
+                            padding: EdgeInsets.only(left: i == 0 ? 0 : 6),
+                            child: Icon(
+                              Icons.favorite,
+                              color: i < lives ? tomato : Colors.black26,
+                              size: 18,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                    ],
                   ),
-                  const SizedBox(height: 10),
+                ),
+                const SizedBox(height: 12),
                 Expanded(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.only(top: 4),
@@ -512,12 +509,37 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                           ),
                         ],
                       ),
-                      child: KeyedSubtree(
-                        key: ValueKey(pregunta.id),
-                        child: buildQuestionWidget(
-                          pregunta: pregunta,
-                          onResult: (ok, mensaje) => _onResult(ok, mensaje, pregunta),
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: tomato.withOpacity(0.14),
+                                
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                '${_xpPorDificultad(pregunta.dificultad)} XP',
+                                style: const TextStyle(
+                                  color: Color(0xFF2C1B0E),
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          KeyedSubtree(
+                            key: ValueKey(pregunta.id),
+                            child: buildQuestionWidget(
+                              pregunta: pregunta,
+                              onResult: (ok, mensaje) => _onResult(ok, mensaje, pregunta),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -564,7 +586,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                   child: ElevatedButton(
                     onPressed: answered ? _siguiente : null,
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: answered ? tomato : Colors.black26,
+                      backgroundColor: answered ? tomato : Colors.black26,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       elevation: answered ? 3 : 0,
                     ),

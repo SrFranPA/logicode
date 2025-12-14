@@ -421,6 +421,7 @@ class _AchievementsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final logrosData = (userData['logros'] as List?)?.cast<Map?>() ?? [];
+    final divisionActual = (userData['division_actual'] ?? '').toString().toLowerCase();
     final List<Map> base = [
       // Divisiones
       {
@@ -474,6 +475,20 @@ class _AchievementsSection extends StatelessWidget {
       };
     }
 
+    bool _desbloqueaDivision(String baseNombre) {
+      final pref = baseNombre.toLowerCase();
+      return divisionActual.startsWith(pref);
+    }
+
+    final divisiones = logros
+        .where((m) => (m['categoria'] ?? '') == 'divisiones')
+        .take(3)
+        .map((m) => {
+              ...m,
+              'locked': !_desbloqueaDivision((m['titulo'] ?? '').toString()),
+            })
+        .toList();
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -516,7 +531,7 @@ class _AchievementsSection extends StatelessWidget {
           const SizedBox(height: 8),
           _CategoryGrid(
             titulo: 'Divisiones',
-            items: logros.where((m) => (m['categoria'] ?? '') == 'divisiones').take(3).toList(),
+            items: divisiones,
           ),
           const SizedBox(height: 12),
           _CategoryGrid(
@@ -646,64 +661,78 @@ class _CategoryGrid extends StatelessWidget {
             final asset = (logro['asset'] ?? '').toString();
             final colorHex = (logro['color'] ?? '#0E6BA8').toString();
             final color = _hexToColor(colorHex);
+            final locked = logro['locked'] == true;
 
-            return Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [color.withOpacity(0.12), color.withOpacity(0.32)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: color.withOpacity(0.3)),
-                boxShadow: [
-                  BoxShadow(
-                    color: color.withOpacity(0.18),
-                    blurRadius: 10,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 78,
-                    height: 78,
+            return Stack(
+              children: [
+                Opacity(
+                  opacity: locked ? 0.35 : 1,
+                  child: Container(
                     decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white.withOpacity(0.88),
-                    ),
-                    child: Center(
-                      child: asset.isNotEmpty
-                          ? ClipOval(
-                              child: Image.asset(
-                                asset,
-                                width: 70,
-                                height: 70,
-                                cacheWidth: 140,
-                                cacheHeight: 140,
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                          : Icon(_iconFromString(icono), color: color, size: 28),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    child: Text(
-                      titulo,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF1E2026),
-                        fontSize: 12,
+                      gradient: LinearGradient(
+                        colors: [color.withOpacity(0.12), color.withOpacity(0.32)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: color.withOpacity(0.3)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: color.withOpacity(0.18),
+                          blurRadius: 10,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 78,
+                          height: 78,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withOpacity(0.88),
+                          ),
+                          child: Center(
+                            child: asset.isNotEmpty
+                                ? ClipOval(
+                                    child: Image.asset(
+                                      asset,
+                                      width: 70,
+                                      height: 70,
+                                      cacheWidth: 140,
+                                      cacheHeight: 140,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )
+                                : Icon(_iconFromString(icono), color: color, size: 28),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 6),
+                          child: Text(
+                            titulo,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF1E2026),
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+                if (locked)
+                  const Positioned(
+                    right: 8,
+                    top: 8,
+                    child: Icon(Icons.lock, size: 18, color: Color(0xFF6B7280)),
+                  ),
+              ],
             );
           },
         ),
