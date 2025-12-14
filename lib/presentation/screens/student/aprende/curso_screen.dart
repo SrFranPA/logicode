@@ -181,13 +181,13 @@ class _CursoScreenState extends State<CursoScreen> {
                     children: [
                       Row(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE9EEF7),
-                              shape: BoxShape.circle,
+                          SizedBox(
+                            width: 78,
+                            height: 78,
+                            child: Image.asset(
+                              'assets/images/mascota/leccion4.png',
+                              fit: BoxFit.contain,
                             ),
-                            child: const Icon(Icons.menu_book, color: tomato),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -224,81 +224,6 @@ class _CursoScreenState extends State<CursoScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.06),
-                        blurRadius: 12,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                    border: Border.all(color: Colors.black.withOpacity(0.03)),
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              const Text(
-                                'Vidas',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  color: Color(0xFF2C1B0E),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Row(
-                                children: List.generate(
-                                  5,
-                                  (i) => Padding(
-                                    padding: EdgeInsets.only(left: i == 0 ? 0 : 6),
-                                    child: Icon(
-                                      Icons.favorite,
-                                      size: 18,
-                                      color: i < _lives ? tomato : Colors.black26,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              const Text(
-                                'Progreso',
-                                style: TextStyle(
-                                  color: Color(0xFF2C1B0E),
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              SizedBox(
-                                width: 140,
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: LinearProgressIndicator(
-                                    value: progreso,
-                                    minHeight: 8,
-                                    backgroundColor: tomato.withOpacity(0.12),
-                                    color: tomato,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
                 const SizedBox(height: 14),
                 const Text(
                   'Lecciones',
@@ -367,22 +292,8 @@ class _CursoScreenState extends State<CursoScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                          decoration: BoxDecoration(
-                                            color: Colors.white.withOpacity(unlocked ? 0.55 : 0.35),
-                                            borderRadius: BorderRadius.circular(12),
-                                          ),
-                                          child: Text(
-                                            'Paso ${i + 1}',
-                                            style: const TextStyle(
-                                              color: Color(0xFF2C1B0E),
-                                              fontWeight: FontWeight.w800,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ),
+                                      children: const [
+                                        SizedBox.shrink(),
                                       ],
                                     ),
                                     const SizedBox(height: 6),

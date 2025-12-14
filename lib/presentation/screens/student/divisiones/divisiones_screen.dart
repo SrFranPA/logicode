@@ -55,7 +55,7 @@ class _DivisionesScreenState extends State<DivisionesScreen> {
         estado: 'En curso',
         color: accent,
         xpMin: 0,
-        asset: 'assets/images/recolector.png',
+        asset: 'assets/images/medallas/recolector.png',
       ),
       _DivisionCardData(
         nombre: 'Division Gamma',
@@ -63,7 +63,7 @@ class _DivisionesScreenState extends State<DivisionesScreen> {
         estado: 'Siguiente parada',
         color: accentAlt,
         xpMin: 500,
-        asset: 'assets/images/arquitecto.png',
+        asset: 'assets/images/medallas/arquitecto.png',
       ),
       _DivisionCardData(
         nombre: 'Division Delta',
@@ -71,7 +71,7 @@ class _DivisionesScreenState extends State<DivisionesScreen> {
         estado: 'Objetivo a largo plazo',
         color: const Color(0xFFE56E1D),
         xpMin: 1000,
-        asset: 'assets/images/explorador.png',
+        asset: 'assets/images/medallas/explorador.png',
       ),
     ];
 
@@ -130,8 +130,10 @@ class _DivisionesScreenState extends State<DivisionesScreen> {
                           ? ClipOval(
                               child: Image.asset(
                                 currentAsset,
-                                width: 78,
-                                height: 78,
+                                width: 64,
+                                height: 64,
+                                cacheWidth: 128,
+                                cacheHeight: 128,
                                 fit: BoxFit.cover,
                               ),
                             )
@@ -232,7 +234,7 @@ class _DivisionesScreenState extends State<DivisionesScreen> {
                     SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Completa lecciones y practicas para sumar XP. Las divisiones se actualizan automaticamente.',
+                        'Completa lecciones y refuerzo para sumar XP. Las divisiones se actualizan automaticamente.',
                         style: TextStyle(color: Colors.white, fontSize: 13),
                       ),
                     ),
@@ -523,8 +525,8 @@ class _DivisionCard extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            height: 78,
-            width: 78,
+            height: 70,
+            width: 70,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: data.color.withOpacity(0.18),
@@ -534,8 +536,10 @@ class _DivisionCard extends StatelessWidget {
                 ? ClipOval(
                     child: Image.asset(
                       data.asset!,
-                      width: 72,
-                      height: 72,
+                      width: 62,
+                      height: 62,
+                      cacheWidth: 124,
+                      cacheHeight: 124,
                       fit: BoxFit.cover,
                     ),
                   )

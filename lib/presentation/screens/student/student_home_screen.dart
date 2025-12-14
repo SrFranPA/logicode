@@ -7,10 +7,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'ajustes/student_settings_screen.dart';
-import 'aprende/aprende_screen.dart';
-import 'divisiones/divisiones_screen.dart';
-import 'practicas/student_practicas_screen.dart';
-import 'perfil/student_profile_screen.dart';
+  import 'aprende/aprende_screen.dart';
+  import 'divisiones/divisiones_screen.dart';
+  import 'practicas/student_practicas_screen.dart';
+  import 'perfil/student_profile_screen.dart';
 
 class StudentHomeScreen extends StatefulWidget {
   const StudentHomeScreen({super.key});
@@ -35,12 +35,12 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
       activeIcon: Icons.emoji_events,
       label: 'Divisiones',
     ),
-    _NavItem(
-      screen: StudentPracticasScreen(),
-      icon: Icons.fact_check_outlined,
-      activeIcon: Icons.fact_check,
-      label: 'Practicas',
-    ),
+      _NavItem(
+        screen: StudentPracticasScreen(),
+        icon: Icons.fact_check_outlined,
+        activeIcon: Icons.fact_check,
+        label: 'Refuerzo',
+      ),
     _NavItem(
       screen: StudentProfileScreen(),
       icon: Icons.person_outline,

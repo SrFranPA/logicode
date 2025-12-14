@@ -329,7 +329,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                 _StatTile(
                   title: 'Division actual',
                   value: divisionActual,
-                  subtitle: 'Sube con XP y practicas',
+                  subtitle: 'Sube con XP y refuerzo',
                   icon: Icons.rocket_launch,
                   accent: accent,
                 ),
@@ -425,39 +425,39 @@ class _AchievementsSection extends StatelessWidget {
       // Divisiones
       {
         'titulo': 'Recolector',
-        'asset': 'assets/images/recolector.png',
+        'asset': 'assets/images/medallas/recolector.png',
         'color': '#FFA451',
         'categoria': 'divisiones',
         'desc': 'Completa retos iniciales de division.'
       },
       {
         'titulo': 'Arquitecto',
-        'asset': 'assets/images/arquitecto.png',
+        'asset': 'assets/images/medallas/arquitecto.png',
         'color': '#FF8A3D',
         'categoria': 'divisiones',
         'desc': 'Diseña tu ruta y sube de nivel.'
       },
       {
         'titulo': 'Explorador',
-        'asset': 'assets/images/explorador.png',
+        'asset': 'assets/images/medallas/explorador.png',
         'color': '#4CAF50',
         'categoria': 'divisiones',
         'desc': 'Descubre nuevas divisiones.'
       },
       // Cursos (curso1-curso9)
-      {'titulo': 'Curso 1', 'asset': 'assets/images/curso1.png', 'color': '#FFB74D', 'categoria': 'cursos', 'desc': 'Completa el curso 1.'},
-      {'titulo': 'Curso 2', 'asset': 'assets/images/curso2.png', 'color': '#FF9800', 'categoria': 'cursos', 'desc': 'Completa el curso 2.'},
-      {'titulo': 'Curso 3', 'asset': 'assets/images/curso3.png', 'color': '#F57C00', 'categoria': 'cursos', 'desc': 'Completa el curso 3.'},
-      {'titulo': 'Curso 4', 'asset': 'assets/images/curso4.png', 'color': '#FB8C00', 'categoria': 'cursos', 'desc': 'Completa el curso 4.'},
-      {'titulo': 'Curso 5', 'asset': 'assets/images/curso5.png', 'color': '#FFB300', 'categoria': 'cursos', 'desc': 'Completa el curso 5.'},
-      {'titulo': 'Curso 6', 'asset': 'assets/images/curso6.png', 'color': '#FFA726', 'categoria': 'cursos', 'desc': 'Completa el curso 6.'},
-      {'titulo': 'Curso 7', 'asset': 'assets/images/curso7.png', 'color': '#FF7043', 'categoria': 'cursos', 'desc': 'Completa el curso 7.'},
-      {'titulo': 'Curso 8', 'asset': 'assets/images/curso8.png', 'color': '#FF6F00', 'categoria': 'cursos', 'desc': 'Completa el curso 8.'},
-      {'titulo': 'Curso 9', 'asset': 'assets/images/curso9.png', 'color': '#F9A825', 'categoria': 'cursos', 'desc': 'Completa el curso 9.'},
+      {'titulo': 'Curso 1', 'asset': 'assets/images/medallas/curso1.png', 'color': '#FFB74D', 'categoria': 'cursos', 'desc': 'Completa el curso 1.'},
+      {'titulo': 'Curso 2', 'asset': 'assets/images/medallas/curso2.png', 'color': '#FF9800', 'categoria': 'cursos', 'desc': 'Completa el curso 2.'},
+      {'titulo': 'Curso 3', 'asset': 'assets/images/medallas/curso3.png', 'color': '#F57C00', 'categoria': 'cursos', 'desc': 'Completa el curso 3.'},
+      {'titulo': 'Curso 4', 'asset': 'assets/images/medallas/curso4.png', 'color': '#FB8C00', 'categoria': 'cursos', 'desc': 'Completa el curso 4.'},
+      {'titulo': 'Curso 5', 'asset': 'assets/images/medallas/curso5.png', 'color': '#FFB300', 'categoria': 'cursos', 'desc': 'Completa el curso 5.'},
+      {'titulo': 'Curso 6', 'asset': 'assets/images/medallas/curso6.png', 'color': '#FFA726', 'categoria': 'cursos', 'desc': 'Completa el curso 6.'},
+      {'titulo': 'Curso 7', 'asset': 'assets/images/medallas/curso7.png', 'color': '#FF7043', 'categoria': 'cursos', 'desc': 'Completa el curso 7.'},
+      {'titulo': 'Curso 8', 'asset': 'assets/images/medallas/curso8.png', 'color': '#FF6F00', 'categoria': 'cursos', 'desc': 'Completa el curso 8.'},
+      {'titulo': 'Curso 9', 'asset': 'assets/images/medallas/curso9.png', 'color': '#F9A825', 'categoria': 'cursos', 'desc': 'Completa el curso 9.'},
       // Coleccionista
       {
         'titulo': 'Rey',
-        'asset': 'assets/images/rey.png',
+        'asset': 'assets/images/medallas/rey.png',
         'color': '#FFC107',
         'categoria': 'coleccion',
         'desc': 'Colecciona todas las medallas clave.'
@@ -668,8 +668,8 @@ class _CategoryGrid extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    width: 98,
-                    height: 98,
+                    width: 78,
+                    height: 78,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.white.withOpacity(0.88),
@@ -679,8 +679,10 @@ class _CategoryGrid extends StatelessWidget {
                           ? ClipOval(
                               child: Image.asset(
                                 asset,
-                                width: 82,
-                                height: 82,
+                                width: 70,
+                                height: 70,
+                                cacheWidth: 140,
+                                cacheHeight: 140,
                                 fit: BoxFit.cover,
                               ),
                             )

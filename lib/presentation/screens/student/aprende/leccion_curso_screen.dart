@@ -34,12 +34,25 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
   String? _userId;
   bool sinVidas = false;
   int _xpPendiente = 0;
+  String _leccionImage = 'assets/images/mascota/leccion1.png';
 
   @override
   void initState() {
     super.initState();
     _userId = FirebaseAuth.instance.currentUser?.uid;
+    _leccionImage = _randomLeccionImage();
     _initData();
+  }
+
+  String _randomLeccionImage() {
+    final imgs = [
+      'assets/images/mascota/leccion1.png',
+      'assets/images/mascota/leccion2.png',
+      'assets/images/mascota/leccion3.png',
+      'assets/images/mascota/leccion4.png',
+    ];
+    imgs.shuffle();
+    return imgs.first;
   }
 
   Future<void> _initData() async {
@@ -312,14 +325,6 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
             titleSpacing: 0,
             title: Row(
               children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () async {
-                    final exit = await confirmExit();
-                    if (exit && mounted) Navigator.pop(context);
-                  },
-                ),
-                const SizedBox(width: 4),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
@@ -327,9 +332,8 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.menu_book, color: Colors.white, size: 18),
-                      const SizedBox(width: 8),
                       Text(
                         widget.leccionTitulo,
                         style: const TextStyle(
@@ -374,17 +378,8 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                         ),
                       ],
                     ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: widget.accentColor.withOpacity(0.14),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(Icons.menu_book, color: widget.accentColor),
-                        ),
-                        const SizedBox(width: 12),
+                  child: Row(
+                    children: [
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -393,6 +388,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                                 widget.leccionTitulo,
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w900,
+                                  fontSize: 18,
                                   color: Color(0xFF2C1B0E),
                                 ),
                               ),
@@ -402,11 +398,18 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                                 style: const TextStyle(
                                   color: Color(0xFF5A5248),
                                   fontWeight: FontWeight.w700,
-                                  fontSize: 12,
+                                  fontSize: 13,
                                 ),
                               ),
                             ],
                           ),
+                        ),
+                        const SizedBox(width: 12),
+                        Image.asset(
+                          _leccionImage,
+                          width: 88,
+                          height: 88,
+                          fit: BoxFit.contain,
                         ),
                       ],
                     ),
@@ -451,7 +454,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                           borderRadius: BorderRadius.circular(10),
                           child: LinearProgressIndicator(
                             value: progreso,
-                            minHeight: 8,
+                            minHeight: 5,
                             backgroundColor: tomato.withOpacity(0.15),
                             color: tomato,
                           ),
