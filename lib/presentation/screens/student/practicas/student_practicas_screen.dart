@@ -12,22 +12,7 @@ class StudentPracticasScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFFCF8F2),
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: const Color(0xFF1E2433),
-        elevation: 0,
-        centerTitle: true,
-        title: const Text(
-          'Refuerzo',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w800,
-            fontSize: 18,
-            letterSpacing: 0.2,
-          ),
-        ),
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
+      appBar: null,
       body: uid == null
           ? const Center(child: Text('Inicia sesion para ver tu refuerzo'))
           : StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
@@ -39,24 +24,40 @@ class StudentPracticasScreen extends StatelessWidget {
                 final data = snap.data!.data() ?? {};
                 final errores = (data['errores'] as List?)?.cast<Map?>() ?? [];
 
-                if (errores.isEmpty) {
-                  return const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(24),
-                      child: Text(
-                        'Sin refuerzo pendiente. Sigue practicando para mejorar.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Color(0xFF283347), fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                  );
-                }
+                final placeholders = [
+                  {
+                    'pregunta': '¿Cuál es la salida de este código al recorrer un arreglo?',
+                    'curso': 'Estructuras de datos',
+                    'leccion': 'Arreglos y listas',
+                    'dificultad': 'Medio',
+                  },
+                  {
+                    'pregunta': 'Completa el if/else para validar el ingreso de un usuario.',
+                    'curso': 'Condicionales',
+                    'leccion': 'Validaciones básicas',
+                    'dificultad': 'Fácil',
+                  },
+                  {
+                    'pregunta': 'Ordena los pasos para crear un bucle while controlado por contador.',
+                    'curso': 'Bucles',
+                    'leccion': 'While y control',
+                    'dificultad': 'Medio',
+                  },
+                ];
+
+                final items = errores.isNotEmpty ? errores : placeholders;
 
                 return ListView.builder(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-                  itemCount: errores.length,
+                  itemCount: items.length + 1,
                   itemBuilder: (context, i) {
-                    final e = (errores[i] ?? {}) as Map;
+                    if (i == 0) {
+                      return _HeroPractica(
+                        accent: accent,
+                        total: items.length,
+                      );
+                    }
+                    final e = (items[i - 1] ?? {}) as Map;
                     final pregunta = (e['pregunta'] ?? 'Pregunta pendiente').toString();
                     final curso = (e['curso'] ?? '').toString();
                     final leccion = (e['leccion'] ?? '').toString();
@@ -73,6 +74,88 @@ class StudentPracticasScreen extends StatelessWidget {
                 );
               },
             ),
+    );
+  }
+}
+
+class _HeroPractica extends StatelessWidget {
+  final Color accent;
+  final int total;
+
+  const _HeroPractica({required this.accent, required this.total});
+
+  @override
+  Widget build(BuildContext context) {
+    const images = [
+      'assets/images/mascota/refuerzo1.png',
+      'assets/images/mascota/refuerzo2.png',
+      'assets/images/mascota/refuerzo3.png',
+      
+    ];
+    final imgPath = images[(total % images.length).clamp(0, images.length - 1)];
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1E2433), Color(0xFF2F3A4F)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.16),
+            blurRadius: 16,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.16),
+              shape: BoxShape.circle,
+            ),
+            child: ClipOval(
+              child: Image.asset(
+                imgPath,
+                width: 68,
+                height: 68,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Prácticas dirigidas',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 17,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Refuerza las preguntas falladas con nuevos ejercicios del curso.',
+                  style: const TextStyle(
+                    color: Color(0xFFE6EAF5),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -96,15 +179,22 @@ class _RefuerzoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withOpacity(0.25)),
+        gradient: LinearGradient(
+          colors: [
+            color.withOpacity(0.12),
+            color.withOpacity(0.03),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withOpacity(0.35)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 12,
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 14,
             offset: const Offset(0, 6),
           ),
         ],
@@ -114,32 +204,36 @@ class _RefuerzoCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.14),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  dificultad,
-                  style: TextStyle(
-                    color: color,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 12,
-                  ),
-                ),
+              _Tag(
+                label: dificultad,
+                color: color,
+                icon: Icons.flag_rounded,
               ),
               const Spacer(),
-              const Icon(Icons.refresh, color: Color(0xFF4A6275)),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.07),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const Icon(Icons.refresh, color: Color(0xFF1E2433)),
+              ),
             ],
           ),
           const SizedBox(height: 10),
           Text(
             titulo,
             style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF12314D),
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+              color: Color(0xFF0F172A),
             ),
           ),
           if (etiqueta.isNotEmpty)
@@ -148,9 +242,9 @@ class _RefuerzoCard extends StatelessWidget {
               child: Text(
                 etiqueta,
                 style: const TextStyle(
-                  color: Color(0xFF4A6275),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF475569),
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
             ),
@@ -158,25 +252,72 @@ class _RefuerzoCard extends StatelessWidget {
           Text(
             descripcion,
             style: const TextStyle(
-              color: Color(0xFF4A6275),
-              fontSize: 12,
+              color: Color(0xFF1F2937),
+              fontSize: 13,
               height: 1.3,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           Row(
-            children: const [
-              Icon(Icons.lightbulb, color: Color(0xFF4A6275), size: 18),
-              SizedBox(width: 6),
-              Text(
-                'Repasar pregunta',
-                style: TextStyle(
-                  color: Color(0xFF12314D),
-                  fontWeight: FontWeight.w700,
-                  fontSize: 12,
-                ),
+            children: [
+              _Tag(
+                label: 'Repasar pregunta',
+                color: color,
+                icon: Icons.lightbulb_rounded,
+              ),
+              const SizedBox(width: 8),
+              _Tag(
+                label: 'Práctica guiada',
+                color: const Color(0xFF0EA5E9),
+                icon: Icons.auto_awesome,
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Tag extends StatelessWidget {
+  final String label;
+  final Color color;
+  final IconData icon;
+
+  const _Tag({
+    required this.label,
+    required this.color,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.35)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 16),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.w800,
+              fontSize: 12,
+            ),
           ),
         ],
       ),

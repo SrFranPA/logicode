@@ -166,7 +166,9 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
     });
     if (isCorrect) {
       _aciertos++;
-      _xpPendiente += _xpPorDificultad(preguntaActual.dificultad);
+      if (!_esTestFinal) {
+        _xpPendiente += _xpPorDificultad(preguntaActual.dificultad);
+      }
     } else if (lives > 0 && !_esTestFinal) {
       _consumirVida();
     }
@@ -262,7 +264,9 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
     if (index + 1 >= preguntas.length) {
       final aprobado = !_esTestFinal || _aciertos >= 7;
       if (aprobado) {
-        await _guardarXpPendiente();
+        if (!_esTestFinal) {
+          await _guardarXpPendiente();
+        }
         if (_esTestFinal) {
           await _registrarResultadoFinal(true);
           await _mostrarResultadoFinal(true);
