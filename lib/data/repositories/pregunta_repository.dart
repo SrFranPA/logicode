@@ -39,37 +39,52 @@ class PreguntaRepository {
     await db.collection("banco_preguntas").doc(id).delete();
   }
 
-  /// PRETEST: obtener hasta 10 preguntas; si hay muy difíciles las prioriza, si no, toma cualquieras
+  /// PRETEST: seleccionar hasta 10 preguntas aleatorias priorizando 1 por curso (si existe)
   Future<List<Pregunta>> cargarPreguntasPretest() async {
-    // Intentar traer preguntas "Muy dificil" (texto normalizado)
-    final snapDificil = await db
+    final snap = await db
         .collection("banco_preguntas")
-        .where("dificultad", isEqualTo: "Muy dificil")
-        .limit(50)
+        .orderBy("fecha_creacion", descending: true)
+        .limit(400)
         .get();
 
-    List<Pregunta> candidatas = snapDificil.docs.map((e) => Pregunta.fromDoc(e)).toList();
+    final all = snap.docs.map((e) => Pregunta.fromDoc(e)).toList();
+    if (all.isEmpty) return [];
 
-    // Si no hay suficientes, traer otras cualquiera para rellenar
-    if (candidatas.length < 10) {
-      final snapTodas = await db
-          .collection("banco_preguntas")
-          .orderBy("fecha_creacion", descending: true)
-          .limit(200)
-          .get();
-      final todas = snapTodas.docs.map((e) => Pregunta.fromDoc(e)).toList();
-      // evitar duplicados por id
-      final ids = candidatas.map((p) => p.id).toSet();
-      for (final p in todas) {
-        if (ids.contains(p.id)) continue;
-        candidatas.add(p);
-      }
+    int _score(String? dif) {
+      final d = (dif ?? "").toLowerCase();
+      if (d.contains("muy dificil")) return 5;
+      if (d.contains("dificil")) return 4;
+      if (d.contains("medio")) return 3;
+      if (d.contains("facil")) return 2;
+      return 1;
     }
 
-    candidatas.shuffle();
-    if (candidatas.length > 10) {
-      return candidatas.sublist(0, 10);
+    final byCurso = <String, List<Pregunta>>{};
+    for (final p in all) {
+      byCurso.putIfAbsent(p.cursoId, () => []).add(p);
     }
-    return candidatas;
+
+    final seleccion = <Pregunta>[];
+
+    // Tomar una por curso, priorizando dificultad alta y variando orden
+    for (final list in byCurso.values) {
+      list.sort((a, b) => _score(b.dificultad).compareTo(_score(a.dificultad)));
+      list.shuffle();
+      list.sort((a, b) => _score(b.dificultad).compareTo(_score(a.dificultad)));
+      seleccion.add(list.first);
+      if (seleccion.length >= 10) break; // si hay más de 10 cursos, cortamos en 10
+    }
+
+    // Rellenar hasta 10 con el resto más difíciles
+    final resto = all.where((p) => !seleccion.any((s) => s.id == p.id)).toList();
+    resto.sort((a, b) => _score(b.dificultad).compareTo(_score(a.dificultad)));
+    resto.shuffle();
+    for (final p in resto) {
+      if (seleccion.length >= 10) break;
+      seleccion.add(p);
+    }
+
+    seleccion.shuffle();
+    return seleccion;
   }
 }
