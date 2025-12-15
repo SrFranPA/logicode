@@ -417,8 +417,17 @@ class _CursoScreenState extends State<CursoScreen> {
                         borderRadius: BorderRadius.circular(14),
                       ),
                       elevation: 4,
-                    ),
+                  ),
                     onPressed: () async {
+                      final allLessonsDone = _completed.every((e) => e);
+                      if (!allLessonsDone) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Completa todas las lecciones antes de hacer el test final.'),
+                          ),
+                        );
+                        return;
+                      }
                       if (_lives <= 0) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(

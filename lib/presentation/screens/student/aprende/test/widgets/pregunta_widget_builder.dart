@@ -52,6 +52,7 @@ Widget buildQuestionWidget({
       return FillBlankQuestionWidget(
         enunciado: pregunta.enunciado,
         blanks: _asStringList(data["blanks"]),
+        opcionesExtra: _asStringList(data["opciones"]) + _asStringList(data["distractores"]),
         retroalimentacion: data["retroalimentacion"] ?? "",
         onResult: onResult,
       );

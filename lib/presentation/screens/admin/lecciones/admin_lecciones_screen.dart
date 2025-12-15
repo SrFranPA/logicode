@@ -7,6 +7,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../data/models/pregunta_model.dart';
 import '../../../../blocs/admin_preguntas/admin_preguntas_cubit.dart';
 import '../../../../blocs/admin_preguntas/admin_preguntas_state.dart';
 import 'plantillas/chip_select_editor.dart';
@@ -64,6 +65,18 @@ class _AdminLeccionesScreenState extends State<AdminLeccionesScreen> {
     return buffer.toString();
   }
 
+  List<Pregunta> _dedupPreguntas(List<Pregunta> source) {
+    final seen = <String>{};
+    final result = <Pregunta>[];
+    for (final p in source) {
+      final key = '${p.cursoId.toLowerCase()}|${p.enunciado.toLowerCase()}';
+      if (seen.add(key)) {
+        result.add(p);
+      }
+    }
+    return result;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -86,7 +99,7 @@ class _AdminLeccionesScreenState extends State<AdminLeccionesScreen> {
                   }
 
                   if (state is AdminPreguntasLoaded) {
-                    final preguntas = state.preguntas;
+                    final preguntas = _dedupPreguntas(state.preguntas);
 
                     if (preguntas.isEmpty) {
                       widget.lessonCountNotifier?.value = 0;

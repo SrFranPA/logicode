@@ -17,6 +17,7 @@ class _FillBlankEditorState extends State<FillBlankEditor> {
 
   final _enunciadoCtrl = TextEditingController();
   final List<TextEditingController> _blanks = [];
+  final List<TextEditingController> _extras = [];
   final retroCtrl = TextEditingController();
 
   bool loading = true;
@@ -41,6 +42,10 @@ class _FillBlankEditorState extends State<FillBlankEditor> {
         final blanksList = List<String>.from(decoded["blanks"] ?? []);
         for (final word in blanksList) {
           _blanks.add(TextEditingController(text: word));
+        }
+        final extrasList = List<String>.from(decoded["opciones"] ?? decoded["distractores"] ?? []);
+        for (final opt in extrasList) {
+          _extras.add(TextEditingController(text: opt));
         }
         retroCtrl.text = decoded["retroalimentacion"] ?? "";
       }
@@ -80,6 +85,8 @@ class _FillBlankEditorState extends State<FillBlankEditor> {
 
     final blanksValues =
         _blanks.map((c) => c.text.trim()).where((c) => c.isNotEmpty).toList();
+    final extrasValues =
+        _extras.map((c) => c.text.trim()).where((c) => c.isNotEmpty).toList();
 
     if (blanksValues.length != _cantidadEspacios) {
       return _error(
@@ -94,6 +101,7 @@ class _FillBlankEditorState extends State<FillBlankEditor> {
     final jsonData = {
       "tipo": "completa_espacio",
       "blanks": blanksValues,
+      "opciones": extrasValues,
       "retroalimentacion": retro,
     };
 
@@ -236,6 +244,69 @@ class _FillBlankEditorState extends State<FillBlankEditor> {
                               borderSide: BorderSide.none,
                             ),
                           ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _cardSection(
+                        title: "Opciones erróneas (distractores)",
+                        subtitle:
+                            "Agrega palabras que aparecerán para arrastrar y confundir al estudiante.",
+                        child: Column(
+                          children: [
+                            ...List.generate(_extras.length, (i) {
+                              return Container(
+                                margin: EdgeInsets.only(top: i == 0 ? 0 : 10),
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Colors.black.withOpacity(0.06),
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: TextField(
+                                        controller: _extras[i],
+                                        decoration: InputDecoration(
+                                          labelText: "Distractor ${i + 1}",
+                                          filled: true,
+                                          fillColor: Colors.white,
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(10),
+                                            borderSide: BorderSide.none,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                                      onPressed: () {
+                                        setState(() {
+                                          _extras.removeAt(i);
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }),
+                            const SizedBox(height: 10),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: TextButton.icon(
+                                onPressed: () {
+                                  setState(() {
+                                    _extras.add(TextEditingController());
+                                  });
+                                },
+                                icon: const Icon(Icons.add),
+                                label: const Text("Agregar opcion errónea"),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 18),
