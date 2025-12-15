@@ -266,11 +266,11 @@ class _StudentHudState extends State<_StudentHud> {
     }
 
     final elapsedSecs = now.difference(last).inSeconds;
-    if (elapsedSecs < 60) return; // menos de 1 min
+    if (elapsedSecs < 120) return; // menos de 2 min
 
-    final cycles = elapsedSecs ~/ 60;
+    final cycles = elapsedSecs ~/ 120; // 1 vida cada 2 min
     final newVidas = (vidas + cycles).clamp(0, 5);
-    final newLast = newVidas == 5 ? now : last.add(Duration(minutes: cycles));
+    final newLast = newVidas == 5 ? now : last.add(Duration(minutes: cycles * 2));
 
     await docRef.update({
       'vidas': newVidas,

@@ -115,6 +115,7 @@ class _CursoScreenState extends State<CursoScreen> {
   }
 
   Future<void> _openLesson(int i) async {
+    await _loadLives();
     if (_lives <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

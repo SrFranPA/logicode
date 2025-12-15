@@ -171,6 +171,9 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
       }
     } else if (lives > 0 && !_esTestFinal) {
       _consumirVida();
+      if (lives - 1 <= 0) {
+        _mostrarSinVidas();
+      }
     }
   }
 
@@ -237,28 +240,224 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
   Future<void> _mostrarResultadoFinal(bool aprobado) async {
     if (!mounted) return;
     final puntaje = '$_aciertos/${preguntas.length}';
+    final img = aprobado
+        ? 'assets/images/mascota/refuerzo2.png'
+        : 'assets/images/mascota/leccion3.png';
+    final mensaje = aprobado
+        ? '¡Gran trabajo! Superaste el test con puntaje $puntaje. Ganaste tu medalla y desbloqueaste el siguiente curso.'
+        : 'No pasa nada: necesitas 7 aciertos. Repasa tus notas, intenta de nuevo y verás cómo mejoras.';
+    final motivacion = aprobado
+        ? 'Sigue este ritmo, cada logro te acerca a tu meta.'
+        : 'Cada intento suma. Practica y volverás más fuerte.';
+
     await showDialog<void>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: Text(aprobado ? '¡Test aprobado!' : 'Test no aprobado'),
-        content: Text(
-          aprobado
-              ? 'Superaste el test final con puntaje $puntaje. Aprobado: ganaste una medalla y desbloqueaste el siguiente curso.'
-              : 'Necesitas al menos 7 aciertos. Vuelve y practica las lecciones para reintentar el test final.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Aceptar'),
+      barrierDismissible: true,
+      builder: (_) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset(
+                img,
+                width: 160,
+                height: 160,
+                fit: BoxFit.contain,
+              ),
+              const SizedBox(height: 14),
+              Text(
+                aprobado ? '¡Test aprobado!' : 'Sigue practicando',
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 18,
+                  color: aprobado ? const Color(0xFF166534) : const Color(0xFF92400E),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                mensaje,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Color(0xFF1F2937),
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13.5,
+                  height: 1.35,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                motivacion,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Color(0xFF4B5563),
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12.5,
+                ),
+              ),
+              const SizedBox(height: 14),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: aprobado ? const Color(0xFF16A34A) : const Color(0xFFF59E0B),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text(
+                    'Entendido',
+                    style: TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _mostrarLeccionCompletada() async {
+    if (!mounted) return;
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      builder: (_) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ClipOval(
+                child: Image.asset(
+                  'assets/images/mascota/refuerzo3.png',
+                  width: 120,
+                  height: 120,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                '¡Genial, lo lograste!',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 18,
+                  color: Color(0xFF166534),
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Sigue con la siguiente lección, tu progreso se está notando.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Color(0xFF1F2937),
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13.5,
+                  height: 1.35,
+                ),
+              ),
+              const SizedBox(height: 14),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF16A34A),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text(
+                    'Continuar',
+                    style: TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _mostrarSinVidas() async {
+    if (!mounted) return;
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      builder: (_) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ClipOval(
+                child: Image.asset(
+                  'assets/images/mascota/leccion2.png',
+                  width: 120,
+                  height: 120,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Sin vidas disponibles',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 18,
+                  color: Color(0xFF92400E),
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Tómate un respiro y vuelve a intentarlo. Cada intento te acerca a dominar el tema.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Color(0xFF1F2937),
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13.5,
+                  height: 1.35,
+                ),
+              ),
+              const SizedBox(height: 14),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    if (Navigator.of(context).canPop()) {
+                      Navigator.of(context).pop(false);
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFF59E0B),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text(
+                    'Entendido',
+                    style: TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
   Future<void> _siguiente() async {
     if (lives == 0 && !_esTestFinal) {
-      Navigator.of(context).pop(false);
+      await _mostrarSinVidas();
       return;
     }
     if (index + 1 >= preguntas.length) {
@@ -272,6 +471,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
           await _mostrarResultadoFinal(true);
         } else {
           await _marcarLeccionCompletada();
+          await _mostrarLeccionCompletada();
         }
         if (mounted) Navigator.of(context).pop(true);
       } else {
@@ -326,7 +526,22 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
             context: context,
             builder: (_) => AlertDialog(
               title: const Text('Salir de la leccion'),
-              content: const Text('Perderas tu progreso actual. Deseas salir?'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.asset(
+                    'assets/images/mascota/salida1.png',
+                    width: 140,
+                    height: 140,
+                    fit: BoxFit.contain,
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Perderas tu progreso actual. Deseas salir?',
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context, false),

@@ -81,6 +81,7 @@ flutter:
     - assets/images/medallas/arquitecto.png
     - assets/images/medallas/explorador.png
     - assets/images/mascota/mascota.png
+    - assets/images/mascota/salida1.png
     - assets/images/mascota/leccion1.png
     - assets/images/mascota/leccion2.png
     - assets/images/mascota/leccion3.png
