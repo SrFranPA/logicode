@@ -77,21 +77,74 @@ class _PretestScreenState extends State<PretestScreen> {
       _finalizado = true;
       showDialog(
         context: context,
-        builder: (ctx) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text('Pretest completado'),
-          content: const Text(
-            'Has finalizado el pretest. Ahora puedes avanzar en tus cursos.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(ctx).pop();
-                Navigator.of(context).pop(true);
-              },
-              child: const Text('Continuar'),
+        barrierDismissible: true,
+        builder: (ctx) => Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset(
+                  'assets/images/mascota/refuerzo2.png',
+                  width: 160,
+                  height: 160,
+                  fit: BoxFit.contain,
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  '¡Pretest completado!',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 18,
+                    color: Color(0xFF166534),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Ahora puedes avanzar en tus cursos. Cada paso suma para llegar lejos.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Color(0xFF1F2937),
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13.5,
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  'Sigue con este impulso, el siguiente reto te espera.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Color(0xFF4B5563),
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12.5,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                      Navigator.of(context).pop(true);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF16A34A),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text(
+                      'Continuar',
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       );
       return;

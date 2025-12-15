@@ -261,11 +261,50 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Image.asset(
-                img,
-                width: 160,
-                height: 160,
-                fit: BoxFit.contain,
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: aprobado
+                        ? [const Color(0xFF22C55E).withOpacity(0.18), const Color(0xFF4ADE80).withOpacity(0.3)]
+                        : [const Color(0xFFF59E0B).withOpacity(0.18), const Color(0xFFFBBF24).withOpacity(0.3)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: aprobado ? const Color(0xFF16A34A) : const Color(0xFFF59E0B),
+                    width: 1.2,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Image.asset(
+                      img,
+                      width: 170,
+                      height: 170,
+                      fit: BoxFit.contain,
+                    ),
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: aprobado ? const Color(0xFF16A34A) : const Color(0xFFF59E0B),
+                        ),
+                      ),
+                      child: Text(
+                        'Puntaje: $puntaje',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          color: aprobado ? const Color(0xFF166534) : const Color(0xFF92400E),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 14),
               Text(
@@ -669,11 +708,11 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: Colors.black.withOpacity(0.04)),
                       boxShadow: [
@@ -719,13 +758,81 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                       ),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 12),
+              ),
+              const SizedBox(height: 12),
+              if (_esTestFinal)
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF1E2433), Color(0xFF2F3A4F)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.12),
+                        blurRadius: 10,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.12),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.flag_rounded, color: Colors.white, size: 22),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const [
+                            Text(
+                              'Desafío final',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 14,
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              'Responde con calma: este reto libera tu medalla y el siguiente curso.',
+                              style: TextStyle(
+                                color: Color(0xFFE6EAF5),
+                                fontWeight: FontWeight.w700,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.asset(
+                          'assets/images/mascota/refuerzo2.png',
+                          width: 64,
+                          height: 64,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              if (_esTestFinal) const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(color: Colors.black.withOpacity(0.04)),
                     boxShadow: [

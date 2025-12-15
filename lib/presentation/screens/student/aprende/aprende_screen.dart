@@ -37,15 +37,10 @@ class AprendeScreen extends StatelessWidget {
 
             int unlockedUntilOrder = 1;
             int highestApprovedOrder = 0;
-            int cursoActualOrder = 0;
 
             for (final c in cursos) {
               final data = c.data();
               final orden = (data['orden'] as num?)?.toInt() ?? 1;
-
-              if (c.id == cursoActualId) {
-                cursoActualOrder = orden;
-              }
 
               final progresoCurso = (progresoCursos[c.id] as Map?) ?? {};
               final finalScore = (progresoCurso['final_score'] as num?)?.toInt() ?? 0;
@@ -57,8 +52,8 @@ class AprendeScreen extends StatelessWidget {
 
             if (highestApprovedOrder > 0) {
               unlockedUntilOrder = highestApprovedOrder + 1;
-            } else if (cursoActualOrder > 0) {
-              unlockedUntilOrder = cursoActualOrder + 1;
+            } else {
+              unlockedUntilOrder = 1; // tras pretest, solo curso 1 disponible
             }
 
             return Container(

@@ -52,6 +52,7 @@ class _CursoScreenState extends State<CursoScreen> {
     _userId = FirebaseAuth.instance.currentUser?.uid;
     _loadLives();
     _loadProgress();
+    Future.microtask(_mostrarMotivacion);
   }
 
   Future<void> _loadLives() async {
@@ -66,6 +67,69 @@ class _CursoScreenState extends State<CursoScreen> {
         _lives = vidas.clamp(0, 5);
       });
     }
+  }
+
+  Future<void> _mostrarMotivacion() async {
+    if (!mounted) return;
+    showDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      builder: (_) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 26, vertical: 24),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset(
+                'assets/images/mascota/refuerzo1.png',
+                width: 150,
+                height: 150,
+                fit: BoxFit.contain,
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                '¡Vamos por este curso!',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 18,
+                  color: Color(0xFF0F172A),
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Comienza fuerte: cada leccion te acerca a tu meta. ¡Tu puedes!',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Color(0xFF1F2937),
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13.5,
+                  height: 1.35,
+                ),
+              ),
+              const SizedBox(height: 14),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFA451),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text(
+                    'Comenzar',
+                    style: TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _loadProgress() async {
@@ -408,7 +472,6 @@ class _CursoScreenState extends State<CursoScreen> {
                     },
                   ),
                 ),
-                const SizedBox(height: 18),
                 SizedBox(
                   width: double.infinity,
                   height: 54,
@@ -418,7 +481,7 @@ class _CursoScreenState extends State<CursoScreen> {
                       color: Colors.white,
                     ),
                     label: Text(
-                      _finalAprobado ? 'Test final aprobado' : 'Test final',
+                      _finalAprobado ? 'Repetir test final' : 'Test final',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
@@ -432,15 +495,8 @@ class _CursoScreenState extends State<CursoScreen> {
                       ),
                       elevation: 4,
                   ),
-                    onPressed: _finalAprobado
-                        ? () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Ya aprobaste el test final (puntaje: $_finalScore).'),
-                              ),
-                            );
-                          }
-                        : () async {
+                    onPressed: () async {
+                      await _loadLives();
                       final allLessonsDone = _completed.every((e) => e);
                       if (!allLessonsDone) {
                         ScaffoldMessenger.of(context).showSnackBar(
