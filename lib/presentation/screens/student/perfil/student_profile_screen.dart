@@ -10,9 +10,12 @@ class StudentProfileScreen extends StatefulWidget {
 }
 
 class _StudentProfileScreenState extends State<StudentProfileScreen> {
+  Future<QuerySnapshot<Map<String, dynamic>>>? _cursosFuture;
+
   @override
   void initState() {
     super.initState();
+    _cursosFuture = FirebaseFirestore.instance.collection('cursos').orderBy('orden').get();
     _updateStreak();
   }
 
@@ -319,25 +322,34 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                _StatTile(
-                  title: 'Racha activa',
-                  value: '$racha d',
-                  subtitle: 'Dias seguidos aprendiendo',
-                  icon: Icons.bolt,
-                  accent: accent,
+                Row(
+                  children: [
+                    Expanded(
+                      child: _StatTile(
+                        title: 'Racha activa',
+                        value: '$racha d',
+                        subtitle: '',
+                        icon: Icons.local_fire_department,
+                        accent: accent,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _StatTile(
+                        title: 'Total de XP',
+                        value: '$xp',
+                        subtitle: '',
+                        icon: Icons.grade_rounded,
+                        accent: accent,
+                      ),
+                    ),
+                  ],
                 ),
                 _StatTile(
                   title: 'Division actual',
                   value: divisionActual,
                   subtitle: 'Sube con XP y refuerzo',
                   icon: Icons.rocket_launch,
-                  accent: accent,
-                ),
-                _StatTile(
-                  title: 'Total de XP',
-                  value: '$xp',
-                  subtitle: 'Sumado en cursos y retos',
-                  icon: Icons.stacked_bar_chart,
                   accent: accent,
                 ),
                 const SizedBox(height: 14),
@@ -350,7 +362,16 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                _AchievementsSection(userData: data),
+                FutureBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                  future: _cursosFuture ??= FirebaseFirestore.instance.collection('cursos').orderBy('orden').get(),
+                  builder: (context, cursosSnap) {
+                    final cursos = cursosSnap.data?.docs ?? [];
+                    return _AchievementsSection(
+                      userData: data,
+                      cursos: cursos,
+                    );
+                  },
+                ),
                 const SizedBox(height: 14),
                 Container(
                   padding: const EdgeInsets.all(14),
@@ -415,15 +436,20 @@ IconData _iconFromString(String name) {
 
 class _AchievementsSection extends StatelessWidget {
   final Map<String, dynamic> userData;
+  final List<QueryDocumentSnapshot<Map<String, dynamic>>> cursos;
 
-  const _AchievementsSection({required this.userData});
+  const _AchievementsSection({
+    required this.userData,
+    required this.cursos,
+  });
 
   @override
   Widget build(BuildContext context) {
     final logrosData = (userData['logros'] as List?)?.cast<Map?>() ?? [];
+    final progresoCursos = (userData['progreso'] as Map?) ?? {};
     final divisionActual = (userData['division_actual'] ?? '').toString().toLowerCase();
-    final List<Map> base = [
-      // Divisiones
+
+    const baseDivisiones = [
       {
         'titulo': 'Recolector',
         'asset': 'assets/images/medallas/recolector.png',
@@ -436,7 +462,7 @@ class _AchievementsSection extends StatelessWidget {
         'asset': 'assets/images/medallas/arquitecto.png',
         'color': '#FF8A3D',
         'categoria': 'divisiones',
-        'desc': 'Diseña tu ruta y sube de nivel.'
+        'desc': 'Disena tu ruta y sube de nivel.'
       },
       {
         'titulo': 'Explorador',
@@ -445,34 +471,29 @@ class _AchievementsSection extends StatelessWidget {
         'categoria': 'divisiones',
         'desc': 'Descubre nuevas divisiones.'
       },
-      // Cursos (curso1-curso9)
-      {'titulo': 'Curso 1', 'asset': 'assets/images/medallas/curso1.png', 'color': '#FFB74D', 'categoria': 'cursos', 'desc': 'Completa el curso 1.'},
-      {'titulo': 'Curso 2', 'asset': 'assets/images/medallas/curso2.png', 'color': '#FF9800', 'categoria': 'cursos', 'desc': 'Completa el curso 2.'},
-      {'titulo': 'Curso 3', 'asset': 'assets/images/medallas/curso3.png', 'color': '#F57C00', 'categoria': 'cursos', 'desc': 'Completa el curso 3.'},
-      {'titulo': 'Curso 4', 'asset': 'assets/images/medallas/curso4.png', 'color': '#FB8C00', 'categoria': 'cursos', 'desc': 'Completa el curso 4.'},
-      {'titulo': 'Curso 5', 'asset': 'assets/images/medallas/curso5.png', 'color': '#FFB300', 'categoria': 'cursos', 'desc': 'Completa el curso 5.'},
-      {'titulo': 'Curso 6', 'asset': 'assets/images/medallas/curso6.png', 'color': '#FFA726', 'categoria': 'cursos', 'desc': 'Completa el curso 6.'},
-      {'titulo': 'Curso 7', 'asset': 'assets/images/medallas/curso7.png', 'color': '#FF7043', 'categoria': 'cursos', 'desc': 'Completa el curso 7.'},
-      {'titulo': 'Curso 8', 'asset': 'assets/images/medallas/curso8.png', 'color': '#FF6F00', 'categoria': 'cursos', 'desc': 'Completa el curso 8.'},
-      {'titulo': 'Curso 9', 'asset': 'assets/images/medallas/curso9.png', 'color': '#F9A825', 'categoria': 'cursos', 'desc': 'Completa el curso 9.'},
-      // Coleccionista
-      {
-        'titulo': 'Rey',
-        'asset': 'assets/images/medallas/rey.png',
-        'color': '#FFC107',
-        'categoria': 'coleccion',
-        'desc': 'Colecciona todas las medallas clave.'
-      },
     ];
-    // siempre mostramos 8 espacios; si hay logros en DB, sobrescriben pero heredan asset/base si no traen.
-    final logros = List<Map>.from(base);
-    for (int i = 0; i < logrosData.length && i < 8; i++) {
-      final m = (logrosData[i] ?? {}) as Map;
-      // Hereda asset/icon/color si no vienen
-      logros[i] = {
-        ...base[i],
-        ...m,
-      };
+
+    const cursoColors = [
+      '#FFB74D',
+      '#FF9800',
+      '#F57C00',
+      '#FB8C00',
+      '#FFB300',
+      '#FFA726',
+      '#FF7043',
+      '#FF6F00',
+      '#F9A825',
+    ];
+
+    Map<String, dynamic> _mergeOverrides(Map base) {
+      final override = logrosData.firstWhere(
+        (m) => (m?['titulo'] ?? '') == base['titulo'],
+        orElse: () => null,
+      );
+      if (override is Map) {
+        return {...base, ...override};
+      }
+      return Map<String, dynamic>.from(base);
     }
 
     bool _desbloqueaDivision(String baseNombre) {
@@ -480,14 +501,45 @@ class _AchievementsSection extends StatelessWidget {
       return divisionActual.startsWith(pref);
     }
 
-    final divisiones = logros
-        .where((m) => (m['categoria'] ?? '') == 'divisiones')
-        .take(3)
-        .map((m) => {
-              ...m,
-              'locked': !_desbloqueaDivision((m['titulo'] ?? '').toString()),
-            })
+    final divisiones = baseDivisiones
+        .map((m) {
+          final data = _mergeOverrides(m);
+          return {
+            ...data,
+            'locked': !_desbloqueaDivision((data['titulo'] ?? '').toString()),
+          };
+        })
         .toList();
+
+    final cursoItems = <Map>[];
+    for (var i = 0; i < cursos.length && i < 9; i++) {
+      final doc = cursos[i];
+      final data = doc.data();
+      final progresoCurso = (progresoCursos[doc.id] as Map?) ?? {};
+      final finalScore = (progresoCurso['final_score'] as num?)?.toInt() ?? 0;
+      final aprobado = progresoCurso['final_aprobado'] == true && finalScore >= 7;
+      final numeroCurso = i + 1;
+      cursoItems.add({
+        'titulo': 'Curso $numeroCurso',
+        'asset': 'assets/images/medallas/curso$numeroCurso.png',
+        'color': cursoColors[i % cursoColors.length],
+        'categoria': 'cursos',
+        'desc': 'Completa el curso $numeroCurso.',
+        'cursoNombre': (data['nombre'] ?? '').toString(),
+        'locked': !aprobado,
+      });
+    }
+
+    final coleccion = [
+      {
+        'titulo': 'Rey',
+        'asset': 'assets/images/medallas/rey.png',
+        'color': '#FFC107',
+        'categoria': 'coleccion',
+        'desc': 'Colecciona todas las medallas clave.',
+        'locked': cursoItems.any((m) => m['locked'] == true),
+      },
+    ];
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -536,19 +588,18 @@ class _AchievementsSection extends StatelessWidget {
           const SizedBox(height: 12),
           _CategoryGrid(
             titulo: 'Cursos',
-            items: logros.where((m) => (m['categoria'] ?? '') == 'cursos').take(9).toList(),
+            items: cursoItems,
           ),
           const SizedBox(height: 12),
           _CategoryGrid(
             titulo: 'Coleccionista',
-            items: logros.where((m) => (m['categoria'] ?? '') == 'coleccion').take(1).toList(),
+            items: coleccion,
           ),
         ],
       ),
     );
   }
 }
-
 class _StatTile extends StatelessWidget {
   final String title;
   final String value;
@@ -568,55 +619,56 @@ class _StatTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.black.withOpacity(0.03)),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       child: Row(
         children: [
           Container(
-            height: 40,
-            width: 40,
+            height: 44,
+            width: 44,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: accent.withOpacity(0.12),
             ),
-            child: Icon(icon, color: accent),
+            child: Icon(icon, color: accent, size: 22),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1E2026),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF111827),
+                    fontSize: 14,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
-                  style: const TextStyle(color: Color(0xFF555B64), fontSize: 12),
+                  style: const TextStyle(color: Color(0xFF6B7280), fontSize: 12),
                 ),
               ],
             ),
           ),
           Text(
             value,
-            style: const TextStyle(
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF1E2026),
+            style: TextStyle(
+              fontWeight: FontWeight.w800,
+              color: const Color(0xFF111827),
             ),
           ),
         ],
@@ -641,6 +693,7 @@ class _CategoryGrid extends StatelessWidget {
           style: const TextStyle(
             fontWeight: FontWeight.w800,
             color: Color(0xFF1E2026),
+            letterSpacing: 0.2,
           ),
         ),
         const SizedBox(height: 6),
@@ -651,34 +704,255 @@ class _CategoryGrid extends StatelessWidget {
             crossAxisCount: 3,
             mainAxisSpacing: 10,
             crossAxisSpacing: 10,
-            childAspectRatio: 0.82,
+            childAspectRatio: 0.75,
           ),
           itemCount: items.length,
           itemBuilder: (context, index) {
+            const palettes = [
+              [Color(0xFFF3A45C), Color(0xFFFECF9C)],
+              [Color(0xFF6CC5B8), Color(0xFFB5F2E2)],
+              [Color(0xFF7D8BFF), Color(0xFFB6C3FF)],
+              [Color(0xFFE57373), Color(0xFFF6B1B1)],
+              [Color(0xFFF4C95D), Color(0xFFFFE4A1)],
+            ];
+            final paleta = palettes[index % palettes.length];
             final logro = (items[index]) as Map;
             final titulo = (logro['titulo'] ?? 'Logro').toString();
+            final desc = (logro['desc'] ?? '').toString();
             final icono = (logro['icono'] ?? 'star').toString();
             final asset = (logro['asset'] ?? '').toString();
             final colorHex = (logro['color'] ?? '#0E6BA8').toString();
             final color = _hexToColor(colorHex);
             final locked = logro['locked'] == true;
+            final cursoNombre = (logro['cursoNombre'] ?? '').toString();
+
+            void _showMedalDetail() {
+              final frase = locked
+                  ? 'Practica y vuelve: esta medalla te espera.'
+                  : 'Sigue avanzando, cada logro te acerca a tu meta.';
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                isDismissible: true,
+                enableDrag: true,
+                barrierColor: Colors.black54,
+                backgroundColor: Colors.transparent,
+                builder: (ctx) {
+                  return DraggableScrollableSheet(
+                    initialChildSize: 0.55,
+                    minChildSize: 0.45,
+                    maxChildSize: 0.78,
+                    expand: false,
+                    builder: (_, controller) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              paleta.first.withOpacity(0.35),
+                              paleta.last.withOpacity(0.55),
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                          borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: paleta.first.withOpacity(0.3),
+                              blurRadius: 20,
+                              offset: const Offset(0, -8),
+                            ),
+                          ],
+                        ),
+                        child: SingleChildScrollView(
+                          controller: controller,
+                          padding: const EdgeInsets.fromLTRB(18, 20, 18, 26),
+                          child: Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.92),
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(color: paleta.first.withOpacity(0.25)),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.08),
+                                  blurRadius: 14,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Container(
+                                  width: 128,
+                                  height: 128,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        paleta.first.withOpacity(0.6),
+                                        paleta.last.withOpacity(0.75),
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    border: Border.all(color: paleta.first.withOpacity(0.75), width: 1.6),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: paleta.first.withOpacity(0.35),
+                                        blurRadius: 14,
+                                        offset: const Offset(0, 8),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Center(
+                                    child: locked
+                                        ? Icon(Icons.lock_outline_rounded, color: paleta.first, size: 54)
+                                        : ClipOval(
+                                            child: Image.asset(
+                                              asset,
+                                              width: 112,
+                                              height: 112,
+                                              cacheWidth: 224,
+                                              cacheHeight: 224,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  titulo,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 18.5,
+                                    color: Color(0xFF0F1A2A),
+                                  ),
+                                ),
+                                if (cursoNombre.isNotEmpty) ...[
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    cursoNombre,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      color: Color(0xFF475569),
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ],
+                                const SizedBox(height: 10),
+                                if (desc.isNotEmpty)
+                                  Text(
+                                    locked ? 'Aún no la ganas. $desc' : desc,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      color: Color(0xFF1F2937),
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 13.2,
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                const SizedBox(height: 14),
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(color: paleta.first.withOpacity(0.18)),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.05),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 6),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(10),
+                                        decoration: BoxDecoration(
+                                          color: paleta.first.withOpacity(0.18),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Icon(
+                                          locked ? Icons.hourglass_bottom_rounded : Icons.celebration_rounded,
+                                          color: paleta.first,
+                                          size: 22,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                              decoration: BoxDecoration(
+                                                color: paleta.last.withOpacity(0.25),
+                                                borderRadius: BorderRadius.circular(10),
+                                              ),
+                                              child: Text(
+                                                locked ? 'Pendiente' : '¡Conseguida!',
+                                                style: const TextStyle(
+                                                  color: Color(0xFF0F172A),
+                                                  fontWeight: FontWeight.w900,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 6),
+                                            Text(
+                                              frase,
+                                              style: const TextStyle(
+                                                color: Color(0xFF2C2F38),
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 12.5,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
+            }
 
             return Stack(
               children: [
-                Opacity(
-                  opacity: locked ? 0.35 : 1,
-                  child: Container(
+                GestureDetector(
+                  onTap: _showMedalDetail,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [color.withOpacity(0.12), color.withOpacity(0.32)],
+                        colors: locked
+                            ? [paleta.first.withOpacity(0.25), paleta.last.withOpacity(0.25)]
+                            : paleta,
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: color.withOpacity(0.3)),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: locked ? Colors.black12 : paleta.first.withOpacity(0.5),
+                        width: 1.2,
+                      ),
                       boxShadow: [
                         BoxShadow(
-                          color: color.withOpacity(0.18),
+                          color: locked ? Colors.black.withOpacity(0.05) : paleta.first.withOpacity(0.25),
                           blurRadius: 10,
                           offset: const Offset(0, 6),
                         ),
@@ -688,50 +962,56 @@ class _CategoryGrid extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Container(
-                          width: 78,
-                          height: 78,
+                          width: 84,
+                          height: 84,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors.white.withOpacity(0.88),
+                            color: Colors.white.withOpacity(0.9),
+                            border: Border.all(
+                              color: locked ? Colors.black12 : color.withOpacity(0.4),
+                              width: 1.2,
+                            ),
                           ),
                           child: Center(
-                            child: asset.isNotEmpty
+                            child: !locked && asset.isNotEmpty
                                 ? ClipOval(
                                     child: Image.asset(
                                       asset,
-                                      width: 70,
-                                      height: 70,
-                                      cacheWidth: 140,
-                                      cacheHeight: 140,
+                                      width: 76,
+                                      height: 76,
+                                      cacheWidth: 152,
+                                      cacheHeight: 152,
                                       fit: BoxFit.cover,
                                     ),
                                   )
-                                : Icon(_iconFromString(icono), color: color, size: 28),
+                                : Icon(
+                                  locked ? Icons.lock_outline_rounded : _iconFromString(icono),
+                                  color: color,
+                                  size: 32,
+                                ),
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 6),
-                          child: Text(
-                            titulo,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w800,
-                              color: Color(0xFF1E2026),
-                              fontSize: 12,
-                            ),
+                        const SizedBox(height: 10),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Text(
+                          titulo,
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w900,
+                            color: locked ? const Color(0xFF3E434F) : const Color(0xFF111827),
+                            fontSize: 11.2,
+                            letterSpacing: 0.15,
                           ),
                         ),
+                      ),
+                        const SizedBox(height: 6),
                       ],
                     ),
                   ),
                 ),
-                if (locked)
-                  const Positioned(
-                    right: 8,
-                    top: 8,
-                    child: Icon(Icons.lock, size: 18, color: Color(0xFF6B7280)),
-                  ),
               ],
             );
           },

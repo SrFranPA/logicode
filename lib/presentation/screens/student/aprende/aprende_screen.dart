@@ -24,6 +24,7 @@ class AprendeScreen extends StatelessWidget {
         final cursoActualId = (user['curso_actual'] ?? '').toString();
         final pretestEstado = (user['pretest_estado'] ?? 'pendiente').toString();
         final bool testAprobado = pretestEstado == 'aprobado';
+        final Map progresoCursos = (user['progreso'] as Map?) ?? {};
 
         return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
           stream: db.collection('cursos').orderBy('orden').snapshots(),
@@ -35,11 +36,29 @@ class AprendeScreen extends StatelessWidget {
             final cursos = cursosSnap.data!.docs;
 
             int unlockedUntilOrder = 1;
+            int highestApprovedOrder = 0;
+            int cursoActualOrder = 0;
+
             for (final c in cursos) {
+              final data = c.data();
+              final orden = (data['orden'] as num?)?.toInt() ?? 1;
+
               if (c.id == cursoActualId) {
-                final orden = (c.data()['orden'] as num?)?.toInt() ?? 1;
-                unlockedUntilOrder = orden + 1;
+                cursoActualOrder = orden;
               }
+
+              final progresoCurso = (progresoCursos[c.id] as Map?) ?? {};
+              final finalScore = (progresoCurso['final_score'] as num?)?.toInt() ?? 0;
+              final finalAprobado = progresoCurso['final_aprobado'] == true && finalScore >= 7;
+              if (finalAprobado && orden > highestApprovedOrder) {
+                highestApprovedOrder = orden;
+              }
+            }
+
+            if (highestApprovedOrder > 0) {
+              unlockedUntilOrder = highestApprovedOrder + 1;
+            } else if (cursoActualOrder > 0) {
+              unlockedUntilOrder = cursoActualOrder + 1;
             }
 
             return Container(
@@ -227,6 +246,9 @@ class AprendeScreen extends StatelessWidget {
                               final nombreCurso = (data['nombre'] ?? 'Curso').toString();
                               final descripcion = (data['descripcion'] ?? '').toString();
                               final orden = (data['orden'] as num?)?.toInt() ?? 1;
+                              final progresoCurso = (progresoCursos[doc.id] as Map?) ?? {};
+                              final finalScore = (progresoCurso['final_score'] as num?)?.toInt() ?? 0;
+                              final finalAprobado = progresoCurso['final_aprobado'] == true && finalScore >= 7;
 
                               final unlocked = testAprobado && orden <= unlockedUntilOrder;
                               final isCurrent = doc.id == cursoActualId;
@@ -239,12 +261,13 @@ class AprendeScreen extends StatelessWidget {
                                     : descripcion,
                                 unlocked: unlocked,
                                 highlight: isCurrent,
+                                aprobado: finalAprobado,
                                 onTap: () {
                                   if (!unlocked) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
                                         content: Text(
-                                          'Debes completar el test inicial antes de acceder al curso.',
+                                          'Debes aprobar el curso anterior (test final >= 7) para desbloquear este contenido.',
                                         ),
                                       ),
                                     );
@@ -259,6 +282,7 @@ class AprendeScreen extends StatelessWidget {
                                         descripcion: descripcion.isEmpty
                                             ? 'Conceptos clave y ejercicios interactivos.'
                                             : descripcion,
+                                        cursoOrden: orden,
                                         iconPath: 'assets/images/iconos/curso${(index % 9) + 1}.png',
                                       ),
                                     ),
@@ -287,6 +311,7 @@ class _CourseCard extends StatefulWidget {
   final String description;
   final bool unlocked;
   final bool highlight;
+  final bool aprobado;
   final VoidCallback onTap;
 
   const _CourseCard({
@@ -295,6 +320,7 @@ class _CourseCard extends StatefulWidget {
     required this.description,
     required this.unlocked,
     required this.highlight,
+    this.aprobado = false,
     required this.onTap,
   });
 
@@ -347,7 +373,18 @@ class _CourseCardState extends State<_CourseCard> with SingleTickerProviderState
     Color colorA = colors[0];
     Color colorB = colors[1];
 
-    if (!widget.unlocked) {
+    final bool disponible = widget.aprobado || widget.unlocked;
+    final statusIcon = widget.aprobado
+        ? Icons.emoji_events
+        : widget.unlocked
+            ? Icons.play_circle_fill
+            : Icons.lock_outline;
+    final statusLabel = widget.aprobado ? 'Aprobado' : (widget.unlocked ? 'Disponible' : 'Bloqueado');
+    final statusColor = widget.aprobado
+        ? const Color(0xFF8B5E1A)
+        : (widget.unlocked ? const Color(0xFF0F172A) : const Color(0xFF4B5563));
+
+    if (!disponible) {
       colorA = const Color(0xFFE8E8E8);
       colorB = const Color(0xFFF6F6F6);
     }
@@ -395,47 +432,45 @@ class _CourseCardState extends State<_CourseCard> with SingleTickerProviderState
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(
-                            widget.title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: const Color(0xFF1F2A44)
-                                  .withOpacity(widget.unlocked ? 0.95 : 0.6),
-                              fontSize: 16,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 0.2,
-                            ),
+                            Text(
+                              widget.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: const Color(0xFF1F2A44)
+                                  .withOpacity(disponible ? 0.95 : 0.6),
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.2,
+                              ),
                           ),
                           const SizedBox(height: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(widget.unlocked ? 0.22 : 0.18),
+                              color: disponible
+                                  ? statusColor.withOpacity(0.14)
+                                  : const Color.fromARGB(255, 245, 245, 245),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: widget.unlocked
-                                    ? const Color(0xFF1F2A44).withOpacity(0.25)
-                                    : const Color(0xFF8B8B8B).withOpacity(0.25),
+                                color: disponible
+                                    ? statusColor.withOpacity(0.35)
+                                    : const Color.fromARGB(255, 255, 255, 255),
                               ),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
-                                  widget.unlocked ? Icons.play_circle_fill : Icons.lock_outline,
+                                  statusIcon,
                                   size: 16,
-                                  color: widget.unlocked
-                                      ? const Color(0xFF1F2A44)
-                                      : const Color(0xFF8B8B8B),
+                                  color: statusColor,
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
-                                  widget.unlocked ? 'Disponible' : 'Bloqueado',
+                                  statusLabel,
                                   style: TextStyle(
-                                    color: widget.unlocked
-                                        ? const Color(0xFF1F2A44)
-                                        : const Color(0xFF8B8B8B),
+                                    color: statusColor,
                                     fontWeight: FontWeight.w800,
                                     fontSize: 12,
                                   ),
@@ -459,7 +494,7 @@ class _CourseCardState extends State<_CourseCard> with SingleTickerProviderState
                         width: 58,
                         height: 58,
                         fit: BoxFit.contain,
-                        opacity: widget.unlocked ? null : const AlwaysStoppedAnimation(0.45),
+                        opacity: disponible ? null : const AlwaysStoppedAnimation(0.45),
                       ),
                     ),
                   ]
@@ -475,7 +510,7 @@ class _CourseCardState extends State<_CourseCard> with SingleTickerProviderState
                         width: 58,
                         height: 58,
                         fit: BoxFit.contain,
-                        opacity: widget.unlocked ? null : const AlwaysStoppedAnimation(0.45),
+                        opacity: disponible ? null : const AlwaysStoppedAnimation(0.45),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -484,26 +519,26 @@ class _CourseCardState extends State<_CourseCard> with SingleTickerProviderState
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(
-                            widget.title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: const Color(0xFF1F2A44)
-                                  .withOpacity(widget.unlocked ? 0.95 : 0.6),
-                              fontSize: 16,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 0.2,
-                            ),
+                            Text(
+                              widget.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: const Color(0xFF1F2A44)
+                                  .withOpacity(disponible ? 0.95 : 0.6),
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.2,
+                              ),
                           ),
                           const SizedBox(height: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(widget.unlocked ? 0.22 : 0.18),
+                              color: Colors.white.withOpacity(disponible ? 0.22 : 0.18),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: widget.unlocked
+                                color: disponible
                                     ? const Color(0xFF1F2A44).withOpacity(0.25)
                                     : const Color(0xFF8B8B8B).withOpacity(0.25),
                               ),
@@ -512,19 +547,15 @@ class _CourseCardState extends State<_CourseCard> with SingleTickerProviderState
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
-                                  widget.unlocked ? Icons.play_circle_fill : Icons.lock_outline,
+                                  statusIcon,
                                   size: 16,
-                                  color: widget.unlocked
-                                      ? const Color(0xFF1F2A44)
-                                      : const Color(0xFF8B8B8B),
+                                  color: statusColor,
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
-                                  widget.unlocked ? 'Disponible' : 'Bloqueado',
+                                  statusLabel,
                                   style: TextStyle(
-                                    color: widget.unlocked
-                                        ? const Color(0xFF1F2A44)
-                                        : const Color(0xFF8B8B8B),
+                                    color: statusColor,
                                     fontWeight: FontWeight.w800,
                                     fontSize: 12,
                                   ),

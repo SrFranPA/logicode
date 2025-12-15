@@ -10,6 +10,7 @@ class CursoScreen extends StatefulWidget {
   final String cursoNombre;
   final String descripcion;
   final String iconPath;
+  final int cursoOrden;
 
   const CursoScreen({
     super.key,
@@ -17,13 +18,15 @@ class CursoScreen extends StatefulWidget {
     required this.cursoNombre,
     required this.descripcion,
     this.iconPath = 'assets/images/iconos/curso1.png',
+    this.cursoOrden = 1,
   });
 
   const CursoScreen.placeholder({super.key})
       : cursoId = '',
         cursoNombre = 'Curso',
         descripcion = '',
-        iconPath = 'assets/images/iconos/curso1.png';
+        iconPath = 'assets/images/iconos/curso1.png',
+        cursoOrden = 1;
 
   @override
   State<CursoScreen> createState() => _CursoScreenState();
@@ -39,6 +42,8 @@ class _CursoScreenState extends State<CursoScreen> {
   late List<bool> _completed;
   int _lives = 5;
   String? _userId;
+  bool _finalAprobado = false;
+  int _finalScore = 0;
 
   @override
   void initState() {
@@ -72,12 +77,16 @@ class _CursoScreenState extends State<CursoScreen> {
     final progreso = (data['progreso'] as Map?) ?? {};
     final cursoProg = (progreso[widget.cursoId] as Map?) ?? {};
     final completadas = (cursoProg['completadas'] as List?)?.cast<String>() ?? [];
+    final finalScore = (cursoProg['final_score'] as num?)?.toInt() ?? 0;
+    final finalAprobado = cursoProg['final_aprobado'] == true && finalScore >= 7;
 
     if (mounted) {
       setState(() {
         _completed = lessons
             .map((l) => completadas.contains(l.title))
             .toList(growable: false);
+        _finalAprobado = finalAprobado;
+        _finalScore = finalScore;
       });
     }
   }
@@ -130,6 +139,7 @@ class _CursoScreenState extends State<CursoScreen> {
           cursoId: widget.cursoId,
           cursoNombre: widget.cursoNombre,
           leccionTitulo: lessons[i].title,
+          cursoOrden: widget.cursoOrden,
           accentColor: _lessonPalette(i).first,
         ),
       ),
@@ -402,23 +412,34 @@ class _CursoScreenState extends State<CursoScreen> {
                   width: double.infinity,
                   height: 54,
                   child: ElevatedButton.icon(
-                    icon: const Icon(Icons.quiz, color: Colors.white),
-                    label: const Text(
-                      'Test final',
-                      style: TextStyle(
+                    icon: Icon(
+                      _finalAprobado ? Icons.emoji_events_rounded : Icons.quiz,
+                      color: Colors.white,
+                    ),
+                    label: Text(
+                      _finalAprobado ? 'Test final aprobado' : 'Test final',
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
                         color: Colors.white,
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: tomato,
+                      backgroundColor: _finalAprobado ? const Color(0xFF2E7D32) : tomato,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
                       elevation: 4,
                   ),
-                    onPressed: () async {
+                    onPressed: _finalAprobado
+                        ? () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Ya aprobaste el test final (puntaje: $_finalScore).'),
+                              ),
+                            );
+                          }
+                        : () async {
                       final allLessonsDone = _completed.every((e) => e);
                       if (!allLessonsDone) {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -442,14 +463,34 @@ class _CursoScreenState extends State<CursoScreen> {
                             cursoId: widget.cursoId,
                             cursoNombre: widget.cursoNombre,
                             leccionTitulo: 'Test final',
+                            cursoOrden: widget.cursoOrden,
                             accentColor: tomato,
                           ),
                         ),
                       );
                       _loadLives();
+                      _loadProgress();
                     },
                   ),
                 ),
+                if (_finalAprobado)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.check_circle, color: Color(0xFF2E7D32), size: 18),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Aprobaste el test final (puntaje: $_finalScore).',
+                          style: const TextStyle(
+                            color: Color(0xFF2E7D32),
+                            fontWeight: FontWeight.w800,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
               ],
             ),
           ),

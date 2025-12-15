@@ -12,6 +12,7 @@ class LeccionCursoScreen extends StatefulWidget {
   final String cursoNombre;
   final String leccionTitulo;
   final Color accentColor;
+  final int cursoOrden;
 
   const LeccionCursoScreen({
     super.key,
@@ -19,6 +20,7 @@ class LeccionCursoScreen extends StatefulWidget {
     required this.cursoNombre,
     required this.leccionTitulo,
     this.accentColor = const Color(0xFFFFA451),
+    this.cursoOrden = 1,
   });
 
   @override
@@ -203,6 +205,55 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
     }
   }
 
+  Future<void> _registrarResultadoFinal(bool aprobado) async {
+    if (_userId == null) return;
+    final cursoData = <String, dynamic>{
+      'ultima_actualizacion': FieldValue.serverTimestamp(),
+      'final_aprobado': aprobado,
+      'final_score': _aciertos,
+      'orden': widget.cursoOrden,
+    };
+    if (aprobado) {
+      cursoData['completadas'] = FieldValue.arrayUnion([widget.leccionTitulo]);
+    }
+
+    try {
+      await FirebaseFirestore.instance.collection('usuarios').doc(_userId).set(
+        {
+          'progreso': {
+            widget.cursoId: cursoData,
+          },
+          if (aprobado) 'curso_actual': widget.cursoId,
+        },
+        SetOptions(merge: true),
+      );
+    } catch (_) {
+      // si falla, se puede reintentar en otro intento
+    }
+  }
+
+  Future<void> _mostrarResultadoFinal(bool aprobado) async {
+    if (!mounted) return;
+    final puntaje = '$_aciertos/${preguntas.length}';
+    await showDialog<void>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(aprobado ? '¡Test aprobado!' : 'Test no aprobado'),
+        content: Text(
+          aprobado
+              ? 'Superaste el test final con puntaje $puntaje. Aprobado: ganaste una medalla y desbloqueaste el siguiente curso.'
+              : 'Necesitas al menos 7 aciertos. Vuelve y practica las lecciones para reintentar el test final.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Aceptar'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _siguiente() async {
     if (lives == 0 && !_esTestFinal) {
       Navigator.of(context).pop(false);
@@ -212,12 +263,19 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
       final aprobado = !_esTestFinal || _aciertos >= 7;
       if (aprobado) {
         await _guardarXpPendiente();
-        await _marcarLeccionCompletada();
-        if (mounted) {
-          Navigator.of(context).pop(true);
+        if (_esTestFinal) {
+          await _registrarResultadoFinal(true);
+          await _mostrarResultadoFinal(true);
+        } else {
+          await _marcarLeccionCompletada();
         }
+        if (mounted) Navigator.of(context).pop(true);
       } else {
-        if (mounted) {
+        if (_esTestFinal) {
+          await _registrarResultadoFinal(false);
+          await _mostrarResultadoFinal(false);
+          if (mounted) Navigator.of(context).pop(false);
+        } else if (mounted) {
           await showDialog<void>(
             context: context,
             builder: (_) => AlertDialog(
