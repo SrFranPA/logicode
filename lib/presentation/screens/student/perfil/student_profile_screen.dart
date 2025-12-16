@@ -258,12 +258,12 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.black.withOpacity(0.03)),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: const Color(0xFFE5E7EB)),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.06),
-                        blurRadius: 18,
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 14,
                         offset: const Offset(0, 8),
                       ),
                     ],
@@ -271,15 +271,24 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                   child: Row(
                     children: [
                       Container(
-                        height: 64,
-                        width: 64,
+                        height: 70,
+                        width: 70,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(18),
+                          shape: BoxShape.circle,
                           gradient: const LinearGradient(
-                            colors: [Color(0xFFE9EEF7), Color(0xFFD7DFEF)],
+                            colors: [Color(0xFF95A3B8), Color(0xFF6B7A94)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                           ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF6B7A94).withOpacity(0.22),
+                              blurRadius: 10,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
                         ),
-                        child: const Icon(Icons.person, color: Color(0xFF283347), size: 32),
+                        child: const Icon(Icons.person, color: Colors.white, size: 32),
                       ),
                       const SizedBox(width: 14),
                       Expanded(
@@ -288,25 +297,30 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                           children: [
                             Text(
                               nombre,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF1E2026),
+                                fontSize: 17,
+                                fontWeight: FontWeight.w900,
+                                color: Color(0xFF1F2937),
+                                letterSpacing: 0.2,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               email,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontSize: 13,
-                                color: Color(0xFF555B64),
+                                color: Color(0xFF4B5563),
                               ),
                             ),
                           ],
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.edit, color: Color(0xFF555B64)),
+                        icon: const Icon(Icons.edit, color: Color(0xFF6B7280)),
                         onPressed: () => _showEditSheet(context, nombre),
                       ),
                     ],

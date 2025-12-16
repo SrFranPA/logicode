@@ -69,6 +69,85 @@ class _PretestScreenState extends State<PretestScreen> {
     }
   }
 
+  Future<bool> _confirmExit() async {
+    return await showDialog<bool>(
+          context: context,
+          barrierDismissible: true,
+          builder: (ctx) => Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: Image.asset(
+                      'assets/images/mascota/leccion2.png',
+                      width: 130,
+                      height: 130,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    '¿Salir del pretest?',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 17,
+                      color: Color(0xFF2C1B0E),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Cada intento te acerca a tu meta. ¡Termina este reto y demuestra tu nivel!',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Color(0xFF4B4F56),
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                      height: 1.35,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextButton(
+                          onPressed: () => Navigator.of(ctx).pop(false),
+                          child: const Text(
+                            'Continuar',
+                            style: TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF2C1B0E)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.of(ctx).pop(true),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFFFA200),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          child: const Text(
+                            'Salir',
+                            style: TextStyle(fontWeight: FontWeight.w800),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ) ??
+        false;
+  }
+
   Future<void> _siguiente() async {
     if (_finalizado) return;
     if (index + 1 >= preguntas.length) {
@@ -179,12 +258,20 @@ class _PretestScreenState extends State<PretestScreen> {
 
     final pregunta = preguntas[index];
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFFCF8F2),
+    return WillPopScope(
+      onWillPop: _confirmExit,
+      child: Scaffold(
+      backgroundColor: const Color(0xFFFFF2F0),
       appBar: AppBar(
         elevation: 0,
         backgroundColor: const Color(0xFF2C1B0E),
-        leading: const BackButton(color: Colors.white),
+        leading: BackButton(
+          color: Colors.white,
+          onPressed: () async {
+            final exit = await _confirmExit();
+            if (exit && mounted) Navigator.of(context).pop();
+          },
+        ),
         title: const Text(
           "Pretest",
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
@@ -193,7 +280,7 @@ class _PretestScreenState extends State<PretestScreen> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFFCF8F2), Color(0xFFEFE3CF)],
+            colors: [Color(0xFFFFF2F0), Color(0xFFFCD9D4)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -207,11 +294,70 @@ class _PretestScreenState extends State<PretestScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFFCF8F2), Color(0xFFEFE3CF)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.12),
+                        blurRadius: 12,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const [
+                            Text(
+                              "Calienta motores",
+                              style: TextStyle(
+                                color: Color(0xFF4A3424),
+                                fontWeight: FontWeight.w800,
+                                fontSize: 13,
+                              ),
+                            ),
+                            SizedBox(height: 6),
+                            Text(
+                              "Demuestra tu nivel para empezar con potencia.",
+                              style: TextStyle(
+                                color: Color(0xFF2C1B0E),
+                                fontWeight: FontWeight.w900,
+                                fontSize: 17,
+                                height: 1.2,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(14),
+                        child: Image.asset(
+                          'assets/images/mascota/refuerzo3.png',
+                          width: 86,
+                          height: 86,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFBF9),
                     borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFFFB9A0).withOpacity(0.25)),
                     boxShadow: const [
                       BoxShadow(
-                        color: Color(0x16000000),
+                        color: Color(0x14000000),
                         blurRadius: 12,
                         offset: Offset(0, 6),
                       ),
@@ -227,6 +373,7 @@ class _PretestScreenState extends State<PretestScreen> {
                             decoration: BoxDecoration(
                               color: const Color(0xFFFFA200).withOpacity(0.16),
                               borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: const Color(0xFFFFA200).withOpacity(0.3)),
                             ),
                             child: const Icon(
                               Icons.flag_circle_rounded,
@@ -345,7 +492,7 @@ class _PretestScreenState extends State<PretestScreen> {
                       child: ElevatedButton(
                         onPressed: locked ? _siguiente : null,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: locked ? const Color(0xFFFFA200) : const Color(0xFFFFDDAF),
+                          backgroundColor: locked ? const Color(0xFFFB7A57) : const Color(0xFFFFD4C6),
                           minimumSize: const Size(double.infinity, 56),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
@@ -384,7 +531,7 @@ class _PretestScreenState extends State<PretestScreen> {
           ),
         ),
       ),
-    );
+    ),    );
   }
 }
 

@@ -149,15 +149,16 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
     }
   }
 
-  Future<void> _consumirVida() async {
-    if (_esTestFinal) return;
-    if (_userId == null) return;
+  Future<int?> _consumirVida() async {
+    if (_esTestFinal) return lives;
+    if (_userId == null) return lives;
     final nueva = (lives - 1).clamp(0, 5);
     setState(() => lives = nueva);
     await FirebaseFirestore.instance.collection('usuarios').doc(_userId).update({'vidas': nueva});
+    return nueva;
   }
 
-  void _onResult(bool isCorrect, String r, Pregunta preguntaActual) {
+  Future<void> _onResult(bool isCorrect, String r, Pregunta preguntaActual) async {
     if (!mounted) return;
     setState(() {
       answered = true;
@@ -170,8 +171,8 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
         _xpPendiente += _xpPorDificultad(preguntaActual.dificultad);
       }
     } else if (lives > 0 && !_esTestFinal) {
-      _consumirVida();
-      if (lives - 1 <= 0) {
+      final restante = await _consumirVida() ?? lives;
+      if (restante <= 0) {
         _mostrarSinVidas();
       }
     }
@@ -457,7 +458,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Tómate un respiro y vuelve a intentarlo. Cada intento te acerca a dominar el tema.',
+                'Tomate un respiro y vuelve a intentarlo. Puedes practicar en Refuerzo.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Color(0xFF1F2937),

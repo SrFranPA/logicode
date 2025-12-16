@@ -45,7 +45,7 @@ class StudentPracticasScreen extends StatelessWidget {
                   },
                 ];
 
-                final items = errores.isNotEmpty ? errores : placeholders;
+                final items = (errores.isNotEmpty ? errores : placeholders).take(5).toList();
 
                 return ListView.builder(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
@@ -90,7 +90,6 @@ class _HeroPractica extends StatelessWidget {
       'assets/images/mascota/refuerzo1.png',
       'assets/images/mascota/refuerzo2.png',
       'assets/images/mascota/refuerzo3.png',
-      
     ];
     final imgPath = images[(total % images.length).clamp(0, images.length - 1)];
 
@@ -133,8 +132,8 @@ class _HeroPractica extends StatelessWidget {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
+              children: const [
+                Text(
                   'Prácticas dirigidas',
                   style: TextStyle(
                     color: Colors.white,
@@ -142,10 +141,10 @@ class _HeroPractica extends StatelessWidget {
                     fontSize: 17,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
                   'Refuerza las preguntas falladas con nuevos ejercicios del curso.',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Color(0xFFE6EAF5),
                     fontWeight: FontWeight.w600,
                     fontSize: 13,
@@ -238,40 +237,24 @@ class _RefuerzoCard extends StatelessWidget {
           ),
           if (etiqueta.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.only(top: 4),
+              padding: const EdgeInsets.only(top: 4.0),
               child: Text(
                 etiqueta,
                 style: const TextStyle(
-                  color: Color(0xFF475569),
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w800,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF334155),
                 ),
               ),
             ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Text(
             descripcion,
             style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
               color: Color(0xFF1F2937),
-              fontSize: 13,
-              height: 1.3,
             ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              _Tag(
-                label: 'Repasar pregunta',
-                color: color,
-                icon: Icons.lightbulb_rounded,
-              ),
-              const SizedBox(width: 8),
-              _Tag(
-                label: 'Práctica guiada',
-                color: const Color(0xFF0EA5E9),
-                icon: Icons.auto_awesome,
-              ),
-            ],
           ),
         ],
       ),
@@ -295,26 +278,19 @@ class _Tag extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.35)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        color: color.withOpacity(0.14),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withOpacity(0.26)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: color, size: 16),
+          Icon(icon, color: color, size: 14),
           const SizedBox(width: 6),
           Text(
             label,
-            style: TextStyle(
-              color: color,
+            style: const TextStyle(
+              color: Color(0xFF0F172A),
               fontWeight: FontWeight.w800,
               fontSize: 12,
             ),

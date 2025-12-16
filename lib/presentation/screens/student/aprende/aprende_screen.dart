@@ -71,7 +71,7 @@ class AprendeScreen extends StatelessWidget {
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [Color(0xFFFFFFFF), Color(0xFFF7F1E3)],
+                              colors: [Color.fromARGB(255, 250, 250, 250), Color.fromARGB(255, 255, 220, 202)],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
@@ -83,73 +83,120 @@ class AprendeScreen extends StatelessWidget {
                                 offset: Offset(0, 6),
                               ),
                             ],
-                            border: Border.all(color: const Color(0xFFF2B46D).withOpacity(0.16)),
+                            border: Border.all(color: const Color(0xFFFFC9A8).withOpacity(0.18)),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
-                                children: const [
-                                  CircleAvatar(
-                                    radius: 18,
-                                    backgroundColor: Color(0xFFE38B2F),
-                                    child: Icon(Icons.flag, color: Colors.white, size: 18),
-                                  ),
-                                  SizedBox(width: 10),
-                                  Expanded(
-                                    child: Text(
-                                      'Elige un curso y avanza en tu laboratorio. Cada modulo desbloquea el siguiente.',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        height: 1.3,
-                                        color: Color(0xFF2C3B4A),
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
                               if (!testAprobado) ...[
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFFFB88C).withOpacity(0.3),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: const Icon(Icons.emoji_events, color: Color(0xFFBB4B1E)),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: const [
+                                        Text(
+                                          'Test inicial',
+                                          style: TextStyle(
+                                            color: Color(0xFF4C2817),
+                                            fontWeight: FontWeight.w900,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                        SizedBox(height: 4),
+                                        Text(
+                                          'Completa este reto y libera tus cursos.',
+                                          style: TextStyle(
+                                            color: Color(0xFF6E3A22),
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 12.5,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
                                 Container(
                                   width: double.infinity,
                                   padding: const EdgeInsets.all(14),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFFFF7E6),
+                                    gradient: const LinearGradient(
+                                      colors: [Color(0xFFFFE9D7), Color(0xFFFFD1B3)],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
                                     borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: const Color(0xFFE7C899)),
+                                    border: Border.all(color: const Color(0xFFEAA35C).withOpacity(0.4)),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.08),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 6),
+                                      ),
+                                    ],
                                   ),
                                   child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFFFD9B3),
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      ClipRRect(
                                         borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: const Icon(Icons.lock_outline, color: Color(0xFFE07A1E)),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    const Expanded(
-                                      child: Text(
-                                        'Completa el test inicial para desbloquear tus cursos.',
-                                        style: TextStyle(
-                                          color: Color(0xFF8A5A2F),
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 13,
+                                        child: Image.asset(
+                                          'assets/images/mascota/refuerzo2.png',
+                                          width: 70,
+                                          height: 70,
+                                          fit: BoxFit.cover,
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFFE07A1E).withOpacity(0.14),
+                                                borderRadius: BorderRadius.circular(10),
+                                              ),
+                                            child: const Text(
+                                              'Desbloquea tus cursos',
+                                              style: TextStyle(
+                                                color: Color(0xFF7A3417),
+                                                fontWeight: FontWeight.w800,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ),
+                                            const SizedBox(height: 8),
+                                            const Text(
+                                              'Completa el test inicial para liberar tu ruta y comenzar a avanzar.',
+                                              style: TextStyle(
+                                                color: Color(0xFF4A2B16),
+                                                fontWeight: FontWeight.w800,
+                                                fontSize: 13,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
                                 const SizedBox(height: 14),
                                 SizedBox(
                                   width: double.infinity,
-                                  child: ElevatedButton.icon(
+                                  child: ElevatedButton(
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFFE07A1E),
+                                      backgroundColor: const Color(0xFFCC5A1A),
                                       minimumSize: const Size(double.infinity, 62),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(18),
@@ -158,35 +205,28 @@ class AprendeScreen extends StatelessWidget {
                                         horizontal: 18,
                                         vertical: 16,
                                       ),
-                                      elevation: 8,
-                                      shadowColor: const Color(0xFFE07A1E).withOpacity(0.35),
+                                      elevation: 12,
+                                      shadowColor: const Color(0xFFCC5A1A).withOpacity(0.35),
                                     ),
                                     onPressed: () {
                                       Navigator.of(context).pushNamed('/pretest');
                                     },
-                                    icon: const Icon(
-                                      Icons.assignment_turned_in,
-                                      color: Colors.white,
-                                      size: 22,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: const [
+                                        Icon(Icons.assignment_turned_in, color: Colors.white, size: 22),
+                                        SizedBox(width: 10),
+                                        Text(
+                                          'Realizar test',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w900,
+                                            color: Colors.white,
+                                            fontSize: 18,
+                                            letterSpacing: 0.2,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    label: const Text(
-                                      'Realizar test',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w900,
-                                        color: Colors.white,
-                                        fontSize: 18,
-                                        letterSpacing: 0.2,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                const Text(
-                                  'Completar el test inicial desbloquea todo el contenido.',
-                                  style: TextStyle(
-                                    color: Color(0xFF6B5332),
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 12,
                                   ),
                                 ),
                               ] else ...[

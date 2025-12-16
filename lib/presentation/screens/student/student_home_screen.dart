@@ -57,83 +57,173 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFCF8F2),
-      body: DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFFCF8F2), Color(0xFFEFE3CF)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: Column(
-          children: [
-            const _StudentHud(),
-            const SizedBox(height: 8),
-            Expanded(
-              child: _items[_currentIndex].screen,
-            ),
-          ],
-        ), 
-      ),
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF1F2533), Color(0xFF141927)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Color(0x44000000),
-              blurRadius: 16,
-              offset: Offset(0, -2),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          top: false,
-          child: BottomNavigationBar(
-            currentIndex: _currentIndex,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            selectedItemColor: const Color(0xFFFFA451),
-            unselectedItemColor: Colors.white70,
-            selectedIconTheme: const IconThemeData(size: 26, color: Color(0xFFFFA451)),
-            unselectedIconTheme: const IconThemeData(
-              size: 22,
-              color: Colors.white70,
-            ),
-            selectedLabelStyle: const TextStyle(
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.3,
-            ),
-            unselectedLabelStyle: const TextStyle(
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.2,
-            ),
-            type: BottomNavigationBarType.fixed,
-            onTap: (i) => setState(() => _currentIndex = i),
-            items: _items
-                .map(
-                  (item) => BottomNavigationBarItem(
-                    icon: Icon(item.icon),
-                    activeIcon: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFA451).withOpacity(0.16),
-                        borderRadius: BorderRadius.circular(12),
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) {
+      return const Scaffold(
+        body: Center(child: Text('Inicia sesion para continuar')),
+      );
+    }
+
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance.collection('usuarios').doc(uid).snapshots(),
+      builder: (context, snap) {
+        if (!snap.hasData || !snap.data!.exists) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator.adaptive()),
+          );
+        }
+        final data = snap.data!.data() ?? {};
+        final pretestEstado = (data['pretest_estado'] ?? 'pendiente').toString();
+        final bool pretestOk = pretestEstado == 'aprobado';
+
+        Future<void> _showPretestNeeded() async {
+          await showDialog<void>(
+            context: context,
+            builder: (ctx) => Dialog(
+              insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        width: 140,
+                        height: 140,
+                        fit: BoxFit.cover,
                       ),
-                      child: Icon(item.activeIcon, color: const Color(0xFFFFA451)),
                     ),
-                    label: item.label,
-                  ),
-                )
-                .toList(),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Completa el pretest',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 18,
+                        color: Color(0xFF2C1B0E),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Necesitas aprobar el pretest para desbloquear las demas secciones. Ve a Aprende y realiza el test.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Color(0xFF4B4F56),
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13.2,
+                        height: 1.35,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.of(ctx).pop(),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFFA451),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: const Text(
+                          'Entendido',
+                          style: TextStyle(fontWeight: FontWeight.w800),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+
+        return Scaffold(
+          backgroundColor: const Color(0xFFFCF8F2),
+          body: DecoratedBox(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFFFCF8F2), Color(0xFFEFE3CF)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+            child: Column(
+              children: [
+                const _StudentHud(),
+                const SizedBox(height: 8),
+                Expanded(
+                  child: _items[_currentIndex].screen,
+                ),
+              ],
+            ), 
           ),
-        ),
-      ),
+          bottomNavigationBar: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF1F2533), Color(0xFF141927)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0x44000000),
+                  blurRadius: 16,
+                  offset: Offset(0, -2),
+                ),
+              ],
+            ),
+            child: SafeArea(
+              top: false,
+              child: BottomNavigationBar(
+                currentIndex: _currentIndex,
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                selectedItemColor: const Color(0xFFFFA451),
+                unselectedItemColor: Colors.white70,
+                selectedIconTheme: const IconThemeData(size: 26, color: Color(0xFFFFA451)),
+                unselectedIconTheme: const IconThemeData(
+                  size: 22,
+                  color: Colors.white70,
+                ),
+                selectedLabelStyle: const TextStyle(
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.3,
+                ),
+                unselectedLabelStyle: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.2,
+                ),
+                type: BottomNavigationBarType.fixed,
+                onTap: (i) async {
+                  if (!pretestOk && i > 0) {
+                    await _showPretestNeeded();
+                    return;
+                  }
+                  setState(() => _currentIndex = i);
+                },
+                items: _items
+                    .map(
+                      (item) => BottomNavigationBarItem(
+                        icon: Icon(item.icon),
+                        activeIcon: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFA451).withOpacity(0.16),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(item.activeIcon, color: const Color(0xFFFFA451)),
+                        ),
+                        label: item.label,
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
