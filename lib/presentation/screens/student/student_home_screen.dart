@@ -197,7 +197,8 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                 ),
                 type: BottomNavigationBarType.fixed,
                 onTap: (i) async {
-                  if (!pretestOk && i > 0) {
+                  final bool isAjustes = _items[i].label.toLowerCase() == 'ajustes';
+                  if (!pretestOk && i > 0 && !isAjustes) {
                     await _showPretestNeeded();
                     return;
                   }

@@ -106,7 +106,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                    color: const Color(0xFFFFA451),
+                        color: const Color(0xFFFFA451),
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: const Icon(Icons.person, color: Colors.white),
@@ -288,7 +288,15 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                             ),
                           ],
                         ),
-                        child: const Icon(Icons.person, color: Colors.white, size: 32),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.asset(
+                            'assets/images/logo.png',
+                            width: 32,
+                            height: 32,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
                       ),
                       const SizedBox(width: 14),
                       Expanded(
@@ -320,7 +328,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.edit, color: Color(0xFF6B7280)),
+                        icon: const Icon(Icons.edit, color: Color(0xFFFF8A3D)),
                         onPressed: () => _showEditSheet(context, nombre),
                       ),
                     ],
@@ -574,7 +582,7 @@ class _AchievementsSection extends StatelessWidget {
         children: [
           Row(
             children: const [
-              Icon(Icons.emoji_events, color: Color(0xFF283347)),
+              Icon(Icons.emoji_events, color: Color(0xFFFF8A3D)),
               SizedBox(width: 8),
               Text(
                 'Logros y medallas',
