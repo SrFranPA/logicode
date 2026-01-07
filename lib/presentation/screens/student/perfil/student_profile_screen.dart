@@ -404,7 +404,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
     final divisionActual = (userData['division_actual'] ?? '').toString().toLowerCase();
     final divisionTitles = ['Recolector', 'Arquitecto', 'Explorador'];
     for (final t in divisionTitles) {
-      if (divisionActual.startsWith(t.toLowerCase()) && !unlockedTitles.contains(t)) {
+      if (_isDivisionNivel3(divisionActual, t) && !unlockedTitles.contains(t)) {
         nuevos.add({
           'titulo': t,
           'unlocked': true,
@@ -417,8 +417,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
     for (var i = 0; i < cursos.length && i < 9; i++) {
       final doc = cursos[i];
       final progresoCurso = (progresoCursos[doc.id] as Map?) ?? {};
-      final finalScore = (progresoCurso['final_score'] as num?)?.toInt() ?? 0;
-      final aprobado = progresoCurso['final_aprobado'] == true && finalScore >= 7;
+      final aprobado = _cursoFinalAprobado(progresoCurso);
       final titulo = 'Curso ${i + 1}';
       if (aprobado && !unlockedTitles.contains(titulo)) {
         nuevos.add({
@@ -486,6 +485,17 @@ IconData _iconFromString(String name) {
   }
 }
 
+bool _cursoFinalAprobado(Map progresoCurso) {
+  final finalScore = (progresoCurso['final_score'] as num?)?.toInt() ?? 0;
+  return progresoCurso['final_aprobado'] == true && finalScore >= 7;
+}
+
+bool _isDivisionNivel3(String divisionActual, String baseNombre) {
+  final pref = baseNombre.toLowerCase();
+  if (!divisionActual.startsWith(pref)) return false;
+  return divisionActual.contains('_3');
+}
+
 class _AchievementsSection extends StatelessWidget {
   final Map<String, dynamic> userData;
   final List<QueryDocumentSnapshot<Map<String, dynamic>>> cursos;
@@ -549,8 +559,7 @@ class _AchievementsSection extends StatelessWidget {
     }
 
     bool _desbloqueaDivision(String baseNombre) {
-      final pref = baseNombre.toLowerCase();
-      return divisionActual.startsWith(pref);
+      return _isDivisionNivel3(divisionActual, baseNombre);
     }
 
     bool _unlockedStored(String titulo) {
@@ -575,8 +584,7 @@ class _AchievementsSection extends StatelessWidget {
       final doc = cursos[i];
       final data = doc.data();
       final progresoCurso = (progresoCursos[doc.id] as Map?) ?? {};
-      final finalScore = (progresoCurso['final_score'] as num?)?.toInt() ?? 0;
-      final aprobado = progresoCurso['final_aprobado'] == true && finalScore >= 7;
+      final aprobado = _cursoFinalAprobado(progresoCurso);
       final numeroCurso = i + 1;
       cursoItems.add({
         'titulo': 'Curso $numeroCurso',

@@ -1,4 +1,4 @@
-// lib/presentation/modals/login_options_modal.dart
+﻿// lib/presentation/modals/login_options_modal.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -89,15 +89,6 @@ class _LoginOptionsModalState extends State<LoginOptionsModal> {
                   },
                 ),
                 const SizedBox(height: 12),
-
-                // 🔥 Teléfono
-                PhoneLoginButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _showPhoneInputModal(context);
-                  },
-                ),
-
                 const SizedBox(height: 25),
               ],
 
@@ -418,4 +409,5 @@ class _LoginOptionsModalState extends State<LoginOptionsModal> {
     );
   }
 }
+
 

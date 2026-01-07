@@ -3,6 +3,29 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+bool _isDivisionBaseId(String idOrName) {
+  final key = idOrName.toLowerCase();
+  return key.contains('_1') || key.contains('_2');
+}
+
+String _assetForDivisionId(String idOrName) {
+  final key = idOrName.toLowerCase();
+  if (key.contains('arquitecto')) return 'assets/images/medallas/arquitecto.png';
+  if (key.contains('recolector')) return 'assets/images/medallas/recolector.png';
+  if (key.contains('explorador')) return 'assets/images/medallas/explorador.png';
+  return 'assets/images/medallas/explorador.png';
+}
+
+bool _shouldLockDivision(String idOrName, String? currentDivision) {
+  final key = idOrName.toLowerCase();
+  if (currentDivision != null &&
+      currentDivision.isNotEmpty &&
+      currentDivision.toLowerCase() == key) {
+    return false;
+  }
+  return key.contains('_3') || key.contains('arquitecto_4');
+}
+
 class DivisionesScreen extends StatefulWidget {
   const DivisionesScreen({super.key});
 
@@ -16,6 +39,8 @@ class _DivisionesScreenState extends State<DivisionesScreen> {
   String? _uid;
   List<QueryDocumentSnapshot<Map<String, dynamic>>> _divisiones = [];
   bool _updatingDivision = false;
+  String? _lastDivisionNotified;
+  bool _readyForDivisionToast = false;
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _divSub;
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _userSub;
 
@@ -58,6 +83,7 @@ class _DivisionesScreenState extends State<DivisionesScreen> {
           _loadingDivision = false;
         });
       }
+      _maybeShowDivisionUpgrade(div);
       _syncDivisionWithXp();
     });
   }
@@ -94,6 +120,47 @@ class _DivisionesScreenState extends State<DivisionesScreen> {
         _updatingDivision = false;
       }
     }
+  }
+
+  void _maybeShowDivisionUpgrade(String? newDiv) {
+    if (newDiv == null || newDiv.isEmpty) return;
+    if (!_readyForDivisionToast) {
+      _readyForDivisionToast = true;
+      _lastDivisionNotified = newDiv;
+      return;
+    }
+    if (_lastDivisionNotified == newDiv) return;
+    _lastDivisionNotified = newDiv;
+    _showDivisionSnack(newDiv);
+  }
+
+  void _showDivisionSnack(String divisionId) {
+    if (!mounted) return;
+    final match = _divisiones.where((d) => d.id == divisionId).toList();
+    final nombre = match.isNotEmpty
+        ? (match.first.data()['nombre'] ?? divisionId).toString()
+        : divisionId;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: const Color(0xFF1E2433),
+          behavior: SnackBarBehavior.floating,
+          content: Row(
+            children: [
+              const Icon(Icons.emoji_events, color: Color(0xFFFFA451)),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  '¡Felicidades! Subiste a $nombre. Sigue así, vas excelente.',
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
   }
 
   @override
@@ -142,15 +209,11 @@ class _DivisionesScreenState extends State<DivisionesScreen> {
                           shape: BoxShape.circle,
                         ),
                         child: _divisionActual != null && _divisionActual!.isNotEmpty
-                            ? ClipOval(
-                                child: Image.asset(
-                                  _assetForDivision(_divisionActual!),
-                                  width: 64,
-                                  height: 64,
-                                  cacheWidth: 128,
-                                  cacheHeight: 128,
-                                  fit: BoxFit.cover,
-                                ),
+                            ? _divisionBadgeWidget(
+                                idOrName: _divisionActual!,
+                                currentDivision: _divisionActual,
+                                size: 64,
+                                dark: dark,
                               )
                             : const Icon(Icons.flag, color: Colors.white),
                       ),
@@ -239,7 +302,7 @@ class _DivisionesScreenState extends State<DivisionesScreen> {
                       estado: '',
                       color: _colorForDivision(doc.id, accent, accentAlt),
                       xpMin: xpMin,
-                      asset: _assetForDivision(doc.id),
+                      asset: _assetForDivisionId(doc.id),
                       iconoUrl: (data['icono_url'] ?? '').toString(),
                     );
                   }).toList().asMap().entries.map((entry) {
@@ -257,6 +320,7 @@ class _DivisionesScreenState extends State<DivisionesScreen> {
                     return _DivisionCard(
                       data: d.copyWith(estado: estado),
                       dark: dark,
+                      currentDivision: _divisionActual,
                       isCurrent: isCurrent,
                       isNext: isNext,
                     );
@@ -296,12 +360,43 @@ class _DivisionesScreenState extends State<DivisionesScreen> {
     );
   }
 
-  String _assetForDivision(String idOrName) {
-    final key = idOrName.toLowerCase();
-    if (key.contains('arquitecto')) return 'assets/images/medallas/arquitecto.png';
-    if (key.contains('recolector')) return 'assets/images/medallas/recolector.png';
-    if (key.contains('explorador')) return 'assets/images/medallas/explorador.png';
-    return 'assets/images/medallas/explorador.png';
+  bool _isDivisionBase(String idOrName) {
+    return _isDivisionBaseId(idOrName);
+  }
+
+  Widget _divisionBadgeWidget({
+    required String idOrName,
+    required String? currentDivision,
+    required double size,
+    required Color dark,
+  }) {
+    if (_isDivisionBaseId(idOrName)) {
+      return Center(
+        child: Icon(
+          Icons.extension_rounded,
+          color: Colors.white,
+          size: size * 0.6,
+        ),
+      );
+    }
+    final img = Image.asset(
+      _assetForDivisionId(idOrName),
+      width: size,
+      height: size,
+      cacheWidth: (size * 2).round(),
+      cacheHeight: (size * 2).round(),
+      fit: BoxFit.cover,
+    );
+    if (_shouldLockDivision(idOrName, currentDivision)) {
+      return Stack(
+        alignment: Alignment.center,
+        children: [
+          ClipOval(child: Opacity(opacity: 0.35, child: img)),
+          Icon(Icons.lock, color: Colors.white.withOpacity(0.9), size: size * 0.45),
+        ],
+      );
+    }
+    return ClipOval(child: img);
   }
 
   Color _colorForDivision(String idOrName, Color accent, Color accentAlt) {
@@ -583,12 +678,14 @@ class _DivisionCardData {
 class _DivisionCard extends StatelessWidget {
   final _DivisionCardData data;
   final Color dark;
+  final String? currentDivision;
   final bool isCurrent;
   final bool isNext;
 
   const _DivisionCard({
     required this.data,
     required this.dark,
+    required this.currentDivision,
     this.isCurrent = false,
     this.isNext = false,
   });
@@ -629,28 +726,51 @@ class _DivisionCard extends StatelessWidget {
               color: data.color.withOpacity(0.18),
               border: Border.all(color: data.color.withOpacity(0.4)),
             ),
-            child: data.iconoUrl.isNotEmpty
-                ? ClipOval(
-                    child: Image.network(
-                      data.iconoUrl,
-                      width: 62,
-                      height: 62,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Icon(Icons.rocket_launch, color: dark),
-                    ),
-                  )
-                : (data.asset != null && data.asset!.isNotEmpty
-                    ? ClipOval(
-                        child: Image.asset(
-                          data.asset!,
-                          width: 62,
-                          height: 62,
-                          cacheWidth: 124,
-                          cacheHeight: 124,
-                          fit: BoxFit.cover,
-                        ),
+            child: _isDivisionBaseId(data.id)
+                ? Icon(Icons.extension_rounded, color: dark, size: 38)
+                : _shouldLockDivision(data.id, currentDivision)
+                    ? Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          ClipOval(
+                            child: Opacity(
+                              opacity: 0.35,
+                              child: Image.asset(
+                                data.asset ?? _assetForDivisionId(data.id),
+                                width: 62,
+                                height: 62,
+                                cacheWidth: 124,
+                                cacheHeight: 124,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          Icon(Icons.lock, color: dark, size: 28),
+                        ],
                       )
-                    : Icon(Icons.rocket_launch, color: dark)),
+                    : data.iconoUrl.isNotEmpty
+                        ? ClipOval(
+                            child: Image.network(
+                              data.iconoUrl,
+                              width: 62,
+                              height: 62,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) =>
+                                  Icon(Icons.rocket_launch, color: dark),
+                            ),
+                          )
+                        : (data.asset != null && data.asset!.isNotEmpty
+                            ? ClipOval(
+                                child: Image.asset(
+                                  data.asset!,
+                                  width: 62,
+                                  height: 62,
+                                  cacheWidth: 124,
+                                  cacheHeight: 124,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                            : Icon(Icons.rocket_launch, color: dark)),
           ),
           const SizedBox(width: 12),
           Expanded(
