@@ -34,9 +34,9 @@ class CursoScreen extends StatefulWidget {
 
 class _CursoScreenState extends State<CursoScreen> {
   final List<_Lesson> lessons = const [
-    _Lesson(title: 'Leccion 1', detail: 'Conceptos basicos'),
-    _Lesson(title: 'Leccion 2', detail: 'Practica guiada'),
-    _Lesson(title: 'Leccion 3', detail: 'Desafio final'),
+    _Lesson(title: 'Leccion 1', detail: 'Conceptos básicos'),
+    _Lesson(title: 'Leccion 2', detail: 'Práctica guiada'),
+    _Lesson(title: 'Leccion 3', detail: 'Desafío final'),
   ];
 
   late List<bool> _completed;
@@ -100,7 +100,7 @@ class _CursoScreenState extends State<CursoScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Comienza fuerte: cada leccion te acerca a tu meta. ¡Tu puedes!',
+                'Comienza fuerte: cada lección te acerca a tu meta. ¡Tú puedes!',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Color(0xFF1F2937),
@@ -192,7 +192,7 @@ class _CursoScreenState extends State<CursoScreen> {
     if (!unlocked) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Completa la leccion anterior para continuar.'),
+          content: Text('Completa la lección anterior para continuar.'),
         ),
       );
       return;
@@ -319,7 +319,7 @@ class _CursoScreenState extends State<CursoScreen> {
                 ),
                 const SizedBox(height: 4),
                 const Text(
-                  'Avanza paso a paso. Cada leccion desbloquea la siguiente.',
+                  'Avanza paso a paso. Cada lección desbloquea la siguiente.',
                   style: TextStyle(
                     color: Color(0xFF5A5248),
                     fontWeight: FontWeight.w600,
@@ -392,7 +392,7 @@ class _CursoScreenState extends State<CursoScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      item.title,
+                                      _displayLeccionTitle(item.title),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(
@@ -554,6 +554,13 @@ class _CursoScreenState extends State<CursoScreen> {
         ),
       ),
     );
+  }
+
+  String _displayLeccionTitle(String title) {
+    if (title.startsWith('Leccion')) {
+      return title.replaceFirst('Leccion', 'Lección');
+    }
+    return title;
   }
 
   List<Color> _lessonPalette(int index) {

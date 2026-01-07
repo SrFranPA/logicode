@@ -443,7 +443,7 @@ class _PretestScreenState extends State<PretestScreen> {
                       const SizedBox(height: 12),
                       Row(
                         children: [
-                          _badge(Icons.check_circle_outline, "Responde y continua", const Color(0xFF3FB07F)),
+                          _badge(Icons.check_circle_outline, "Responde y continúa", const Color(0xFF3FB07F)),
                           const SizedBox(width: 10),
                           _badge(Icons.shuffle, "Orden aleatorio", const Color(0xFFE57373)),
                         ],

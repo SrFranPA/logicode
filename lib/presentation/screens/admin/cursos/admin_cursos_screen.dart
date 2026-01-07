@@ -1,4 +1,4 @@
-// lib/presentation/screens/admin/cursos/admin_cursos_screen.dart
+﻿// lib/presentation/screens/admin/cursos/admin_cursos_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -27,7 +27,7 @@ class AdminCursosScreen extends StatelessWidget {
               ),
             ),
             content: const Text(
-              "¿Seguro que deseas eliminar este curso? Esta acción no se puede deshacer.",
+              "¿¿¿¿Seguro que deseas eliminar este curso? Esta acción no se puede deshacer.",
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.black87,
@@ -124,6 +124,10 @@ class AdminCursosScreen extends StatelessWidget {
               const SizedBox(height: 12),
               TextField(
                 controller: nombreCtrl,
+                keyboardType: TextInputType.text,
+                textCapitalization: TextCapitalization.sentences,
+                autocorrect: true,
+                enableSuggestions: true,
                 decoration: InputDecoration(
                   labelText: "Nombre",
                   border: OutlineInputBorder(
@@ -134,6 +138,10 @@ class AdminCursosScreen extends StatelessWidget {
               const SizedBox(height: 12),
               TextField(
                 controller: descCtrl,
+                keyboardType: TextInputType.text,
+                textCapitalization: TextCapitalization.sentences,
+                autocorrect: true,
+                enableSuggestions: true,
                 decoration: InputDecoration(
                   labelText: "Descripción",
                   border: OutlineInputBorder(

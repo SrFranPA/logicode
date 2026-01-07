@@ -53,7 +53,7 @@ class PretestResultScreen extends StatelessWidget {
                       Icon(Icons.visibility_off, size: 46, color: Color(0xFF555B64)),
                       SizedBox(height: 10),
                       Text(
-                        'La nota del test diagnostico esta oculta por administracion.',
+                        'La nota del test diagnóstico está oculta por administración.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 16,

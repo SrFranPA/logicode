@@ -215,7 +215,7 @@ class _DivisionesScreenState extends State<DivisionesScreen> {
               ),
               const SizedBox(height: 6),
               const Text(
-                'Cada division desbloquea nuevos retos. Completa XP para avanzar.',
+                'Cada división desbloquea nuevos retos. Completa XP para avanzar.',
                 style: TextStyle(
                   fontSize: 13,
                   color: Color(0xFF555B64),
@@ -282,7 +282,7 @@ class _DivisionesScreenState extends State<DivisionesScreen> {
                     SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Completa lecciones y refuerzo para sumar XP. Las divisiones se actualizan automaticamente.',
+                        'Completa lecciones y refuerzo para sumar XP. Las divisiones se actualizan automáticamente.',
                         style: TextStyle(color: Colors.white, fontSize: 13),
                       ),
                     ),
@@ -401,8 +401,8 @@ class _TopGlobalSection extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Text(
                       divisionActual != null && divisionActual!.isNotEmpty
-                          ? 'Aun no hay usuarios en esta division.'
-                          : 'Aun no hay usuarios registrados.',
+                          ? 'Aún no hay usuarios en esta división.'
+                          : 'Aún no hay usuarios registrados.',
                       style: const TextStyle(color: Color(0xFF555B64)),
                     ),
                   );
@@ -428,7 +428,7 @@ class _TopGlobalSection extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          'Tu posicion: #$userPosition',
+                          'Tu posición: #$userPosition',
                           style: TextStyle(
                             color: accent,
                             fontWeight: FontWeight.w800,
@@ -493,7 +493,7 @@ class _TopGlobalSection extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    division.isNotEmpty ? division : 'Division actual',
+                                    division.isNotEmpty ? division : 'División actual',
                                     style:
                                         const TextStyle(color: Color(0xFF555B64), fontSize: 12),
                                   ),

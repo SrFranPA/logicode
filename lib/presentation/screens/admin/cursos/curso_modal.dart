@@ -1,4 +1,4 @@
-// lib/presentation/screens/admin/cursos/curso_modal.dart
+﻿// lib/presentation/screens/admin/cursos/curso_modal.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -62,6 +62,10 @@ class _CursoModalState extends State<CursoModal> {
 
             TextField(
               controller: nombreCtrl,
+              keyboardType: TextInputType.text,
+              textCapitalization: TextCapitalization.sentences,
+              autocorrect: true,
+              enableSuggestions: true,
               decoration: const InputDecoration(labelText: "Nombre"),
             ),
 
@@ -69,6 +73,10 @@ class _CursoModalState extends State<CursoModal> {
 
             TextField(
               controller: descripcionCtrl,
+              keyboardType: TextInputType.text,
+              textCapitalization: TextCapitalization.sentences,
+              autocorrect: true,
+              enableSuggestions: true,
               decoration: const InputDecoration(labelText: "Descripción"),
             ),
 

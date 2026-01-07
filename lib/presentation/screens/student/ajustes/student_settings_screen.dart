@@ -126,7 +126,7 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
               const SizedBox(height: 10),
               _actionTile(
                 icon: Icons.lock_reset,
-                title: 'Cambiar contrasena',
+                title: 'Cambiar contraseña',
                 subtitle: 'Actualiza la clave de acceso de tu laboratorio.',
                 gradient: const [Color(0xFF1E2433), Color(0xFF283347)],
                 onTap: () async {
@@ -135,8 +135,8 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
               ),
               _actionTile(
                 icon: Icons.logout,
-                title: 'Cerrar sesion',
-                subtitle: 'Sal de la aplicacion de forma segura.',
+                title: 'Cerrar sesión',
+                subtitle: 'Sal de la aplicación de forma segura.',
                 gradient: const [Color(0xFF1E2433), Color(0xFF283347)],
                 onTap: () async {
                   await FirebaseAuth.instance.signOut();
@@ -257,7 +257,7 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text(
-                    'Cambiar contrasena',
+                    'Cambiar contraseña',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
                   ),
                   const SizedBox(height: 16),
@@ -265,7 +265,7 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
                     controller: currentCtrl,
                     obscureText: true,
                     decoration: InputDecoration(
-                      labelText: 'Contrasena actual',
+                      labelText: 'Contraseña actual',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
@@ -274,7 +274,7 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
                     controller: newCtrl,
                     obscureText: true,
                     decoration: InputDecoration(
-                      labelText: 'Nueva contrasena',
+                      labelText: 'Nueva contraseña',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
@@ -283,7 +283,7 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
                     controller: confirmCtrl,
                     obscureText: true,
                     decoration: InputDecoration(
-                      labelText: 'Confirmar nueva contrasena',
+                      labelText: 'Confirmar nueva contraseña',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
@@ -305,7 +305,7 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
                               }
                               if (next != confirm) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('La nueva contrasena no coincide.')),
+                                  const SnackBar(content: Text('La nueva contraseña no coincide.')),
                                 );
                                 return;
                               }
@@ -328,12 +328,12 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
                                 if (mounted) {
                                   Navigator.of(context).pop();
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Contrasena actualizada.')),
+                                    const SnackBar(content: Text('Contraseña actualizada.')),
                                   );
                                 }
                               } catch (_) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Contrasena actual invalida.')),
+                                  const SnackBar(content: Text('Contraseña actual inválida.')),
                                 );
                               } finally {
                                 if (mounted) setSheetState(() => loading = false);

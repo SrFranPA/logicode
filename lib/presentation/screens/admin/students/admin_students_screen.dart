@@ -152,7 +152,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
         return DropdownButtonFormField<String>(
           value: selectedDivision,
           decoration: InputDecoration(
-            labelText: "Division",
+            labelText: "División",
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
           items: [
@@ -321,7 +321,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                             _pill("Rol: ${showingAdmins ? 'Administrador' : 'Estudiante'}",
                                 color: const Color(0xFFFFE4B8)),
                             if (!showingAdmins)
-                              _pill("Division: ${division.isEmpty ? 'N/D' : division}",
+                              _pill("División: ${division.isEmpty ? 'N/D' : division}",
                                   color: const Color(0xFFE9ECF3)),
                             if (!showingAdmins)
                               _pill("Curso: ${curso.isEmpty ? 'N/D' : curso}",
@@ -423,8 +423,8 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text("Confirmar eliminacion"),
-        content: const Text("Seguro que deseas eliminar este estudiante?"),
+        title: const Text("Confirmar eliminación"),
+        content: const Text("¿Seguro que deseas eliminar este estudiante?"),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),

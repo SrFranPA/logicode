@@ -176,7 +176,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
     final authUser = FirebaseAuth.instance.currentUser;
     if (authUser == null) {
       return const Scaffold(
-        body: Center(child: Text('Inicia sesion para ver tu perfil')),
+        body: Center(child: Text('Inicia sesión para ver tu perfil')),
       );
     }
     final uid = authUser.uid;
@@ -324,7 +324,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                   ],
                 ),
                 _StatTile(
-                  title: 'Division actual',
+                  title: 'División actual',
                   value: divisionActual,
                   subtitle: 'Sube con XP y refuerzo',
                   icon: Icons.rocket_launch,
@@ -371,7 +371,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                       SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          'Pronto podras editar tu avatar, vincular redes y descargar tu certificado.',
+                          'Pronto podrás editar tu avatar, vincular redes y descargar tu certificado.',
                           style: TextStyle(color: Color(0xFF1E2026), fontSize: 13),
                         ),
                       ),
@@ -507,14 +507,14 @@ class _AchievementsSection extends StatelessWidget {
         'asset': 'assets/images/medallas/recolector.png',
         'color': '#FFA451',
         'categoria': 'divisiones',
-        'desc': 'Completa retos iniciales de division.'
+        'desc': 'Completa retos iniciales de división.'
       },
       {
         'titulo': 'Arquitecto',
         'asset': 'assets/images/medallas/arquitecto.png',
         'color': '#FF8A3D',
         'categoria': 'divisiones',
-        'desc': 'Disena tu ruta y sube de nivel.'
+        'desc': 'Diseña tu ruta y sube de nivel.'
       },
       {
         'titulo': 'Explorador',

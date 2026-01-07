@@ -335,12 +335,12 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
   Widget _infoGrid(String division, String curso, String racha) {
     return _infoTile(
       icon: Icons.account_tree,
-      label: "Division",
+      label: "División",
       value: division.isEmpty ? "No asignada" : division,
       highlightValue: true,
       onEdit: () => showEditModal(
         fieldName: "division_actual",
-        label: "Division",
+        label: "División",
         initialValue: division,
         isDropdown: true,
         fetchOptions: () async {

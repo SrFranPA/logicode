@@ -138,7 +138,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Text(
-                  'Diagnostico / Final',
+                  'Diagnóstico / Final',
                   style: TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 12,
@@ -150,7 +150,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
           ),
           const SizedBox(height: 10),
           const Text(
-            'Abre la tabla con los resultados de test diagnostico y finales de curso para revisar el desempeño.',
+            'Abre la tabla con los resultados de test diagnóstico y finales de curso para revisar el desempeño.',
             style: TextStyle(
               color: Color(0xFF4B4F56),
               fontWeight: FontWeight.w700,
@@ -239,7 +239,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
         },
         icon: const Icon(Icons.logout),
         label: const Text(
-          'Cerrar sesion',
+          'Cerrar sesión',
           style: TextStyle(fontWeight: FontWeight.w800),
         ),
         style: ElevatedButton.styleFrom(
@@ -584,7 +584,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
             runSpacing: 8,
             children: [
               _statChip(
-                'Promedio diagnostico',
+                'Promedio diagnóstico',
                 avg.promedioPre == null ? '' : '${avg.promedioPre!.toStringAsFixed(1)}%',
               ),
               _statChip(
@@ -1152,7 +1152,7 @@ class _AdminTestResultsScreenState extends State<_AdminTestResultsScreen>
                         unselectedLabelColor: const Color(0xFF7C8391),
                         indicatorColor: const Color(0xFF6A7FDB),
                         tabs: const [
-                          Tab(text: 'Diagnostico'),
+                          Tab(text: 'Diagnóstico'),
                           Tab(text: 'Test final'),
                         ],
                       ),
@@ -1181,7 +1181,7 @@ class _AdminTestResultsScreenState extends State<_AdminTestResultsScreen>
                       children: [
                         _EvaluacionesTable(
                           futureRows: _diagFuture ?? Future.value([]),
-                          emptyText: 'No hay resultados de diagnostico.',
+                          emptyText: 'No hay resultados de diagnóstico.',
                         ),
                         _PostVectorTable(
                           futureRows: _postFuture ?? Future.value([]),

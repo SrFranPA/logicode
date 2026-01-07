@@ -709,8 +709,8 @@ class _AdminLeccionesScreenState extends State<AdminLeccionesScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text("Confirmar eliminacion"),
-        content: const Text("Seguro que deseas eliminar esta pregunta?"),
+        title: const Text("Confirmar eliminación"),
+        content: const Text("¿Seguro que deseas eliminar esta pregunta?"),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),

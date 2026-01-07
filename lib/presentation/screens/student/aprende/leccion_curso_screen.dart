@@ -465,7 +465,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Tomate un respiro y vuelve a intentarlo. Puedes practicar en Refuerzo.',
+                'Tómate un respiro y vuelve a intentarlo. Puedes practicar en Refuerzo.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Color(0xFF1F2937),
@@ -658,16 +658,24 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
     return 30; // muy facil u otro
   }
 
+  String _displayLeccionTitle(String title) {
+    if (title.startsWith('Leccion')) {
+      return title.replaceFirst('Leccion', 'Lección');
+    }
+    return title;
+  }
+
   @override
   Widget build(BuildContext context) {
     const Color tomato = Color(0xFFFFA451);
     final Color accentSoft = widget.accentColor.withOpacity(0.20);
+    final displayLeccion = _displayLeccionTitle(widget.leccionTitulo);
 
     Future<bool> confirmExit() async {
       return await showDialog<bool>(
             context: context,
             builder: (_) => AlertDialog(
-              title: const Text('Salir de la leccion'),
+              title: const Text('Salir de la lección'),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -679,7 +687,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                   ),
                   const SizedBox(height: 12),
                   const Text(
-                    'Perderas tu progreso actual. Deseas salir?',
+                    'Perderás tu progreso actual. ¿Deseas salir?',
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -711,7 +719,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
         appBar: AppBar(
         backgroundColor: widget.accentColor,
         foregroundColor: Colors.white,
-          title: Text(widget.leccionTitulo),
+          title: Text(displayLeccion),
         ),
         body: const Center(
           child: Padding(
@@ -734,11 +742,11 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
         backgroundColor: const Color(0xFFFCF8F2),
         appBar: AppBar(
         backgroundColor: const Color(0xFF283347),
-          title: Text(widget.leccionTitulo),
+          title: Text(displayLeccion),
         ),
         body: const Center(
           child: Text(
-            'No hay preguntas para esta leccion.',
+            'No hay preguntas para esta lección.',
             style: TextStyle(color: Color(0xFF2C1B0E)),
           ),
         ),
@@ -783,7 +791,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        widget.leccionTitulo,
+                        displayLeccion,
                         style: const TextStyle(
                           fontWeight: FontWeight.w900,
                           color: Colors.white,
@@ -842,7 +850,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                widget.leccionTitulo,
+                                displayLeccion,
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 13,

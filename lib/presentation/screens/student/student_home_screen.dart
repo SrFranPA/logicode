@@ -61,7 +61,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) {
       return const Scaffold(
-        body: Center(child: Text('Inicia sesion para continuar')),
+        body: Center(child: Text('Inicia sesión para continuar')),
       );
     }
 
@@ -109,7 +109,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'Necesitas aprobar el pretest para desbloquear las demas secciones. Ve a Aprende y realiza el test.',
+                      'Necesitas aprobar el pretest para desbloquear las demás secciones. Ve a Aprende y realiza el test.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Color(0xFF4B4F56),
@@ -460,7 +460,7 @@ class _StudentHudState extends State<_StudentHud> {
                                   size: 18, color: Colors.white),
                               const SizedBox(width: 6),
                               Text(
-                                '$racha dias',
+                                '$racha días',
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.w700,
