@@ -11,6 +11,7 @@ import 'ajustes/student_settings_screen.dart';
   import 'divisiones/divisiones_screen.dart';
   import 'practicas/student_practicas_screen.dart';
   import 'perfil/student_profile_screen.dart';
+import '../../../services/notification_service.dart';
 
 class StudentHomeScreen extends StatefulWidget {
   const StudentHomeScreen({super.key});
@@ -260,6 +261,7 @@ class _StudentHudState extends State<_StudentHud> {
   DateTime _now = DateTime.now();
   int _tickCounter = 0;
   bool _notifiedFullLives = false;
+  DateTime? _lastStreakWarningDay;
 
   @override
   void initState() {
@@ -295,6 +297,7 @@ class _StudentHudState extends State<_StudentHud> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Vidas recargadas')),
         );
+        NotificationService.showLivesFull();
         _notifiedFullLives = true;
       }
       return;
@@ -331,6 +334,7 @@ class _StudentHudState extends State<_StudentHud> {
     return '$m:$s';
   }
 
+
   @override
   Widget build(BuildContext context) {
     final uid = FirebaseAuth.instance.currentUser!.uid;
@@ -360,6 +364,8 @@ class _StudentHudState extends State<_StudentHud> {
           final diff = nextRecuperacion.difference(_now);
           restante = diff.isNegative ? Duration.zero : diff;
         }
+
+        _maybeNotifyStreak(data);
 
         return FutureBuilder<DocumentSnapshot<Map<String, dynamic>>?>(
           future: divisionId.isNotEmpty
@@ -551,5 +557,25 @@ class _StudentHudState extends State<_StudentHud> {
         );
       },
     );
+  }
+
+  void _maybeNotifyStreak(Map<String, dynamic> data) {
+    final lastTs = data['ultima_racha'];
+    if (lastTs is! Timestamp) return;
+    final last = lastTs.toDate();
+    final today = DateTime(_now.year, _now.month, _now.day);
+    final lastDate = DateTime(last.year, last.month, last.day);
+    final diffDays = today.difference(lastDate).inDays;
+    if (diffDays != 1) return; // racha en riesgo solo si fue ayer
+    if (_now.hour < 18) return;
+    final lastWarn = _lastStreakWarningDay;
+    if (lastWarn != null &&
+        lastWarn.year == today.year &&
+        lastWarn.month == today.month &&
+        lastWarn.day == today.day) {
+      return;
+    }
+    _lastStreakWarningDay = today;
+    NotificationService.showStreakWarning();
   }
 }

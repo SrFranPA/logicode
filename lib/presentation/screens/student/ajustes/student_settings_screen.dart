@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
 class StudentSettingsScreen extends StatefulWidget {
@@ -12,6 +13,7 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
   bool _notificaciones = true;
   bool _modoFoco = false;
   bool _recordatorios = true;
+  bool _loadingNotif = false;
 
   @override
   Widget build(BuildContext context) {
@@ -109,15 +111,8 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
                 title: 'Notificaciones',
                 subtitle: 'Recibe avisos de nuevas misiones y recordatorios.',
                 value: _notificaciones,
-                onChanged: (v) => setState(() => _notificaciones = v),
+                onChanged: _loadingNotif ? null : (v) => _toggleNotificaciones(v),
                 accent: const Color(0xFFFFA451),
-              ),
-              _settingTile(
-                title: 'Recordatorios diarios',
-                subtitle: 'Resumen rapido cada dia.',
-                value: _recordatorios,
-                onChanged: (v) => setState(() => _recordatorios = v),
-                accent: const Color(0xFFFF8A3D),
               ),
               const SizedBox(height: 18),
               const Text(
@@ -135,30 +130,7 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
                 subtitle: 'Actualiza la clave de acceso de tu laboratorio.',
                 gradient: const [Color(0xFF1E2433), Color(0xFF283347)],
                 onTap: () async {
-                  final user = FirebaseAuth.instance.currentUser;
-                  final email = user?.email;
-                  if (email == null || email.isEmpty) {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('No pudimos obtener tu correo. Intenta mas tarde.')),
-                      );
-                    }
-                    return;
-                  }
-                  try {
-                    await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Te enviamos un correo a $email para cambiar la contrasena.')),
-                      );
-                    }
-                  } catch (_) {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('No se pudo enviar el correo. Intenta nuevamente.')),
-                      );
-                    }
-                  }
+                  await _showChangePasswordSheet();
                 },
               ),
               _actionTile(
@@ -183,7 +155,7 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
     required String title,
     required String subtitle,
     required bool value,
-    required ValueChanged<bool> onChanged,
+    required ValueChanged<bool>? onChanged,
     Color accent = const Color(0xFF5B8DEF),
   }) {
     return Container(
@@ -223,6 +195,165 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
           style: const TextStyle(color: Color(0xFF555B64)),
         ),
       ),
+    );
+  }
+
+  Future<void> _toggleNotificaciones(bool enabled) async {
+    setState(() {
+      _loadingNotif = true;
+      _notificaciones = enabled;
+    });
+    try {
+      await FirebaseMessaging.instance.setAutoInitEnabled(enabled);
+      if (enabled) {
+        await FirebaseMessaging.instance.requestPermission(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(enabled ? 'Notificaciones activadas.' : 'Notificaciones desactivadas.'),
+          ),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No se pudo actualizar notificaciones.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _loadingNotif = false);
+    }
+  }
+
+  Future<void> _showChangePasswordSheet() async {
+    final currentCtrl = TextEditingController();
+    final newCtrl = TextEditingController();
+    final confirmCtrl = TextEditingController();
+    bool loading = false;
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Cambiar contrasena',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: currentCtrl,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: 'Contrasena actual',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: newCtrl,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: 'Nueva contrasena',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: confirmCtrl,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: 'Confirmar nueva contrasena',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: loading
+                          ? null
+                          : () async {
+                              final current = currentCtrl.text.trim();
+                              final next = newCtrl.text.trim();
+                              final confirm = confirmCtrl.text.trim();
+                              if (current.isEmpty || next.isEmpty || confirm.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Completa todos los campos.')),
+                                );
+                                return;
+                              }
+                              if (next != confirm) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('La nueva contrasena no coincide.')),
+                                );
+                                return;
+                              }
+                              final user = FirebaseAuth.instance.currentUser;
+                              final email = user?.email;
+                              if (user == null || email == null || email.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('No se pudo validar el usuario.')),
+                                );
+                                return;
+                              }
+                              setSheetState(() => loading = true);
+                              try {
+                                final credential = EmailAuthProvider.credential(
+                                  email: email,
+                                  password: current,
+                                );
+                                await user.reauthenticateWithCredential(credential);
+                                await user.updatePassword(next);
+                                if (mounted) {
+                                  Navigator.of(context).pop();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Contrasena actualizada.')),
+                                  );
+                                }
+                              } catch (_) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Contrasena actual invalida.')),
+                                );
+                              } finally {
+                                if (mounted) setSheetState(() => loading = false);
+                              }
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFFA451),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: const Text('Guardar', style: TextStyle(fontWeight: FontWeight.w800)),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 

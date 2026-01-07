@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -13,22 +14,42 @@ class _DivisionesScreenState extends State<DivisionesScreen> {
   String? _divisionActual;
   bool _loadingDivision = true;
   String? _uid;
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> _divisiones = [];
+  bool _updatingDivision = false;
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _divSub;
+  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _userSub;
 
   @override
   void initState() {
     super.initState();
     _uid = FirebaseAuth.instance.currentUser?.uid;
-    _loadDivision();
+    _startDivisionSync();
   }
 
-  Future<void> _loadDivision() async {
+  @override
+  void dispose() {
+    _divSub?.cancel();
+    _userSub?.cancel();
+    super.dispose();
+  }
+
+  void _startDivisionSync() {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) {
       setState(() => _loadingDivision = false);
       return;
     }
-    try {
-      final doc = await FirebaseFirestore.instance.collection('usuarios').doc(uid).get();
+
+    _divSub = FirebaseFirestore.instance
+        .collection('divisiones')
+        .orderBy('xp_min')
+        .snapshots()
+        .listen((snap) {
+      _divisiones = snap.docs;
+      _syncDivisionWithXp();
+    });
+
+    _userSub = FirebaseFirestore.instance.collection('usuarios').doc(uid).snapshots().listen((doc) {
       final data = doc.data() ?? {};
       final div = data['division_actual']?.toString();
       if (mounted) {
@@ -37,8 +58,41 @@ class _DivisionesScreenState extends State<DivisionesScreen> {
           _loadingDivision = false;
         });
       }
-    } catch (_) {
-      if (mounted) setState(() => _loadingDivision = false);
+      _syncDivisionWithXp();
+    });
+  }
+
+  Future<void> _syncDivisionWithXp() async {
+    if (_updatingDivision) return;
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null || _divisiones.isEmpty) return;
+
+    final userRef = FirebaseFirestore.instance.collection('usuarios').doc(uid);
+    final userDoc = await userRef.get();
+    if (!userDoc.exists) return;
+    final userData = userDoc.data() ?? {};
+    final xp = (userData['xp_acumulada'] as num?)?.toInt() ?? 0;
+    final currentDiv = userData['division_actual']?.toString();
+
+    String? newDiv;
+    for (final d in _divisiones) {
+      final data = d.data();
+      final xpMin = (data['xp_min'] as num?)?.toInt() ?? 0;
+      final xpMax = (data['xp_max'] as num?)?.toInt();
+      final inRange = xp >= xpMin && (xpMax == null || xp <= xpMax);
+      if (inRange) {
+        newDiv = d.id;
+        break;
+      }
+    }
+
+    if (newDiv != null && newDiv != currentDiv) {
+      _updatingDivision = true;
+      try {
+        await userRef.update({'division_actual': newDiv});
+      } finally {
+        _updatingDivision = false;
+      }
     }
   }
 
@@ -47,45 +101,6 @@ class _DivisionesScreenState extends State<DivisionesScreen> {
     const accent = Color(0xFFFFA451); // tomate aprende
     const accentAlt = Color(0xFFFF8A3D);
     const dark = Color(0xFF1E2433); // tono oscuro usado en aprende
-
-    final sampleDivisiones = [
-      _DivisionCardData(
-        nombre: 'Division Beta',
-        rango: '0 - 499 XP',
-        estado: 'En curso',
-        color: accent,
-        xpMin: 0,
-        asset: 'assets/images/medallas/recolector.png',
-      ),
-      _DivisionCardData(
-        nombre: 'Division Gamma',
-        rango: '500 - 999 XP',
-        estado: 'Siguiente parada',
-        color: accentAlt,
-        xpMin: 500,
-        asset: 'assets/images/medallas/arquitecto.png',
-      ),
-      _DivisionCardData(
-        nombre: 'Division Delta',
-        rango: '1000+ XP',
-        estado: 'Objetivo a largo plazo',
-        color: const Color(0xFFE56E1D),
-        xpMin: 1000,
-        asset: 'assets/images/medallas/explorador.png',
-      ),
-    ];
-
-    // Marcar actual y siguiente en la ruta
-    int currentIndex = sampleDivisiones.indexWhere(
-      (d) => d.nombre.toLowerCase() == (_divisionActual ?? '').toLowerCase(),
-    );
-    if (currentIndex == -1) currentIndex = 0;
-    final String? currentAsset =
-        (currentIndex >= 0 && currentIndex < sampleDivisiones.length)
-            ? sampleDivisiones[currentIndex].asset
-            : null;
-    // Asegura mostrar nombres claros de divisiones principales
-    const tituloRuta = 'Divisiones principales';
 
     return Scaffold(
       backgroundColor: const Color(0xFFFCF8F2),
@@ -118,27 +133,27 @@ class _DivisionesScreenState extends State<DivisionesScreen> {
                     ),
                   ],
                 ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.12),
-                        shape: BoxShape.circle,
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.12),
+                          shape: BoxShape.circle,
+                        ),
+                        child: _divisionActual != null && _divisionActual!.isNotEmpty
+                            ? ClipOval(
+                                child: Image.asset(
+                                  _assetForDivision(_divisionActual!),
+                                  width: 64,
+                                  height: 64,
+                                  cacheWidth: 128,
+                                  cacheHeight: 128,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                            : const Icon(Icons.flag, color: Colors.white),
                       ),
-                      child: currentAsset != null
-                          ? ClipOval(
-                              child: Image.asset(
-                                currentAsset,
-                                width: 64,
-                                height: 64,
-                                cacheWidth: 128,
-                                cacheHeight: 128,
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                          : const Icon(Icons.flag, color: Colors.white),
-                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -207,13 +222,46 @@ class _DivisionesScreenState extends State<DivisionesScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              ...sampleDivisiones.asMap().entries.map((entry) {
-                final i = entry.key;
-                final d = entry.value;
-                final isCurrent = i == currentIndex;
-                final isNext = i == currentIndex + 1 && i < sampleDivisiones.length;
-                return _DivisionCard(data: d, dark: dark, isCurrent: isCurrent, isNext: isNext);
-              }).toList(),
+              if (_divisiones.isEmpty)
+                const Center(child: CircularProgressIndicator.adaptive())
+              else
+                Column(
+                  children: _divisiones.map((doc) {
+                    final data = doc.data();
+                    final nombre = (data['nombre'] ?? doc.id).toString();
+                    final xpMin = (data['xp_min'] as num?)?.toInt() ?? 0;
+                    final xpMax = (data['xp_max'] as num?)?.toInt();
+                    final rango = xpMax != null ? '$xpMin - $xpMax XP' : '$xpMin+ XP';
+                    return _DivisionCardData(
+                      id: doc.id,
+                      nombre: nombre,
+                      rango: rango,
+                      estado: '',
+                      color: _colorForDivision(doc.id, accent, accentAlt),
+                      xpMin: xpMin,
+                      asset: _assetForDivision(doc.id),
+                      iconoUrl: (data['icono_url'] ?? '').toString(),
+                    );
+                  }).toList().asMap().entries.map((entry) {
+                    final i = entry.key;
+                    final d = entry.value;
+                    int currentIndex = _divisiones.indexWhere((div) => div.id == _divisionActual);
+                    if (currentIndex == -1) currentIndex = 0;
+                    final isCurrent = i == currentIndex;
+                    final isNext = i == currentIndex + 1 && i < _divisiones.length;
+                    final estado = isCurrent
+                        ? 'En curso'
+                        : isNext
+                            ? 'Siguiente parada'
+                            : 'Objetivo a largo plazo';
+                    return _DivisionCard(
+                      data: d.copyWith(estado: estado),
+                      dark: dark,
+                      isCurrent: isCurrent,
+                      isNext: isNext,
+                    );
+                  }).toList(),
+                ),
               const SizedBox(height: 10),
               Container(
                 padding: const EdgeInsets.all(14),
@@ -246,6 +294,21 @@ class _DivisionesScreenState extends State<DivisionesScreen> {
         ),
       ),
     );
+  }
+
+  String _assetForDivision(String idOrName) {
+    final key = idOrName.toLowerCase();
+    if (key.contains('arquitecto')) return 'assets/images/medallas/arquitecto.png';
+    if (key.contains('recolector')) return 'assets/images/medallas/recolector.png';
+    if (key.contains('explorador')) return 'assets/images/medallas/explorador.png';
+    return 'assets/images/medallas/explorador.png';
+  }
+
+  Color _colorForDivision(String idOrName, Color accent, Color accentAlt) {
+    final key = idOrName.toLowerCase();
+    if (key.contains('arquitecto')) return accentAlt;
+    if (key.contains('recolector')) return accent;
+    return const Color(0xFFE56E1D);
   }
 }
 
@@ -437,19 +500,34 @@ class _TopGlobalSection extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: accent.withOpacity(0.14),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                '$xp XP',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  color: accent,
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (i == 2)
+                                  const Padding(
+                                    padding: EdgeInsets.only(right: 6),
+                                    child: Icon(
+                                      Icons.emoji_events,
+                                      color: Color(0xFFFFA451),
+                                      size: 18,
+                                    ),
+                                  ),
+                                Container(
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: accent.withOpacity(0.14),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    '$xp XP',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                      color: accent,
+                                    ),
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
                           ],
                         ),
@@ -466,21 +544,40 @@ class _TopGlobalSection extends StatelessWidget {
 }
 
 class _DivisionCardData {
+  final String id;
   final String nombre;
   final String rango;
   final String estado;
   final Color color;
   final int? xpMin;
   final String? asset;
+  final String iconoUrl;
 
   _DivisionCardData({
+    required this.id,
     required this.nombre,
     required this.rango,
     required this.estado,
     required this.color,
     this.xpMin,
     this.asset,
+    this.iconoUrl = '',
   });
+
+  _DivisionCardData copyWith({
+    String? estado,
+  }) {
+    return _DivisionCardData(
+      id: id,
+      nombre: nombre,
+      rango: rango,
+      estado: estado ?? this.estado,
+      color: color,
+      xpMin: xpMin,
+      asset: asset,
+      iconoUrl: iconoUrl,
+    );
+  }
 }
 
 class _DivisionCard extends StatelessWidget {
@@ -532,18 +629,28 @@ class _DivisionCard extends StatelessWidget {
               color: data.color.withOpacity(0.18),
               border: Border.all(color: data.color.withOpacity(0.4)),
             ),
-            child: data.asset != null && data.asset!.isNotEmpty
+            child: data.iconoUrl.isNotEmpty
                 ? ClipOval(
-                    child: Image.asset(
-                      data.asset!,
+                    child: Image.network(
+                      data.iconoUrl,
                       width: 62,
                       height: 62,
-                      cacheWidth: 124,
-                      cacheHeight: 124,
                       fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Icon(Icons.rocket_launch, color: dark),
                     ),
                   )
-                : Icon(Icons.rocket_launch, color: dark),
+                : (data.asset != null && data.asset!.isNotEmpty
+                    ? ClipOval(
+                        child: Image.asset(
+                          data.asset!,
+                          width: 62,
+                          height: 62,
+                          cacheWidth: 124,
+                          cacheHeight: 124,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    : Icon(Icons.rocket_launch, color: dark)),
           ),
           const SizedBox(width: 12),
           Expanded(

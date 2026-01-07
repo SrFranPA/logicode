@@ -702,10 +702,9 @@ class _EvaluacionesTableState extends State<_EvaluacionesTable>
           );
         }
 
-        const nameWidth = 220.0;
-        const dateWidth = 120.0;
+        const nameWidth = 240.0;
         const noteWidth = 90.0;
-        final totalWidth = nameWidth + dateWidth + noteWidth;
+        final totalWidth = nameWidth + noteWidth;
 
         return LayoutBuilder(
           builder: (context, constraints) {
@@ -720,7 +719,7 @@ class _EvaluacionesTableState extends State<_EvaluacionesTable>
                   height: constraints.maxHeight,
                   child: Column(
                     children: [
-                      _diagHeaderRow(nameWidth, dateWidth, noteWidth),
+                      _diagHeaderRow(nameWidth, noteWidth),
                       const Divider(height: 1),
                       Expanded(
                         child: Scrollbar(
@@ -731,7 +730,7 @@ class _EvaluacionesTableState extends State<_EvaluacionesTable>
                             itemCount: rows.length,
                             itemBuilder: (context, index) {
                               final r = rows[index];
-                              return _diagDataRow(r, nameWidth, dateWidth, noteWidth);
+                              return _diagDataRow(r, nameWidth, noteWidth);
                             },
                           ),
                         ),
@@ -747,21 +746,20 @@ class _EvaluacionesTableState extends State<_EvaluacionesTable>
     );
   }
 
-  Widget _diagHeaderRow(double nameWidth, double dateWidth, double noteWidth) {
+  Widget _diagHeaderRow(double nameWidth, double noteWidth) {
     return Container(
       color: const Color(0xFFF4F6FB),
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         children: [
           _cell('Nombre', nameWidth, isHeader: true),
-          _cell('Fecha', dateWidth, isHeader: true),
           _cell('Nota', noteWidth, isHeader: true),
         ],
       ),
     );
   }
 
-  Widget _diagDataRow(_EvalRow r, double nameWidth, double dateWidth, double noteWidth) {
+  Widget _diagDataRow(_EvalRow r, double nameWidth, double noteWidth) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
@@ -771,8 +769,32 @@ class _EvaluacionesTableState extends State<_EvaluacionesTable>
       ),
       child: Row(
         children: [
-          _cell(r.nombre, nameWidth),
-          _cell(_formatDateStatic(r.fecha), dateWidth),
+          SizedBox(
+            width: nameWidth,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _formatDateStatic(r.fecha),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF6B7280),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  r.nombre,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1E2026),
+                  ),
+                ),
+              ],
+            ),
+          ),
           _cell(
             r.porcentajeTexto ?? (r.isNd ? 'N/D' : '${r.porcentaje.toStringAsFixed(1)}%'),
             noteWidth,

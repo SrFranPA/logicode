@@ -51,6 +51,8 @@ dependencies:
   flutter_signin_button: ^2.1.1
   firebase_storage: ^12.4.10
   file_picker: ^10.3.7
+  firebase_messaging: ^15.2.10
+  flutter_local_notifications: ^17.2.2
   
 
 dev_dependencies:

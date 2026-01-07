@@ -11,6 +11,7 @@ class StudentProfileScreen extends StatefulWidget {
 
 class _StudentProfileScreenState extends State<StudentProfileScreen> {
   Future<QuerySnapshot<Map<String, dynamic>>>? _cursosFuture;
+  bool _syncingLogros = false;
 
   @override
   void initState() {
@@ -343,6 +344,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                   future: _cursosFuture ??= FirebaseFirestore.instance.collection('cursos').orderBy('orden').get(),
                   builder: (context, cursosSnap) {
                     final cursos = cursosSnap.data?.docs ?? [];
+                    _syncUnlockedLogros(data, cursos);
                     return _AchievementsSection(
                       userData: data,
                       cursos: cursos,
@@ -382,6 +384,79 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _syncUnlockedLogros(
+    Map<String, dynamic> userData,
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> cursos,
+  ) async {
+    if (_syncingLogros) return;
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final logrosList = (userData['logros'] as List?)?.cast<Map?>() ?? [];
+    final unlockedTitles = logrosList
+        .map((m) => (m?['titulo'] ?? '').toString())
+        .where((t) => t.isNotEmpty)
+        .toSet();
+
+    final List<Map<String, dynamic>> nuevos = [];
+    final divisionActual = (userData['division_actual'] ?? '').toString().toLowerCase();
+    final divisionTitles = ['Recolector', 'Arquitecto', 'Explorador'];
+    for (final t in divisionTitles) {
+      if (divisionActual.startsWith(t.toLowerCase()) && !unlockedTitles.contains(t)) {
+        nuevos.add({
+          'titulo': t,
+          'unlocked': true,
+          'unlocked_at': Timestamp.now(),
+        });
+      }
+    }
+
+    final progresoCursos = (userData['progreso'] as Map?) ?? {};
+    for (var i = 0; i < cursos.length && i < 9; i++) {
+      final doc = cursos[i];
+      final progresoCurso = (progresoCursos[doc.id] as Map?) ?? {};
+      final finalScore = (progresoCurso['final_score'] as num?)?.toInt() ?? 0;
+      final aprobado = progresoCurso['final_aprobado'] == true && finalScore >= 7;
+      final titulo = 'Curso ${i + 1}';
+      if (aprobado && !unlockedTitles.contains(titulo)) {
+        nuevos.add({
+          'titulo': titulo,
+          'unlocked': true,
+          'unlocked_at': Timestamp.now(),
+        });
+      }
+    }
+
+    final divisionTitlesSet = {'Recolector', 'Arquitecto', 'Explorador'};
+    final cursoTitles = List.generate(
+      cursos.length < 9 ? cursos.length : 9,
+      (i) => 'Curso ${i + 1}',
+    );
+    final allDivisionesUnlocked = divisionTitlesSet
+        .every((t) => unlockedTitles.contains(t) || nuevos.any((n) => n['titulo'] == t));
+    final allCursosUnlocked = cursoTitles
+        .every((t) => unlockedTitles.contains(t) || nuevos.any((n) => n['titulo'] == t));
+    final allMedallasUnlocked = allDivisionesUnlocked && allCursosUnlocked;
+
+    if (allMedallasUnlocked && !unlockedTitles.contains('Rey')) {
+      nuevos.add({
+        'titulo': 'Rey',
+        'unlocked': true,
+        'unlocked_at': Timestamp.now(),
+      });
+    }
+
+    if (nuevos.isEmpty) return;
+    _syncingLogros = true;
+    try {
+      await FirebaseFirestore.instance.collection('usuarios').doc(user.uid).update({
+        'logros': FieldValue.arrayUnion(nuevos),
+      });
+    } finally {
+      _syncingLogros = false;
+    }
   }
 }
 
@@ -478,12 +553,19 @@ class _AchievementsSection extends StatelessWidget {
       return divisionActual.startsWith(pref);
     }
 
+    bool _unlockedStored(String titulo) {
+      return logrosData.any((m) =>
+          (m?['titulo'] ?? '').toString().toLowerCase() == titulo.toLowerCase() &&
+          (m?['unlocked'] ?? true) == true);
+    }
+
     final divisiones = baseDivisiones
         .map((m) {
           final data = _mergeOverrides(m);
           return {
             ...data,
-            'locked': !_desbloqueaDivision((data['titulo'] ?? '').toString()),
+            'locked': !(_desbloqueaDivision((data['titulo'] ?? '').toString()) ||
+                _unlockedStored((data['titulo'] ?? '').toString())),
           };
         })
         .toList();
@@ -503,7 +585,7 @@ class _AchievementsSection extends StatelessWidget {
         'categoria': 'cursos',
         'desc': 'Completa el curso $numeroCurso.',
         'cursoNombre': (data['nombre'] ?? '').toString(),
-        'locked': !aprobado,
+        'locked': !(aprobado || _unlockedStored('Curso $numeroCurso')),
       });
     }
 
@@ -514,9 +596,13 @@ class _AchievementsSection extends StatelessWidget {
         'color': '#FFC107',
         'categoria': 'coleccion',
         'desc': 'Colecciona todas las medallas clave.',
-        'locked': cursoItems.any((m) => m['locked'] == true),
+        'locked': !((!cursoItems.any((m) => m['locked'] == true) &&
+                !divisiones.any((m) => m['locked'] == true)) ||
+            _unlockedStored('Rey')),
       },
     ];
+    final coleccionVisible =
+        coleccion.where((m) => m['locked'] != true || m['titulo'] != 'Rey').toList();
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -570,7 +656,7 @@ class _AchievementsSection extends StatelessWidget {
           const SizedBox(height: 12),
           _CategoryGrid(
             titulo: 'Coleccionista',
-            items: coleccion,
+            items: coleccionVisible,
           ),
         ],
       ),
