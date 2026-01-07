@@ -23,7 +23,8 @@ class AprendeScreen extends StatelessWidget {
         final user = userSnap.data?.data() ?? <String, dynamic>{};
         final cursoActualId = (user['curso_actual'] ?? '').toString();
         final pretestEstado = (user['pretest_estado'] ?? 'pendiente').toString();
-        final bool testAprobado = pretestEstado == 'aprobado';
+        final bool pretestCompletado = user['pretest_completado'] != null;
+        final bool testAprobado = pretestCompletado || pretestEstado == 'aprobado';
         final Map progresoCursos = (user['progreso'] as Map?) ?? {};
 
         return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(

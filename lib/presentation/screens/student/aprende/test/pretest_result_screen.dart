@@ -2,12 +2,15 @@
 
 import 'package:flutter/material.dart';
 
+import '../../../../../services/app_config_service.dart';
+
 class PretestResultScreen extends StatelessWidget {
   final int total;
   final int correctas;
   final List<String> preguntasIds;
+  final AppConfigService _configService = AppConfigService();
 
-  const PretestResultScreen({
+  PretestResultScreen({
     super.key,
     required this.total,
     required this.correctas,
@@ -32,21 +35,57 @@ class PretestResultScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              '$puntaje%',
-              style: const TextStyle(
-                fontSize: 48,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF12314D),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '$correctas de $total correctas',
-              style: const TextStyle(
-                fontSize: 16,
-                color: Color(0xFF555B64),
-              ),
+            StreamBuilder<bool>(
+              stream: _configService.watchOcultarNotaPretest(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+                  return const Padding(
+                    padding: EdgeInsets.all(12),
+                    child: CircularProgressIndicator.adaptive(),
+                  );
+                }
+
+                final ocultarNota = snapshot.data == true;
+
+                if (ocultarNota) {
+                  return Column(
+                    children: const [
+                      Icon(Icons.visibility_off, size: 46, color: Color(0xFF555B64)),
+                      SizedBox(height: 10),
+                      Text(
+                        'La nota del test diagnostico esta oculta por administracion.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Color(0xFF555B64),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  );
+                }
+
+                return Column(
+                  children: [
+                    Text(
+                      '$puntaje%',
+                      style: const TextStyle(
+                        fontSize: 48,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF12314D),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '$correctas de $total correctas',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF555B64),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 24),
             ElevatedButton(

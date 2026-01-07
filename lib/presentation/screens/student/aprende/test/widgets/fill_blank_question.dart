@@ -168,12 +168,6 @@ class _FillBlankQuestionWidgetState extends State<FillBlankQuestionWidget> {
                 child: const Text("Comprobar", style: TextStyle(color: Colors.white)),
               ),
             ),
-            const SizedBox(width: 10),
-            if (locked)
-              OutlinedButton(
-                onPressed: _reset,
-                child: const Text('Reintentar'),
-              ),
           ],
         )
       ],

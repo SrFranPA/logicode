@@ -31,6 +31,14 @@ class UserService {
       "telefono": "",
       "errores": [],
       "progreso": {},
+      "pretest_estado": "pendiente",
+      "pretest_calificacion": 0,
+      "pretest_completado": null,
+      "postest_calificaciones": [],
+      "postest_estado": "pendiente",
+      "postest_calificacion": 0,
+      "ultima_evaluacion_pre": null,
+      "ultima_evaluacion_post": null,
     });
   }
 

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../data/models/pregunta_model.dart';
 import '../../../../../data/repositories/pregunta_repository.dart';
+import '../../../../../data/repositories/evaluaciones_repository.dart';
 import 'widgets/pregunta_widget_builder.dart';
 
 class PretestScreen extends StatefulWidget {
@@ -17,8 +18,10 @@ class PretestScreen extends StatefulWidget {
 
 class _PretestScreenState extends State<PretestScreen> {
   late final PreguntaRepository repo;
+  late final EvaluacionesRepository evaluacionesRepo;
 
   List<Pregunta> preguntas = [];
+  List<bool?> respuestas = [];
   int index = 0;
   bool cargando = true;
   bool _finalizado = false;
@@ -31,6 +34,7 @@ class _PretestScreenState extends State<PretestScreen> {
   void initState() {
     super.initState();
     repo = PreguntaRepository(FirebaseFirestore.instance);
+    evaluacionesRepo = EvaluacionesRepository(db: FirebaseFirestore.instance);
     cargarPreguntas();
   }
 
@@ -42,6 +46,7 @@ class _PretestScreenState extends State<PretestScreen> {
       final seleccion = data.length > 10 ? data.sublist(0, 10) : data;
       setState(() {
         preguntas = seleccion;
+        respuestas = List<bool?>.filled(seleccion.length, null);
         cargando = false;
       });
     } catch (_) {
@@ -53,19 +58,42 @@ class _PretestScreenState extends State<PretestScreen> {
     }
   }
 
-  Future<void> _marcarCompletado() async {
+  Future<void> _guardarResultadoFinal() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
+    final totalPreguntas = preguntas.length;
+    if (totalPreguntas == 0) return;
+
+    final correctas = respuestas.where((r) => r == true).length;
+    final bancoIds = preguntas.map((p) => p.id ?? '').toList();
+    final porcentaje = (correctas * 100.0 / totalPreguntas);
+    final estado = porcentaje >= 70 ? 'aprobado' : 'reprobado';
+
+    try {
+      await evaluacionesRepo.registrarEvaluacion(
+        uid: user.uid,
+        tipo: 'pre',
+        puntajeObtenido: correctas,
+        puntajeMinimo: 0,
+        puntajeMaximo: totalPreguntas,
+        numPreguntas: totalPreguntas,
+        bancoPreguntasIds: bancoIds,
+      );
+    } catch (_) {
+      // Si falla el detalle, igual guardamos la nota en el perfil.
+    }
+
     try {
       await FirebaseFirestore.instance.collection('usuarios').doc(user.uid).set(
         {
-          'pretest_estado': 'aprobado',
+          'pretest_estado': estado,
+          'pretest_calificacion': porcentaje,
           'pretest_completado': FieldValue.serverTimestamp(),
         },
         SetOptions(merge: true),
       );
     } catch (_) {
-      // Si falla el guardado, no bloqueamos la UX
+      // Ignoramos error para no cortar el flujo del usuario.
     }
   }
 
@@ -150,8 +178,13 @@ class _PretestScreenState extends State<PretestScreen> {
 
   Future<void> _siguiente() async {
     if (_finalizado) return;
+    // Si no se respondio la pregunta actual, marcar como incorrecta.
+    if (respuestas[index] == null) {
+      respuestas[index] = false;
+    }
+
     if (index + 1 >= preguntas.length) {
-      await _marcarCompletado();
+      await _guardarResultadoFinal();
       if (!mounted) return;
       _finalizado = true;
       showDialog(
@@ -444,6 +477,7 @@ class _PretestScreenState extends State<PretestScreen> {
                           locked = true;
                           fueCorrecto = correcta;
                           retro = r;
+                          respuestas[index] = correcta;
                         });
                       },
                     ),
@@ -506,21 +540,6 @@ class _PretestScreenState extends State<PretestScreen> {
                             fontWeight: FontWeight.w800,
                             color: Colors.white,
                           ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    TextButton(
-                      onPressed: _siguiente,
-                      style: TextButton.styleFrom(
-                        foregroundColor: const Color(0xFF2C1B0E),
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                      ),
-                      child: const Text(
-                        "Omitir",
-                        style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 14,
                         ),
                       ),
                     ),

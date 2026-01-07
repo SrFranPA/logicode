@@ -16,51 +16,6 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
   void initState() {
     super.initState();
     _cursosFuture = FirebaseFirestore.instance.collection('cursos').orderBy('orden').get();
-    _updateStreak();
-  }
-
-  Future<void> _updateStreak() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-    final docRef = FirebaseFirestore.instance.collection('usuarios').doc(user.uid);
-    final snap = await docRef.get();
-    if (!snap.exists) return;
-    final data = snap.data() ?? {};
-
-    int racha = (data['racha'] as num?)?.toInt() ?? 0;
-    final lastTs = data['ultima_racha'];
-    DateTime? last;
-    if (lastTs is Timestamp) {
-      last = lastTs.toDate();
-    }
-
-    final today = DateTime.now();
-    final todayDate = DateTime(today.year, today.month, today.day);
-    final lastDate = (last != null) ? DateTime(last.year, last.month, last.day) : null;
-
-    bool changed = false;
-    if (lastDate == null) {
-      racha = 1;
-      changed = true;
-    } else {
-      final diffDays = todayDate.difference(lastDate).inDays;
-      if (diffDays == 0) {
-        // mismo dia, no cambia
-      } else if (diffDays == 1) {
-        racha += 1;
-        changed = true;
-      } else if (diffDays > 1) {
-        racha = 1;
-        changed = true;
-      }
-    }
-
-    if (changed) {
-      await docRef.update({
-        'racha': racha,
-        'ultima_racha': Timestamp.fromDate(today),
-      });
-    }
   }
 
   Future<void> _showEditSheet(BuildContext context, String currentName) async {

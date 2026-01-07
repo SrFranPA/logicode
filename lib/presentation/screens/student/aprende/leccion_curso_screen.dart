@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../data/models/pregunta_model.dart';
+import '../../../../data/repositories/evaluaciones_repository.dart';
 import 'test/widgets/pregunta_widget_builder.dart';
 
 class LeccionCursoScreen extends StatefulWidget {
@@ -28,6 +29,7 @@ class LeccionCursoScreen extends StatefulWidget {
 }
 
 class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
+  late final EvaluacionesRepository _evalRepo;
   List<Pregunta> preguntas = [];
   int index = 0;
   int lives = 5;
@@ -46,6 +48,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
   @override
   void initState() {
     super.initState();
+    _evalRepo = EvaluacionesRepository(db: FirebaseFirestore.instance);
     _userId = FirebaseAuth.instance.currentUser?.uid;
     _leccionImage = _randomLeccionImage();
     _initData();
@@ -206,6 +209,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
         },
         SetOptions(merge: true),
       );
+      await _actualizarRachaPorLeccion();
     } catch (_) {
       // si falla, no bloqueamos la salida; se puede reintentar en otra sesion
     }
@@ -233,6 +237,9 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
         },
         SetOptions(merge: true),
       );
+      if (aprobado) {
+        await _actualizarRachaPorLeccion();
+      }
     } catch (_) {
       // si falla, se puede reintentar en otro intento
     }
@@ -507,6 +514,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
           await _guardarXpPendiente();
         }
         if (_esTestFinal) {
+          await _guardarEvaluacionPost(aprobado: true);
           await _registrarResultadoFinal(true);
           await _mostrarResultadoFinal(true);
         } else {
@@ -516,6 +524,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
         if (mounted) Navigator.of(context).pop(true);
       } else {
         if (_esTestFinal) {
+          await _guardarEvaluacionPost(aprobado: false);
           await _registrarResultadoFinal(false);
           await _mostrarResultadoFinal(false);
           if (mounted) Navigator.of(context).pop(false);
@@ -544,6 +553,99 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
       answered = false;
       correcto = false;
       retro = '';
+    });
+  }
+
+  Future<void> _guardarEvaluacionPost({required bool aprobado}) async {
+    if (!_esTestFinal || _userId == null) return;
+    final totalPreguntas = preguntas.length;
+    final bancoIds = preguntas.map((p) => p.id ?? '').toList();
+    final porcentaje = totalPreguntas > 0 ? (_aciertos * 100.0 / totalPreguntas) : 0.0;
+    try {
+      await _evalRepo.registrarEvaluacion(
+        uid: _userId!,
+        tipo: 'post',
+        puntajeObtenido: _aciertos,
+        puntajeMinimo: 0,
+        puntajeMaximo: totalPreguntas,
+        numPreguntas: totalPreguntas,
+        bancoPreguntasIds: bancoIds,
+        detalle: {
+          'cursoId': widget.cursoId,
+          'cursoNombre': widget.cursoNombre,
+          'leccion': widget.leccionTitulo,
+          'aprobado': aprobado,
+        },
+      );
+    } catch (_) {
+      // Si falla el detalle, igual guardamos la nota en el perfil.
+    }
+
+    try {
+      await _guardarVectorFinal(porcentaje);
+    } catch (_) {
+      // No bloqueamos la UX si falla el guardado.
+    }
+  }
+
+  Future<void> _actualizarRachaPorLeccion() async {
+    if (_userId == null) return;
+    final docRef = FirebaseFirestore.instance.collection('usuarios').doc(_userId);
+    final snap = await docRef.get();
+    if (!snap.exists) return;
+    final data = snap.data() ?? {};
+
+    int racha = (data['racha'] as num?)?.toInt() ?? 0;
+    final lastTs = data['ultima_racha'];
+    DateTime? last;
+    if (lastTs is Timestamp) {
+      last = lastTs.toDate();
+    }
+
+    final now = DateTime.now();
+    final todayDate = DateTime(now.year, now.month, now.day);
+    final lastDate = (last != null) ? DateTime(last.year, last.month, last.day) : null;
+
+    bool changed = false;
+    if (lastDate == null) {
+      racha = 1;
+      changed = true;
+    } else {
+      final diffDays = todayDate.difference(lastDate).inDays;
+      if (diffDays == 0) {
+        // mismo dia, no cambia
+      } else if (diffDays == 1) {
+        racha += 1;
+        changed = true;
+      } else if (diffDays > 1) {
+        racha = 1;
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      await docRef.update({
+        'racha': racha,
+        'ultima_racha': Timestamp.fromDate(now),
+        'ultima_leccion_completada': Timestamp.fromDate(now),
+      });
+    }
+  }
+
+  Future<void> _guardarVectorFinal(double porcentaje) async {
+    if (_userId == null || widget.cursoOrden <= 0) return;
+    final userRef = FirebaseFirestore.instance.collection('usuarios').doc(_userId);
+    await FirebaseFirestore.instance.runTransaction((tx) async {
+      final snap = await tx.get(userRef);
+      final data = snap.data() ?? {};
+      final List<dynamic> actual = (data['postest_calificaciones'] as List?) ?? [];
+      final List<double> valores = actual.map((e) => (e as num?)?.toDouble() ?? 0.0).toList();
+      final index = widget.cursoOrden - 1;
+      if (valores.length <= index) {
+        valores.addAll(List<double>.filled(index + 1 - valores.length, 0.0));
+      }
+      valores[index] = porcentaje;
+      tx.update(userRef, {'postest_calificaciones': valores});
     });
   }
 
