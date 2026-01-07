@@ -38,6 +38,10 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
   bool answered = false;
   bool correcto = false;
   String retro = '';
+  double? _pretestScore10;
+  String? _overrideDificultad;
+  int _sinVidasCount = 0;
+  bool _sinVidasRegistrado = false;
   String? _userId;
   bool sinVidas = false;
   int _xpPendiente = 0;
@@ -67,6 +71,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
 
   Future<void> _initData() async {
     await _cargarVidas();
+    await _cargarPretestScore();
     if (!mounted) return;
     if (lives <= 0 && !_esTestFinal) {
       setState(() {
@@ -89,6 +94,138 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
     }
   }
 
+  Future<void> _cargarPretestScore() async {
+    if (_userId == null) return;
+    try {
+      final doc = await FirebaseFirestore.instance.collection('usuarios').doc(_userId).get();
+      if (!doc.exists) return;
+      final data = doc.data() ?? {};
+      final raw = (data['pretest_calificacion'] as num?)?.toDouble();
+      if (raw == null) return;
+      _pretestScore10 = raw / 10.0;
+
+      final overrides = (data['leccion_dificultad_override'] as Map?)?.cast<String, dynamic>();
+      final cursoOverrides = (overrides?[_cursoKey()] as Map?)?.cast<String, dynamic>();
+      final override = cursoOverrides?[_leccionKey()]?.toString();
+      if (override != null && override.isNotEmpty) {
+        _overrideDificultad = override;
+      }
+
+      final intentos = (data['leccion_intentos_sin_vidas'] as Map?)?.cast<String, dynamic>();
+      final cursoIntentos = (intentos?[_cursoKey()] as Map?)?.cast<String, dynamic>();
+      final count = (cursoIntentos?[_leccionKey()] as num?)?.toInt() ?? 0;
+      _sinVidasCount = count;
+    } catch (_) {
+      // Si falla, no bloqueamos el flujo.
+    }
+  }
+
+  String _cursoKey() => widget.cursoId;
+  String _leccionKey() => widget.leccionTitulo;
+
+  int? _numeroLeccion(String titulo) {
+    final match = RegExp(r'\\d+').firstMatch(titulo);
+    if (match == null) return null;
+    return int.tryParse(match.group(0)!);
+  }
+
+  String _normalizeText(String text) {
+    return text
+        .toLowerCase()
+        .replaceAll('á', 'a')
+        .replaceAll('é', 'e')
+        .replaceAll('í', 'i')
+        .replaceAll('ó', 'o')
+        .replaceAll('ú', 'u');
+  }
+
+  String? _dificultadObjetivo() {
+    if (_overrideDificultad != null && _overrideDificultad!.isNotEmpty) {
+      return _overrideDificultad;
+    }
+    final score = _pretestScore10;
+    final num = _numeroLeccion(widget.leccionTitulo);
+    if (score == null || num == null) return null;
+
+    if (score > 7) {
+      if (num == 1) return 'medio';
+      if (num == 2) return 'dificil';
+      if (num == 3) return 'muy dificil';
+    } else if (score > 4) {
+      if (num == 1) return 'facil';
+      if (num == 2) return 'medio';
+      if (num == 3) return 'dificil';
+    } else {
+      if (num == 1) return 'muy facil';
+      if (num == 2) return 'medio';
+      if (num == 3) return 'medio';
+    }
+    return null;
+  }
+
+  bool _matchDificultad(String? dificultad, String objetivo) {
+    final d = _normalizeText(dificultad ?? '');
+    final o = _normalizeText(objetivo);
+    return d.contains(o);
+  }
+
+  String _bajarDificultad(String actual) {
+    final orden = ['muy facil', 'facil', 'medio', 'dificil', 'muy dificil'];
+    final norm = _normalizeText(actual);
+    final idx = orden.indexWhere((e) => norm.contains(e));
+    if (idx == -1) return 'medio';
+    if (idx == 0) return orden[0];
+    return orden[idx - 1];
+  }
+
+  Future<void> _registrarFalloSinVidas() async {
+    if (_userId == null || _sinVidasRegistrado) return;
+    _sinVidasRegistrado = true;
+    final userRef = FirebaseFirestore.instance.collection('usuarios').doc(_userId);
+    await FirebaseFirestore.instance.runTransaction((tx) async {
+      final snap = await tx.get(userRef);
+      final data = snap.data() ?? {};
+
+      final intentos = (data['leccion_intentos_sin_vidas'] as Map?)?.cast<String, dynamic>() ?? {};
+      final cursoIntentos = (intentos[_cursoKey()] as Map?)?.cast<String, dynamic>() ?? {};
+      int count = (cursoIntentos[_leccionKey()] as num?)?.toInt() ?? 0;
+      count += 1;
+
+      String? newOverride;
+      if (count >= 3) {
+        final actual = _overrideDificultad ?? _dificultadObjetivo() ?? 'medio';
+        newOverride = _bajarDificultad(actual);
+        count = 0;
+        _overrideDificultad = newOverride;
+      }
+
+      cursoIntentos[_leccionKey()] = count;
+      intentos[_cursoKey()] = cursoIntentos;
+
+      final update = <String, dynamic>{
+        'leccion_intentos_sin_vidas': intentos,
+      };
+
+      if (newOverride != null) {
+        final overrides = (data['leccion_dificultad_override'] as Map?)
+                ?.cast<String, dynamic>() ??
+            {};
+        final cursoOverrides = (overrides[_cursoKey()] as Map?)?.cast<String, dynamic>() ?? {};
+        cursoOverrides[_leccionKey()] = newOverride;
+        overrides[_cursoKey()] = cursoOverrides;
+        update['leccion_dificultad_override'] = overrides;
+      }
+
+      tx.update(userRef, update);
+    });
+
+    if (mounted && _overrideDificultad != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ajustamos la dificultad para ayudarte a avanzar.')),
+      );
+    }
+  }
+
   Future<void> _cargarPreguntas() async {
     try {
       final col = FirebaseFirestore.instance.collection('banco_preguntas');
@@ -101,42 +238,28 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
         data = allSnap.docs.map((e) => Pregunta.fromDoc(e)).toList();
       }
 
-      // Seleccion aleatoria sin repeticion, priorizando variedad de dificultad
-      const niveles = ['Muy facil', 'Facil', 'Medio', 'Dificil', 'Muy dificil'];
-      final Map<String, List<Pregunta>> porNivel = {
-        for (final n in niveles) n: [],
-      };
-      for (final p in data) {
-        final d = p.dificultad;
-        if (porNivel.containsKey(d)) {
-          porNivel[d]!.add(p);
-        } else {
-          porNivel.putIfAbsent(d, () => []).add(p);
+      final objetivo = _dificultadObjetivo();
+      List<Pregunta> pool = data;
+      if (objetivo != null) {
+        final filtradas = data.where((p) => _matchDificultad(p.dificultad, objetivo)).toList();
+        if (filtradas.isNotEmpty) {
+          pool = filtradas;
         }
       }
-      // barajar cada nivel
-      for (final list in porNivel.values) {
-        list.shuffle();
-      }
+
       final seleccion = <Pregunta>[];
-      // Tomar hasta 2 por nivel en orden de dificultad
-      for (final n in niveles) {
-        final list = porNivel[n] ?? [];
-        seleccion.addAll(list.take(2));
-        if (seleccion.length >= 10) break;
-      }
-      // Rellenar si faltan con el resto mezclado
+      pool.shuffle();
+      seleccion.addAll(pool.take(10));
+
       if (seleccion.length < 10) {
-        final restantes = porNivel.values.expand((e) => e).toList();
-        restantes.shuffle();
-        for (final p in restantes) {
+        // Si no hay suficientes de la dificultad objetivo, completamos con el resto.
+        final resto = data.where((p) => !seleccion.any((s) => s.id == p.id)).toList();
+        resto.shuffle();
+        for (final p in resto) {
           if (seleccion.length >= 10) break;
-          if (!seleccion.any((sel) => sel.id == p.id)) {
-            seleccion.add(p);
-          }
+          seleccion.add(p);
         }
       }
-      seleccion.shuffle();
 
       if (!mounted) return;
       setState(() {
@@ -434,6 +557,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
 
   Future<void> _mostrarSinVidas() async {
     if (!mounted) return;
+    await _registrarFalloSinVidas();
     await showDialog<void>(
       context: context,
       barrierDismissible: true,

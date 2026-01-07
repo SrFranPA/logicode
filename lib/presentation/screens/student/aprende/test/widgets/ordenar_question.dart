@@ -81,6 +81,15 @@ class _OrdenarQuestionWidgetState extends State<OrdenarQuestionWidget> {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           buildDefaultDragHandles: false,
+          proxyDecorator: (child, index, animation) {
+            return Material(
+              color: Colors.transparent,
+              child: Transform.scale(
+                scale: 0.98,
+                child: child,
+              ),
+            );
+          },
           onReorder: _onReorder,
           itemCount: desordenados.length,
           itemBuilder: (context, i) {

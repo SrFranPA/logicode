@@ -149,7 +149,10 @@ class _FillBlankQuestionWidgetState extends State<FillBlankQuestionWidget> {
               .map(
                 (opt) => Draggable<String>(
                   data: opt,
-                  feedback: _Chip(opt, dragging: true),
+                  feedback: Transform.scale(
+                    scale: 0.95,
+                    child: _Chip(opt, dragging: true),
+                  ),
                   childWhenDragging: _Chip(opt, ghost: true),
                   child: _Chip(opt),
                 ),
@@ -184,10 +187,14 @@ class _Chip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final padding = dragging
+        ? const EdgeInsets.symmetric(horizontal: 10, vertical: 8)
+        : const EdgeInsets.symmetric(horizontal: 14, vertical: 10);
+    final fontSize = dragging ? 13.0 : 14.0;
     return Opacity(
       opacity: ghost ? 0.3 : 1,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: padding,
         decoration: BoxDecoration(
           color: dragging ? const Color(0xFFFFD9B3) : const Color(0xFFFFF4E8),
           borderRadius: BorderRadius.circular(12),
@@ -204,10 +211,12 @@ class _Chip extends StatelessWidget {
         ),
         child: Text(
           label,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
           style: const TextStyle(
             fontWeight: FontWeight.w700,
             color: Color(0xFF3A2A1A),
-          ),
+          ).copyWith(fontSize: fontSize),
         ),
       ),
     );

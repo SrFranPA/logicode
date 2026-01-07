@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+﻿import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/pregunta_model.dart';
 
 class PreguntaRepository {
@@ -39,7 +39,8 @@ class PreguntaRepository {
     await db.collection("banco_preguntas").doc(id).delete();
   }
 
-  /// PRETEST: seleccionar hasta 10 preguntas aleatorias priorizando 1 por curso (si existe)
+      /// PRETEST: seleccionar 10 preguntas solo de nivel medio,
+  /// asegurando al menos 1 por curso cuando exista.
   Future<List<Pregunta>> cargarPreguntasPretest() async {
     final snap = await db
         .collection("banco_preguntas")
@@ -50,41 +51,55 @@ class PreguntaRepository {
     final all = snap.docs.map((e) => Pregunta.fromDoc(e)).toList();
     if (all.isEmpty) return [];
 
-    int _score(String? dif) {
-      final d = (dif ?? "").toLowerCase();
-      if (d.contains("muy dificil")) return 5;
-      if (d.contains("dificil")) return 4;
-      if (d.contains("medio")) return 3;
-      if (d.contains("facil")) return 2;
-      return 1;
+    String _normalize(String text) {
+      return text
+          .toLowerCase()
+          .replaceAll('á', 'a')
+          .replaceAll('é', 'e')
+          .replaceAll('í', 'i')
+          .replaceAll('ó', 'o')
+          .replaceAll('ú', 'u');
     }
 
+    bool _esMedio(String? dif) {
+      final d = _normalize(dif ?? "");
+      return d.contains("medio") || d.contains("media") || d.contains("intermedio");
+    }
+
+    final medio = all.where((p) => _esMedio(p.dificultad)).toList();
+    if (medio.isEmpty) return [];
+
     final byCurso = <String, List<Pregunta>>{};
-    for (final p in all) {
+    for (final p in medio) {
       byCurso.putIfAbsent(p.cursoId, () => []).add(p);
     }
 
     final seleccion = <Pregunta>[];
+    final cursos = byCurso.keys.toList();
+    cursos.shuffle();
+    final cursosSeleccionados = cursos.take(10).toList();
 
-    // Tomar una por curso, priorizando dificultad alta y variando orden
-    for (final list in byCurso.values) {
-      list.sort((a, b) => _score(b.dificultad).compareTo(_score(a.dificultad)));
+    // Tomar una por curso (nivel medio) cuando exista
+    for (final cursoId in cursosSeleccionados) {
+      final list = byCurso[cursoId] ?? [];
+      if (list.isEmpty) continue;
       list.shuffle();
-      list.sort((a, b) => _score(b.dificultad).compareTo(_score(a.dificultad)));
       seleccion.add(list.first);
-      if (seleccion.length >= 10) break; // si hay más de 10 cursos, cortamos en 10
     }
 
-    // Rellenar hasta 10 con el resto más difíciles
-    final resto = all.where((p) => !seleccion.any((s) => s.id == p.id)).toList();
-    resto.sort((a, b) => _score(b.dificultad).compareTo(_score(a.dificultad)));
-    resto.shuffle();
-    for (final p in resto) {
-      if (seleccion.length >= 10) break;
-      seleccion.add(p);
+    if (seleccion.length < 10) {
+      // Rellenar hasta 10 con el resto de nivel medio
+      final resto = medio.where((p) => !seleccion.any((s) => s.id == p.id)).toList();
+      resto.shuffle();
+      for (final p in resto) {
+        if (seleccion.length >= 10) break;
+        seleccion.add(p);
+      }
     }
 
     seleccion.shuffle();
     return seleccion;
   }
 }
+
+

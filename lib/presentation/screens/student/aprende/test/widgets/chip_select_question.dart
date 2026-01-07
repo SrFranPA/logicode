@@ -45,21 +45,38 @@ class _ChipSelectQuestionWidgetState extends State<ChipSelectQuestionWidget> {
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
 
-        Wrap(
-          spacing: 10,
-          children: widget.opciones.map((opt) {
-            final activo = seleccion == opt;
-            return ChoiceChip(
-              label: Text(opt),
-              selected: activo,
-              onSelected: locked
-                  ? null
-                  : (v) {
-                      setState(() => seleccion = opt);
-                    },
-              selectedColor: Colors.orange,
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final maxChipWidth = constraints.maxWidth;
+            return Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: widget.opciones.map((opt) {
+                final activo = seleccion == opt;
+                return ChoiceChip(
+                  label: ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: maxChipWidth - 16),
+                    child: Text(
+                      opt,
+                      softWrap: true,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  selected: activo,
+                  onSelected: locked
+                      ? null
+                      : (v) {
+                          setState(() => seleccion = opt);
+                        },
+                  selectedColor: Colors.orange,
+                  labelPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  visualDensity: VisualDensity.compact,
+                );
+              }).toList(),
             );
-          }).toList(),
+          },
         ),
 
         const SizedBox(height: 20),
