@@ -319,7 +319,7 @@ class AprendeScreen extends StatelessWidget {
                                             ? 'Conceptos clave y ejercicios interactivos.'
                                             : descripcion,
                                         cursoOrden: orden,
-                                        iconPath: 'assets/images/iconos/curso${(index % 9) + 1}.png',
+                                        iconPath: 'assets/gif/cursoG${(index % 9) + 1}.gif',
                                       ),
                                     ),
                                   );
@@ -364,8 +364,10 @@ class _CourseCard extends StatefulWidget {
   State<_CourseCard> createState() => _CourseCardState();
 }
 
-class _CourseCardState extends State<_CourseCard> with SingleTickerProviderStateMixin {
+class _CourseCardState extends State<_CourseCard> with TickerProviderStateMixin {
   late final AnimationController _controller;
+  late final AnimationController _pulseController;
+  Animation<double> _pulse = const AlwaysStoppedAnimation(0.0);
 
   @override
   void initState() {
@@ -376,11 +378,19 @@ class _CourseCardState extends State<_CourseCard> with SingleTickerProviderState
       lowerBound: 0.0,
       upperBound: 0.05,
     );
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1600),
+    )..repeat(reverse: true);
+    _pulse = Tween<double>(begin: -1.2, end: 1.2).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
@@ -481,37 +491,46 @@ class _CourseCardState extends State<_CourseCard> with SingleTickerProviderState
                               ),
                           ),
                           const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: disponible
-                                  ? statusColor.withOpacity(0.14)
-                                  : const Color.fromARGB(255, 245, 245, 245),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
+                          AnimatedBuilder(
+                            animation: _pulse,
+                            builder: (context, child) {
+                              return Transform.translate(
+                                offset: Offset(0, disponible ? _pulse.value : 0),
+                                child: child,
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              decoration: BoxDecoration(
                                 color: disponible
-                                    ? statusColor.withOpacity(0.35)
-                                    : const Color.fromARGB(255, 255, 255, 255),
+                                    ? statusColor.withOpacity(0.14)
+                                    : const Color.fromARGB(255, 245, 245, 245),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: disponible
+                                      ? statusColor.withOpacity(0.35)
+                                      : const Color.fromARGB(255, 255, 255, 255),
+                                ),
                               ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  statusIcon,
-                                  size: 16,
-                                  color: statusColor,
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  statusLabel,
-                                  style: TextStyle(
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    statusIcon,
+                                    size: 16,
                                     color: statusColor,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 12,
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    statusLabel,
+                                    style: TextStyle(
+                                      color: statusColor,
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                           const SizedBox(height: 6),
@@ -568,35 +587,44 @@ class _CourseCardState extends State<_CourseCard> with SingleTickerProviderState
                               ),
                           ),
                           const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(disponible ? 0.22 : 0.18),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: disponible
-                                    ? const Color(0xFF1F2A44).withOpacity(0.25)
-                                    : const Color(0xFF8B8B8B).withOpacity(0.25),
+                          AnimatedBuilder(
+                            animation: _pulse,
+                            builder: (context, child) {
+                              return Transform.translate(
+                                offset: Offset(0, disponible ? _pulse.value : 0),
+                                child: child,
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(disponible ? 0.22 : 0.18),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: disponible
+                                      ? const Color(0xFF1F2A44).withOpacity(0.25)
+                                      : const Color(0xFF8B8B8B).withOpacity(0.25),
+                                ),
                               ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  statusIcon,
-                                  size: 16,
-                                  color: statusColor,
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  statusLabel,
-                                  style: TextStyle(
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    statusIcon,
+                                    size: 16,
                                     color: statusColor,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 12,
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    statusLabel,
+                                    style: TextStyle(
+                                      color: statusColor,
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                           const SizedBox(height: 6),

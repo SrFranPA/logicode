@@ -189,7 +189,7 @@ class _PretestScreenState extends State<PretestScreen> {
       _finalizado = true;
       showDialog(
         context: context,
-        barrierDismissible: true,
+        barrierDismissible: false,
         builder: (ctx) => Dialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
           insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),

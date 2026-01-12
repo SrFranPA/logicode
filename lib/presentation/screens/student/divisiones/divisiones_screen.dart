@@ -598,7 +598,7 @@ class _TopGlobalSection extends StatelessWidget {
                             Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                if (i == 2)
+                                if (i == 0)
                                   const Padding(
                                     padding: EdgeInsets.only(right: 6),
                                     child: Icon(

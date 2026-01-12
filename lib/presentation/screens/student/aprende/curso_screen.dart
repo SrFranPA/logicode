@@ -1,4 +1,4 @@
-// lib/presentation/screens/student/aprende/curso_screen.dart
+﻿// lib/presentation/screens/student/aprende/curso_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -17,7 +17,7 @@ class CursoScreen extends StatefulWidget {
     required this.cursoId,
     required this.cursoNombre,
     required this.descripcion,
-    this.iconPath = 'assets/images/iconos/curso1.png',
+    this.iconPath = 'assets/gif/cursoG1.gif',
     this.cursoOrden = 1,
   });
 
@@ -25,7 +25,7 @@ class CursoScreen extends StatefulWidget {
       : cursoId = '',
         cursoNombre = 'Curso',
         descripcion = '',
-        iconPath = 'assets/images/iconos/curso1.png',
+        iconPath = 'assets/gif/cursoG1.gif',
         cursoOrden = 1;
 
   @override
@@ -416,54 +416,10 @@ class _CursoScreenState extends State<CursoScreen> {
                                 ),
                               ),
                               const SizedBox(width: 12),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: done
-                                      ? const Color(0xFFE8F9E5)
-                                      : Colors.white.withOpacity(0.9),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: done
-                                        ? const Color(0xFF3FB07F).withOpacity(0.6)
-                                        : const Color(0xFF283347).withOpacity(0.12),
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      done
-                                          ? 'Completado'
-                                          : unlocked
-                                              ? 'Disponible'
-                                              : 'Bloqueado',
-                                      style: TextStyle(
-                                        color: done
-                                            ? const Color(0xFF2E7D32)
-                                            : unlocked
-                                                ? const Color(0xFF2C1B0E)
-                                                : const Color(0xFF7A6A5C),
-                                        fontWeight: FontWeight.w800,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Icon(
-                                      done
-                                          ? Icons.check_circle
-                                          : unlocked
-                                              ? Icons.arrow_forward_ios
-                                              : Icons.lock_outline,
-                                      color: done
-                                          ? const Color(0xFF2E7D32)
-                                          : unlocked
-                                              ? tomato
-                                              : const Color(0xFF7A6A5C),
-                                      size: 16,
-                                    ),
-                                  ],
-                                ),
+                              _LessonStatusChip(
+                                done: done,
+                                unlocked: unlocked,
+                                tomato: tomato,
                               ),
                             ],
                           ),
@@ -564,12 +520,11 @@ class _CursoScreenState extends State<CursoScreen> {
   }
 
   List<Color> _lessonPalette(int index) {
-    // Paleta armonizada con tonos cálidos/crema para las primeras lecciones
     const palettes = [
-      [Color(0xFF1BA6A8), Color(0xFF8FE8EA)], // leccion 1 (turquesa suave)
-      [Color(0xFFFFDFA6), Color(0xFFF6C778)], // leccion 2 (ámbar cálido)
-      [Color(0xFFDDF1C8), Color(0xFFB7E29A)], // leccion 3 (verde suave)
-      [Color(0xFFFFE6E6), Color(0xFFFFF0F0)], // resto
+      [Color(0xFF1BA6A8), Color(0xFF8FE8EA)],
+      [Color(0xFFFFDFA6), Color(0xFFF6C778)],
+      [Color(0xFFDDF1C8), Color(0xFFB7E29A)],
+      [Color(0xFFFFE6E6), Color(0xFFFFF0F0)],
     ];
     return palettes[index % palettes.length];
   }
@@ -579,6 +534,113 @@ class _Lesson {
   final String title;
   final String detail;
   const _Lesson({required this.title, required this.detail});
+}
+
+class _LessonStatusChip extends StatefulWidget {
+  final bool done;
+  final bool unlocked;
+  final Color tomato;
+
+  const _LessonStatusChip({
+    required this.done,
+    required this.unlocked,
+    required this.tomato,
+  });
+
+  @override
+  State<_LessonStatusChip> createState() => _LessonStatusChipState();
+}
+
+class _LessonStatusChipState extends State<_LessonStatusChip>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _float;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1600),
+    )..repeat(reverse: true);
+    _float = Tween<double>(begin: -1.2, end: 1.2).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final done = widget.done;
+    final unlocked = widget.unlocked;
+    final textColor = done
+        ? const Color(0xFF2E7D32)
+        : unlocked
+            ? const Color(0xFF2C1B0E)
+            : const Color(0xFF7A6A5C);
+    final iconColor = done
+        ? const Color(0xFF2E7D32)
+        : unlocked
+            ? widget.tomato
+            : const Color(0xFF7A6A5C);
+    final label = done
+        ? 'Completado'
+        : unlocked
+            ? 'Disponible'
+            : 'Bloqueado';
+    final icon = done
+        ? Icons.check_circle
+        : unlocked
+            ? Icons.arrow_forward_ios
+            : Icons.lock_outline;
+
+    return AnimatedBuilder(
+      animation: _float,
+      builder: (context, child) {
+        final offsetY = (unlocked || done) ? _float.value : 0.0;
+        return Transform.translate(
+          offset: Offset(0, offsetY),
+          child: child,
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: done ? const Color(0xFFE8F9E5) : Colors.white.withOpacity(0.9),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: done
+                ? const Color(0xFF3FB07F).withOpacity(0.6)
+                : const Color(0xFF283347).withOpacity(0.12),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                color: textColor,
+                fontWeight: FontWeight.w800,
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Icon(
+              icon,
+              color: iconColor,
+              size: 16,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 Widget _chip(IconData icon, String text) {
@@ -606,3 +668,4 @@ Widget _chip(IconData icon, String text) {
     ),
   );
 }
+

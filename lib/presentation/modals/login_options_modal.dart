@@ -29,6 +29,26 @@ class _LoginOptionsModalState extends State<LoginOptionsModal> {
   int _loginAttempts = 0;
   static const int maxAttempts = 7;
 
+  String _mapAuthError(String message) {
+    final lower = message.toLowerCase();
+    if (lower.contains('email-already-in-use')) {
+      return 'El correo ya está registrado. Inicia sesión o usa otro.';
+    }
+    if (lower.contains('weak-password')) {
+      return 'La contraseña es muy débil. Usa al menos 6 caracteres.';
+    }
+    if (lower.contains('invalid-email')) {
+      return 'El correo no es válido.';
+    }
+    if (lower.contains('user-not-found') || lower.contains('wrong-password')) {
+      return 'Correo o contraseña incorrectos.';
+    }
+    if (lower.contains('too-many-requests')) {
+      return 'Demasiados intentos. Intenta más tarde.';
+    }
+    return 'Ocurrió un error. Revisa los datos e intenta de nuevo.';
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = context.read<AuthCubit>();
@@ -41,7 +61,7 @@ class _LoginOptionsModalState extends State<LoginOptionsModal> {
       listener: (context, state) {
         if (state is AuthError) {
           setState(() {
-            _errorMessage = state.message;
+            _errorMessage = _mapAuthError(state.message);
             if (!isRegisterMode) _loginAttempts++;
           });
         }
@@ -167,6 +187,13 @@ class _LoginOptionsModalState extends State<LoginOptionsModal> {
                       : () {
                           final email = emailCtrl.text.trim();
                           final pass = passCtrl.text.trim();
+
+                          if (email.isEmpty || pass.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Completa todos los campos.')),
+                            );
+                            return;
+                          }
 
                           if (isRegisterMode) {
                             auth.registerEmailPassword(

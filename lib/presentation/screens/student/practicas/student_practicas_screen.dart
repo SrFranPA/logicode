@@ -73,7 +73,7 @@ class _StudentPracticasScreenState extends State<StudentPracticasScreen> {
                 accent: accent,
                 titulo: 'Prácticas dirigidas',
                 subtitulo:
-                    'Refuerza lo que fallaste con una mini lección de 5 preguntas. Si terminas correctamente el curso recibirás recompensas <3',
+                    'Refuerza lo que fallaste con una mini lección de 5 preguntas. Si terminas correctamente el curso recibirás recompensas ❤',
                 intentosRestantes: _intentosRestantes,
                 enabled: puedeGenerarMini,
                 miniCompletada: _miniCompletada,
@@ -103,7 +103,7 @@ class _StudentPracticasScreenState extends State<StudentPracticasScreen> {
                 accent: accent,
                 titulo: 'Desafíos',
                 subtitulo:
-                    'Supera retos extra del curso con 5 preguntas difíciles. Si terminas correctamente el curso recibirás recompensas <3',
+                    'Supera retos extra del curso con 5 preguntas difíciles. Si terminas correctamente el curso recibirás recompensas ❤',
                 intentosRestantes: 0,
                 enabled: ultimoCursoId.isNotEmpty && !_desafioCompletado,
                 miniCompletada: _desafioCompletado,
