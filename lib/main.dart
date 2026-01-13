@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:logicode/presentation/screens/student/aprende/test/pretest_screen.dart';
 
 import 'firebase_options.dart';
 
@@ -25,11 +26,11 @@ import 'data/repositories/evaluaciones_repository.dart';
 import 'services/firebase_auth_service.dart';
 import 'services/user_service.dart';
 import 'services/notification_service.dart';
- 
+
 // screens
 import 'presentation/screens/onboarding/onboarding_screen.dart';
 import 'presentation/screens/home/home_screen.dart';
-import 'presentation/screens/student/aprende/test/pretest_screen.dart';
+import 'presentation/screens/student/aprende/leccion_curso_screen.dart';
 import 'presentation/screens/role_gate.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {

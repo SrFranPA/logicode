@@ -1,4 +1,4 @@
-﻿// lib/presentation/screens/student/aprende/leccion_curso_screen.dart
+// lib/presentation/screens/student/aprende/leccion_curso_screen.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -62,8 +62,8 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
   String _randomLeccionImage() {
     final imgs = [
       'assets/images/mascota/leccion1.png',
-      'assets/images/mascota/leccion2.png',
-      'assets/images/mascota/leccion3.png',
+      'assets/gif/reprovado.gif',
+      'assets/gif/salida.gif',
       'assets/images/mascota/leccion4.png',
     ];
     imgs.shuffle();
@@ -133,11 +133,11 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
   String _normalizeText(String text) {
     return text
         .toLowerCase()
-        .replaceAll('Ãƒ¡', 'a')
-        .replaceAll('ÃƒÂ©', 'e')
-        .replaceAll('ÃƒÂ­', 'i')
-        .replaceAll('ÃƒÂ³', 'o')
-        .replaceAll('ÃƒÂº', 'u');
+        .replaceAll('�f�', 'a')
+        .replaceAll('�f©', 'e')
+        .replaceAll('�f­', 'i')
+        .replaceAll('�f³', 'o')
+        .replaceAll('�fº', 'u');
   }
 
   String? _dificultadObjetivo() {
@@ -373,18 +373,19 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
     if (!mounted) return;
     final puntaje = '$_aciertos/${preguntas.length}';
     final img = aprobado
-        ? 'assets/images/mascota/refuerzo2.png'
-        : 'assets/images/mascota/leccion3.png';
+        ? 'assets/gif/fintest.gif'
+        : 'assets/gif/salida.gif';
     final mensaje = aprobado
-        ? '¡Gran trabajo! Superaste el test con puntaje $puntaje. Ganaste tu medalla y desbloqueaste el siguiente curso.'
+        ? 'Gran trabajo! Superaste el test con puntaje $puntaje. Ganaste tu medalla y desbloqueaste el siguiente curso.'
         : 'No pasa nada: necesitas 7 aciertos. Repasa tus notas, intenta de nuevo y verás cómo mejoras.';
     final motivacion = aprobado
         ? 'Sigue este ritmo, cada logro te acerca a tu meta.'
-        : 'Cada intento suma. Practica y volverás más fuerte.';
+        : 'Cada intento suma. Practica y volveras más fuerte.';
     await showDialog<void>(
       context: context,
       barrierDismissible: true,
       builder: (_) => Dialog(
+        backgroundColor: const Color(0xFFF9FAF9),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
         child: Padding(
@@ -439,7 +440,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
               ),
               const SizedBox(height: 14),
               Text(
-                aprobado ? '¡Test aprobado!' : 'Sigue practicando',
+                aprobado ? 'Test aprobado!' : 'Sigue practicando',
                 style: TextStyle(
                   fontWeight: FontWeight.w900,
                   fontSize: 18,
@@ -496,6 +497,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
       context: context,
       barrierDismissible: true,
       builder: (_) => Dialog(
+        backgroundColor: const Color(0xFFF9FAF9),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
         child: Padding(
@@ -562,6 +564,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
       context: context,
       barrierDismissible: true,
       builder: (_) => Dialog(
+        backgroundColor: const Color(0xFFF9FAF9),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
         child: Padding(
@@ -571,7 +574,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
             children: [
               ClipOval(
                 child: Image.asset(
-                  'assets/images/mascota/leccion2.png',
+                  'assets/gif/reprovado.gif',
                   width: 120,
                   height: 120,
                   fit: BoxFit.cover,
@@ -656,6 +659,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
           await showDialog<void>(
             context: context,
             builder: (_) => AlertDialog(
+                backgroundColor: const Color(0xFFF9FAF9),
               title: const Text('Necesitas 7 aciertos'),
               content: const Text(
                 'Responde al menos 7 preguntas correctas para pasar al siguiente curso.',
@@ -799,6 +803,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
       return await showDialog<bool>(
             context: context,
             builder: (_) => Dialog(
+        backgroundColor: const Color(0xFFF9FAF9),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
               insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
               child: Padding(
@@ -808,12 +813,9 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                   children: [
                     Container(
                       padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFE7D2),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
+                      
                       child: Image.asset(
-                        'assets/images/mascota/salida1.png',
+                        'assets/gif/reprovado.gif',
                         width: 120,
                         height: 120,
                         fit: BoxFit.contain,
@@ -1126,7 +1128,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                       ClipRRect(
                         borderRadius: BorderRadius.circular(12),
                         child: Image.asset(
-                          'assets/images/mascota/refuerzo2.png',
+                          'assets/gif/fintest.gif',
                           width: 64,
                           height: 64,
                           fit: BoxFit.cover,

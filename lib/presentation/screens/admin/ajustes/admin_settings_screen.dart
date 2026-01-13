@@ -5,12 +5,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 class _CourseUsageRow {
   final String label;
-  final int count;
+  final double? promedio;
   final int sortKey;
 
   _CourseUsageRow({
     required this.label,
-    required this.count,
+    required this.promedio,
     required this.sortKey,
   });
 }
@@ -491,7 +491,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
               const SizedBox(width: 10),
               const Expanded(
                 child: Text(
-                  'Estudiantes por curso',
+                  'Promedio por curso',
                   style: TextStyle(
                     fontWeight: FontWeight.w900,
                     fontSize: 16,
@@ -562,7 +562,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                 ),
                 SizedBox(width: 12),
                 Text(
-                  'Estudiantes',
+                  'Promedio',
                   style: TextStyle(fontWeight: FontWeight.w800),
                 ),
               ],
@@ -596,7 +596,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                         ),
                         const SizedBox(width: 12),
                         Text(
-                          row.count.toString(),
+                          row.promedio == null ? 'N/D' : row.promedio!.toStringAsFixed(1),
                           style: const TextStyle(
                             fontWeight: FontWeight.w800,
                             color: Color(0xFF1E2026),
@@ -948,34 +948,43 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
       final Map<String, String> courseNames = {
         for (final c in cursos) c.id: (c.data()['nombre'] ?? c.id).toString(),
       };
+      final Map<String, int> courseOrder = {
+        for (final c in cursos)
+          c.id: (c.data()['orden'] as num?)?.toInt() ?? 0,
+      };
 
       final usersSnap =
           await _db.collection('usuarios').where('rol', isEqualTo: 'estudiante').get();
+      final Map<String, double> sums = {};
       final Map<String, int> counts = {};
-      int totalUsers = 0;
 
       for (final doc in usersSnap.docs) {
-        totalUsers++;
         final data = doc.data();
-        final cursoId = (data['curso_actual'] ?? '').toString();
-        if (cursoId.isEmpty) continue;
-        counts[cursoId] = (counts[cursoId] ?? 0) + 1;
+        final vector = (data['postest_calificaciones'] as List?)
+                ?.map((e) => (e as num?)?.toDouble() ?? 0.0)
+                .toList() ??
+            [];
+        for (final c in cursos) {
+          final orden = courseOrder[c.id] ?? 0;
+          final index = orden > 0 ? orden - 1 : -1;
+          if (index < 0 || index >= vector.length) continue;
+          final valor = vector[index];
+          if (valor <= 0) continue;
+          sums[c.id] = (sums[c.id] ?? 0) + valor;
+          counts[c.id] = (counts[c.id] ?? 0) + 1;
+        }
       }
 
       final rows = <_CourseUsageRow>[
         for (final c in cursos)
           _CourseUsageRow(
             label: courseNames[c.id] ?? c.id,
-            count: counts[c.id] ?? 0,
+            promedio: (counts[c.id] ?? 0) > 0
+                ? (sums[c.id] ?? 0) / (counts[c.id] ?? 1)
+                : null,
             sortKey: (c.data()['orden'] as num?)?.toInt() ?? 0,
           ),
       ];
-      final totalEnCursos = rows.fold<int>(0, (sum, r) => sum + r.count);
-      final sinCurso = (totalUsers - totalEnCursos).clamp(0, totalUsers);
-
-      if (sinCurso > 0) {
-        rows.add(_CourseUsageRow(label: 'Sin curso', count: sinCurso, sortKey: 9999));
-      }
 
       rows.sort((a, b) => a.sortKey.compareTo(b.sortKey));
       return rows;

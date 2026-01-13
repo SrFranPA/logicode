@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../screens/admin/admin_home_screen.dart';
-import '../screens/home/home_screen.dart';
+import '../screens/student/student_home_screen.dart';
 
 class RoleGate extends StatelessWidget {
   final String uid;
@@ -30,7 +30,7 @@ class RoleGate extends StatelessWidget {
         if (rol == "admin") {
           return const AdminHomeScreen();
         } else {
-          return const HomeScreen();
+          return const StudentHomeScreen();
         }
       },
     );

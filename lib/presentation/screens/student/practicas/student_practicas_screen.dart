@@ -1,4 +1,4 @@
-﻿import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -158,12 +158,7 @@ class _HeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const images = [
-      'assets/images/mascota/refuerzo1.png',
-      'assets/images/mascota/refuerzo2.png',
-      'assets/images/mascota/refuerzo3.png',
-    ];
-    final imgPath = images[(titulo.hashCode.abs() % images.length)];
+    const images = [       'assets/images/mascota/refuerzo1.png',      'assets/gif/fintest.gif',     'assets/images/mascota/refuerzo3.png',    ];    final imgPath = images[(titulo.hashCode.abs() % images.length)];
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),

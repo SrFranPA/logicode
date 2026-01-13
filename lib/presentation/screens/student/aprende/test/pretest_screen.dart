@@ -102,6 +102,7 @@ class _PretestScreenState extends State<PretestScreen> {
           context: context,
           barrierDismissible: true,
           builder: (ctx) => Dialog(
+        backgroundColor: const Color(0xFFF9FAF9),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
             child: Padding(
@@ -112,7 +113,7 @@ class _PretestScreenState extends State<PretestScreen> {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(14),
                     child: Image.asset(
-                      'assets/images/mascota/leccion2.png',
+                      'assets/gif/reprovado.gif',
                       width: 130,
                       height: 130,
                       fit: BoxFit.cover,
@@ -191,6 +192,7 @@ class _PretestScreenState extends State<PretestScreen> {
         context: context,
         barrierDismissible: false,
         builder: (ctx) => Dialog(
+        backgroundColor: const Color(0xFFF9FAF9),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
           insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
           child: Padding(
@@ -199,7 +201,7 @@ class _PretestScreenState extends State<PretestScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Image.asset(
-                  'assets/images/mascota/refuerzo2.png',
+                  'assets/gif/fintest.gif',
                   width: 160,
                   height: 160,
                   fit: BoxFit.contain,
@@ -241,7 +243,7 @@ class _PretestScreenState extends State<PretestScreen> {
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.of(ctx).pop();
-                      Navigator.of(context).pop(true);
+                      Navigator.of(context).popUntil((route) => route.isFirst);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF16A34A),

@@ -1,4 +1,4 @@
-// lib/presentation/screens/student/aprende/aprende_screen.dart
+﻿// lib/presentation/screens/student/aprende/aprende_screen.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -151,7 +151,7 @@ class AprendeScreen extends StatelessWidget {
                                       ClipRRect(
                                         borderRadius: BorderRadius.circular(12),
                                         child: Image.asset(
-                                          'assets/images/mascota/refuerzo2.png',
+                                          'assets/gif/fintest.gif',
                                           width: 70,
                                           height: 70,
                                           fit: BoxFit.cover,

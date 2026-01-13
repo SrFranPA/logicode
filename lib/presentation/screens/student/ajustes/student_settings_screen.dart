@@ -1,4 +1,4 @@
-import 'package:firebase_auth/firebase_auth.dart';
+﻿import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
@@ -84,7 +84,7 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
                         ClipRRect(
                           borderRadius: BorderRadius.circular(12),
                           child: Image.asset(
-                            'assets/images/mascota/refuerzo2.png',
+                            'assets/gif/fintest.gif',
                             width: 56,
                             height: 56,
                             fit: BoxFit.cover,

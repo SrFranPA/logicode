@@ -75,6 +75,16 @@ class _OrdenarQuestionWidgetState extends State<OrdenarQuestionWidget> {
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
 
+        const SizedBox(height: 6),
+        const Text(
+          'Arrastra las opciones usando las dos líneas al costado.',
+          style: TextStyle(
+            fontSize: 12,
+            color: Color(0xFF6B7280),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+
         const SizedBox(height: 16),
 
         ReorderableListView.builder(

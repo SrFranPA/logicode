@@ -1,4 +1,4 @@
-﻿// lib/presentation/modals/login_options_modal.dart
+// lib/presentation/modals/login_options_modal.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -21,6 +21,7 @@ class LoginOptionsModal extends StatefulWidget {
 
 class _LoginOptionsModalState extends State<LoginOptionsModal> {
   bool isRegisterMode = false;
+  bool _showPassword = false;
 
   final emailCtrl = TextEditingController();
   final passCtrl = TextEditingController();
@@ -32,10 +33,10 @@ class _LoginOptionsModalState extends State<LoginOptionsModal> {
   String _mapAuthError(String message) {
     final lower = message.toLowerCase();
     if (lower.contains('email-already-in-use')) {
-      return 'El correo ya está registrado. Inicia sesión o usa otro.';
+      return 'El correo ya esta registrado. Inicia sesión o usa otro.';
     }
     if (lower.contains('weak-password')) {
-      return 'La contraseña es muy débil. Usa al menos 6 caracteres.';
+      return 'La contraseña es muy debil. Usa al menos 6 caracteres.';
     }
     if (lower.contains('invalid-email')) {
       return 'El correo no es válido.';
@@ -100,7 +101,7 @@ class _LoginOptionsModalState extends State<LoginOptionsModal> {
 
               const SizedBox(height: 25),
 
-              // 🔥 Google
+              // ?? Google
               if (!isRegisterMode) ...[
                 GoogleLoginButton(
                   onPressed: () {
@@ -159,9 +160,15 @@ class _LoginOptionsModalState extends State<LoginOptionsModal> {
 
               TextField(
                 controller: passCtrl,
-                obscureText: true,
+                obscureText: !_showPassword,
                 decoration: InputDecoration(
                   labelText: "Contraseña",
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _showPassword ? Icons.visibility_off : Icons.visibility,
+                    ),
+                    onPressed: () => setState(() => _showPassword = !_showPassword),
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -254,7 +261,7 @@ class _LoginOptionsModalState extends State<LoginOptionsModal> {
   }
 
   // ============================================================
-  // 🔥 TELEFONO — Paso 1: ingresar número
+  // ?? TELEFONO - Paso 1: ingresar n�mero
   // ============================================================
   void _showPhoneInputModal(BuildContext context) {
     final phoneCtrl = TextEditingController();
@@ -319,21 +326,21 @@ class _LoginOptionsModalState extends State<LoginOptionsModal> {
   }
 
   // ============================================================
-  // 🔥 TELEFONO — Paso 2: enviar código SMS
+  // ?? TELEFONO - Paso 2: enviar c�digo SMS
   // ============================================================
   void _startPhoneVerification(BuildContext context, String phone) async {
     await FirebaseAuth.instance.verifyPhoneNumber(
       phoneNumber: phone,
 
       verificationCompleted: (PhoneAuthCredential credential) async {
-        // ANDROID: login automático sin escribir código
+        // ANDROID: login autom�tico sin escribir c�digo
         final user = await FirebaseAuth.instance.signInWithCredential(credential);
         _onPhoneLoginSuccess(context, user);
       },
 
       verificationFailed: (FirebaseAuthException e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message ?? 'Error al verificar el número')),
+          SnackBar(content: Text(e.message ?? 'Error al verificar el n�mero')),
         );
       },
 
@@ -346,7 +353,7 @@ class _LoginOptionsModalState extends State<LoginOptionsModal> {
   }
 
   // ============================================================
-  // 🔥 TELEFONO — Paso 3: ingresar código
+  // ?? TELEFONO - Paso 3: ingresar c�digo
   // ============================================================
   void _showCodeInputModal(BuildContext context, String verificationId) {
     final codeCtrl = TextEditingController();
@@ -369,7 +376,7 @@ class _LoginOptionsModalState extends State<LoginOptionsModal> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text(
-                "Ingresa el código SMS",
+                "Ingresa el c�digo SMS",
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 15),
@@ -378,7 +385,7 @@ class _LoginOptionsModalState extends State<LoginOptionsModal> {
                 controller: codeCtrl,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  labelText: "Código",
+                  labelText: "C�digo",
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -417,7 +424,7 @@ class _LoginOptionsModalState extends State<LoginOptionsModal> {
   }
 
   // ============================================================
-  // 🔥 TELEFONO — Paso 4: Registrar usuario si no existe
+  // ?? TELEFONO - Paso 4: Registrar usuario si no existe
   // ============================================================
   void _onPhoneLoginSuccess(BuildContext context, UserCredential cred) async {
     final uid = cred.user!.uid;
@@ -432,7 +439,7 @@ class _LoginOptionsModalState extends State<LoginOptionsModal> {
     Navigator.pop(context);
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Inicio de sesión exitoso ✔")),
+      const SnackBar(content: Text("Inicio de sesión exitoso ?")),
     );
   }
 }

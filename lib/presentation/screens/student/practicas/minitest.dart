@@ -1,6 +1,9 @@
-﻿import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:ui' as ui;
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../../data/models/pregunta_model.dart';
 import '../aprende/test/widgets/pregunta_widget_builder.dart';
@@ -112,6 +115,7 @@ class _MiniTestScreenState extends State<MiniTestScreen> {
       context: context,
       barrierDismissible: true,
       builder: (_) => Dialog(
+        backgroundColor: const Color(0xFFF9FAF9),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
         child: Padding(
@@ -121,11 +125,11 @@ class _MiniTestScreenState extends State<MiniTestScreen> {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(14),
-                child: Image.asset(
-                  aprobado ? 'assets/images/medallas/curso1.png' : 'assets/images/mascota/leccion2.png',
+                child: _PausedGif(
+                  asset: aprobado ? 'assets/images/medallas/curso1.png' : 'assets/gif/reprovado.gif',
                   width: 140,
                   height: 140,
-                  fit: BoxFit.cover,
+                  fit: BoxFit.contain,
                 ),
               ),
               const SizedBox(height: 12),
@@ -221,6 +225,7 @@ class _MiniTestScreenState extends State<MiniTestScreen> {
           context: context,
           barrierDismissible: true,
           builder: (_) => Dialog(
+            backgroundColor: const Color(0xFFF9FAF9),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
@@ -229,11 +234,11 @@ class _MiniTestScreenState extends State<MiniTestScreen> {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: Image.asset(
-                      'assets/images/mascota/leccion2.png',
+                    child: _PausedGif(
+                      asset: 'assets/gif/reprovado.gif',
                       width: 160,
                       height: 140,
-                      fit: BoxFit.cover,
+                      fit: BoxFit.contain,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -353,7 +358,7 @@ class _MiniTestScreenState extends State<MiniTestScreen> {
                       ClipRRect(
                         borderRadius: BorderRadius.circular(12),
                         child: Image.asset(
-                          'assets/images/mascota/refuerzo2.png',
+                          'assets/gif/fintest.gif',
                           width: 58,
                           height: 58,
                           fit: BoxFit.cover,
@@ -524,6 +529,88 @@ class _MiniTestScreenState extends State<MiniTestScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _PausedGif extends StatefulWidget {
+  final String asset;
+  final double width;
+  final double height;
+  final BoxFit fit;
+  final Duration pause;
+
+  const _PausedGif({
+    required this.asset,
+    required this.width,
+    required this.height,
+    this.fit = BoxFit.contain,
+    this.pause = const Duration(seconds: 3),
+  });
+
+  @override
+  State<_PausedGif> createState() => _PausedGifState();
+}
+
+class _PausedGifState extends State<_PausedGif> {
+  ui.Codec? _codec;
+  ui.FrameInfo? _frame;
+  int _frameIndex = 0;
+  bool _disposed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  Future<void> _load() async {
+    try {
+      final data = await rootBundle.load(widget.asset);
+      final codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
+      if (_disposed) return;
+      _codec = codec;
+      _frameIndex = 0;
+      _advance();
+    } catch (_) {}
+  }
+
+  Future<void> _advance() async {
+    if (_codec == null || _disposed) return;
+    final frame = await _codec!.getNextFrame();
+    if (_disposed) return;
+    setState(() => _frame = frame);
+
+    _frameIndex++;
+    final isLast = _frameIndex >= _codec!.frameCount;
+    if (isLast) {
+      _frameIndex = 0;
+      await Future.delayed(widget.pause);
+    } else {
+      await Future.delayed(frame.duration);
+    }
+
+    if (!_disposed) {
+      _advance();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_frame == null) {
+      return SizedBox(width: widget.width, height: widget.height);
+    }
+    return RawImage(
+      image: _frame!.image,
+      width: widget.width,
+      height: widget.height,
+      fit: widget.fit,
     );
   }
 }

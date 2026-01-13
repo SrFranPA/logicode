@@ -35,7 +35,7 @@ class _FillBlankQuestionWidgetState extends State<FillBlankQuestionWidget> {
   List<String> _buildPool() {
     final set = <String>{...widget.blanks, ...widget.opcionesExtra};
     if (set.length == widget.blanks.length) {
-      set.addAll(['Opcion extra 1', 'Opcion extra 2']);
+      set.addAll(['dato', 'variable', '8']);
     }
     final list = set.toList()..shuffle();
     return list;

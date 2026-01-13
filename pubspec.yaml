@@ -1,4 +1,4 @@
-name: logicode
+﻿name: logicode
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -123,8 +123,10 @@ flutter:
     - assets/gif/cursoG9.gif
     - assets/gif/Vcurso.gif
     - assets/gif/open.gif
-  
-    
+    - assets/gif/reprovado.gif
+    - assets/gif/salida.gif
+    - assets/gif/fintest.gif
+    - assets/gif/abeja.gif
 flutter_icons:
   android: true
   ios: true

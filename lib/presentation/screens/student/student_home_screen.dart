@@ -8,10 +8,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'ajustes/student_settings_screen.dart';
-  import 'aprende/aprende_screen.dart';
-  import 'divisiones/divisiones_screen.dart';
-  import 'practicas/student_practicas_screen.dart';
-  import 'perfil/student_profile_screen.dart';
+import 'aprende/aprende_screen.dart';
+import 'divisiones/divisiones_screen.dart';
+import 'practicas/student_practicas_screen.dart';
+import 'perfil/student_profile_screen.dart';
 import '../../../services/notification_service.dart';
 import '../../../services/app_usage_service.dart';
 
@@ -434,8 +434,8 @@ class _StudentHudState extends State<_StudentHud> {
                           ),
                           padding: const EdgeInsets.all(6),
                           child: Image.asset(
-                            'assets/images/logo.png',
-                            fit: BoxFit.contain,
+                            'assets/gif/abeja.gif',
+                            
                           ),
                         ),
                         const SizedBox(width: 12),

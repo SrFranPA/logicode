@@ -105,6 +105,25 @@ class _StudentDetailScreenState extends State<StudentDetailScreen> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                         onPressed: () async {
+                          if (fieldName == "rol" && ctrl.text.trim().toLowerCase() == "admin") {
+                            final currentRol =
+                                (userData?["rol"] ?? "").toString().trim().toLowerCase();
+                            if (currentRol != "admin") {
+                              final adminsSnap = await _db
+                                  .collection("usuarios")
+                                  .where("rol", isEqualTo: "admin")
+                                  .get();
+                              if (adminsSnap.docs.length >= 5) {
+                                if (!mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text("Limite de administradores alcanzado (5)."),
+                                  ),
+                                );
+                                return;
+                              }
+                            }
+                          }
                           await _db.collection("usuarios").doc(widget.userId).update({
                             fieldName: ctrl.text.trim(),
                           });
