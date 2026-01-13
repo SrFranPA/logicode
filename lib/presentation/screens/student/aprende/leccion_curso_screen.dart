@@ -376,12 +376,11 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
         ? 'assets/images/mascota/refuerzo2.png'
         : 'assets/images/mascota/leccion3.png';
     final mensaje = aprobado
-        ? 'Ã‚¡Gran trabajo! Superaste el test con puntaje $puntaje. Ganaste tu medalla y desbloqueaste el siguiente curso.'
-        : 'No pasa nada: necesitas 7 aciertos. Repasa tus notas, intenta de nuevo y verÃƒ¡s cÃƒÂ³mo mejoras.';
+        ? '¡Gran trabajo! Superaste el test con puntaje $puntaje. Ganaste tu medalla y desbloqueaste el siguiente curso.'
+        : 'No pasa nada: necesitas 7 aciertos. Repasa tus notas, intenta de nuevo y verás cómo mejoras.';
     final motivacion = aprobado
         ? 'Sigue este ritmo, cada logro te acerca a tu meta.'
-        : 'Cada intento suma. Practica y volverÃƒ¡s mÃƒ¡s fuerte.';
-
+        : 'Cada intento suma. Practica y volverás más fuerte.';
     await showDialog<void>(
       context: context,
       barrierDismissible: true,
@@ -440,7 +439,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
               ),
               const SizedBox(height: 14),
               Text(
-                aprobado ? 'Ã‚¡Test aprobado!' : 'Sigue practicando',
+                aprobado ? '¡Test aprobado!' : 'Sigue practicando',
                 style: TextStyle(
                   fontWeight: FontWeight.w900,
                   fontSize: 18,
@@ -514,7 +513,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
               ),
               const SizedBox(height: 12),
               const Text(
-                'Ã‚¡Genial, lo lograste!',
+                '¡Genial, lo lograste!',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontWeight: FontWeight.w900,
@@ -524,7 +523,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Sigue con la siguiente lecciÃƒÂ³n, tu progreso se estÃƒ¡ notando.',
+                'Sigue con la siguiente lección, tu progreso se está notando.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Color(0xFF1F2937),
@@ -590,7 +589,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'TÃƒÂ³mate un respiro y vuelve a intentarlo. Puedes practicar en Refuerzo.',
+                'Tómate un respiro y vuelve a intentarlo. Puedes practicar en Refuerzo.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Color(0xFF1F2937),
@@ -938,7 +937,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
         ),
         body: const Center(
           child: Text(
-            'No hay preguntas para esta lecciÃƒÂ³n.',
+            'No hay preguntas para esta lección.',
             style: TextStyle(color: Color(0xFF2C1B0E)),
           ),
         ),
@@ -1104,7 +1103,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: const [
                             Text(
-                              'DesafÃƒÂ­o final',
+                              'Desafío final',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w900,

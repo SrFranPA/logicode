@@ -120,7 +120,7 @@ class _CursoScreenState extends State<CursoScreen> {
                     backgroundColor: const Color(0xFFFFA451),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
+                  ), 
                   child: const Text(
                     'Comenzar',
                     style: TextStyle(fontWeight: FontWeight.w800),
