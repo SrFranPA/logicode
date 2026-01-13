@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+﻿import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -44,7 +44,7 @@ class _StudentPracticasScreenState extends State<StudentPracticasScreen> {
           final sinVidas = vidas <= 0;
 
           final placeholders = [
-            {'pregunta': '¿Cuál es la salida al recorrer un arreglo?', 'curso': 'Estructuras'},
+            {'pregunta': 'Cual es la salida al recorrer un arreglo?', 'curso': 'Estructuras'},
             {'pregunta': 'Completa el if/else de validación.', 'curso': 'Condicionales'},
             {'pregunta': 'Ordena los pasos de un while con contador.', 'curso': 'Bucles'},
           ];
@@ -73,7 +73,7 @@ class _StudentPracticasScreenState extends State<StudentPracticasScreen> {
                 accent: accent,
                 titulo: 'Prácticas dirigidas',
                 subtitulo:
-                    'Refuerza lo que fallaste con una mini lección de 5 preguntas. Si terminas correctamente el curso recibirás recompensas ❤',
+                    'Refuerza lo que fallaste con una mini lección de 5 preguntas. Si terminas correctamente el curso recibirás recompensas ♥',
                 intentosRestantes: _intentosRestantes,
                 enabled: puedeGenerarMini,
                 miniCompletada: _miniCompletada,
@@ -103,7 +103,7 @@ class _StudentPracticasScreenState extends State<StudentPracticasScreen> {
                 accent: accent,
                 titulo: 'Desafíos',
                 subtitulo:
-                    'Supera retos extra del curso con 5 preguntas difíciles. Si terminas correctamente el curso recibirás recompensas ❤',
+                    'Supera retos extra del curso con 5 preguntas difíciles. Si terminas correctamente el curso recibirás recompensas ♥',
                 intentosRestantes: 0,
                 enabled: ultimoCursoId.isNotEmpty && !_desafioCompletado,
                 miniCompletada: _desafioCompletado,

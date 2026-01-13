@@ -11,8 +11,6 @@ class StudentSettingsScreen extends StatefulWidget {
 
 class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
   bool _notificaciones = true;
-  bool _modoFoco = false;
-  bool _recordatorios = true;
   bool _loadingNotif = false;
 
   @override

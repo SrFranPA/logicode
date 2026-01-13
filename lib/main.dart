@@ -132,8 +132,47 @@ class _AuthGate extends StatelessWidget {
           return const OnboardingScreen();
         }
 
-        return RoleGate(uid: user.uid);
+        return _LoginDelayGate(uid: user.uid);
       },
     );
+  }
+}
+
+class _LoginDelayGate extends StatefulWidget {
+  final String uid;
+
+  const _LoginDelayGate({required this.uid});
+
+  @override
+  State<_LoginDelayGate> createState() => _LoginDelayGateState();
+}
+
+class _LoginDelayGateState extends State<_LoginDelayGate> {
+  bool _ready = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) setState(() => _ready = true);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_ready) {
+      return const Scaffold(
+        body: Center(
+          child: Image(
+            image: AssetImage('assets/gif/open.gif'),
+            width: 220,
+            height: 220,
+            fit: BoxFit.contain,
+          ),
+        ),
+      );
+    }
+
+    return RoleGate(uid: widget.uid);
   }
 }

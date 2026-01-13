@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+﻿import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -46,14 +46,14 @@ class _MiniTestScreenState extends State<MiniTestScreen> {
       }
       if (widget.dificultades != null && widget.dificultades!.isNotEmpty) {
         final base = widget.dificultades!;
-        // Incluimos variaciones con y sin acento / mayúsculas para que coincida con el campo de Firestore.
+        // Incluimos variaciones con y sin acento / mayÃƒÂºsculas para que coincida con el campo de Firestore.
         final variations = <String>{};
         for (final d in base) {
           variations.add(d);
           variations.add(d.toLowerCase());
           variations.add(d.toUpperCase());
-          variations.add(d.replaceAll('í', 'i'));
-          variations.add(d.replaceAll('Í', 'I'));
+          variations.add(d.replaceAll('ÃƒÂ­', 'i'));
+          variations.add(d.replaceAll('ÃƒÂ', 'I'));
         }
         final listDiffs = variations.take(10).toList();
         query = query.where('dificultad', whereIn: listDiffs);
@@ -276,7 +276,7 @@ class _MiniTestScreenState extends State<MiniTestScreen> {
                         child: ElevatedButton(
                           onPressed: () => Navigator.of(context).pop(true),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFB02A2A),
+                            backgroundColor: const Color(0xFFFFA451),
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
@@ -508,7 +508,7 @@ class _MiniTestScreenState extends State<MiniTestScreen> {
                   child: ElevatedButton(
                     onPressed: locked ? _siguiente : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: accent,
+                      backgroundColor: const Color(0xFFFFA451),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

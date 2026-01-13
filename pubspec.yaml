@@ -79,11 +79,11 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/logo.png
+    - assets/images/icono.png
     - assets/images/logoR.png
     - assets/images/medallas/recolector.png
     - assets/images/medallas/arquitecto.png
     - assets/images/medallas/explorador.png
-    - assets/images/mascota/mascota.png
     - assets/images/mascota/salida1.png
     - assets/images/mascota/leccion1.png
     - assets/images/mascota/leccion2.png
@@ -121,11 +121,14 @@ flutter:
     - assets/gif/cursoG7.gif
     - assets/gif/cursoG8.gif
     - assets/gif/cursoG9.gif
+    - assets/gif/Vcurso.gif
+    - assets/gif/open.gif
+  
     
 flutter_icons:
   android: true
   ios: true
-  image_path: assets/images/logo.png
+  image_path: assets/images/icono.png
     
   # To add assets to your application, add an assets section, like this:
   # assets:

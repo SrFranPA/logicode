@@ -75,13 +75,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
               child: Row(
                 children: [
-                  IconButton(
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    onPressed: () => Navigator.of(context).maybePop(),
-                  ),
-                  const SizedBox(width: 10),
                   Row(
                     children: const [
                       Icon(Icons.shield_outlined, color: Colors.white, size: 20),
@@ -178,8 +171,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           final showAdminsCount = isEstudiantes && viewingAdmins;
           return Row(
             children: [
-              const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 18),
-              const SizedBox(width: 10),
               Text(
                 "Gesti\u00f3n de ${label.toLowerCase()}",
                 style: const TextStyle(

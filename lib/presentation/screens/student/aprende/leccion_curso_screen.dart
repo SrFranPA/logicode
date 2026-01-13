@@ -1,8 +1,9 @@
-// lib/presentation/screens/student/aprende/leccion_curso_screen.dart
+﻿// lib/presentation/screens/student/aprende/leccion_curso_screen.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../../data/models/pregunta_model.dart';
 import '../../../../data/repositories/evaluaciones_repository.dart';
@@ -132,11 +133,11 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
   String _normalizeText(String text) {
     return text
         .toLowerCase()
-        .replaceAll('á', 'a')
-        .replaceAll('é', 'e')
-        .replaceAll('í', 'i')
-        .replaceAll('ó', 'o')
-        .replaceAll('ú', 'u');
+        .replaceAll('Ãƒ¡', 'a')
+        .replaceAll('ÃƒÂ©', 'e')
+        .replaceAll('ÃƒÂ­', 'i')
+        .replaceAll('ÃƒÂ³', 'o')
+        .replaceAll('ÃƒÂº', 'u');
   }
 
   String? _dificultadObjetivo() {
@@ -375,11 +376,11 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
         ? 'assets/images/mascota/refuerzo2.png'
         : 'assets/images/mascota/leccion3.png';
     final mensaje = aprobado
-        ? '¡Gran trabajo! Superaste el test con puntaje $puntaje. Ganaste tu medalla y desbloqueaste el siguiente curso.'
-        : 'No pasa nada: necesitas 7 aciertos. Repasa tus notas, intenta de nuevo y verás cómo mejoras.';
+        ? 'Ã‚¡Gran trabajo! Superaste el test con puntaje $puntaje. Ganaste tu medalla y desbloqueaste el siguiente curso.'
+        : 'No pasa nada: necesitas 7 aciertos. Repasa tus notas, intenta de nuevo y verÃƒ¡s cÃƒÂ³mo mejoras.';
     final motivacion = aprobado
         ? 'Sigue este ritmo, cada logro te acerca a tu meta.'
-        : 'Cada intento suma. Practica y volverás más fuerte.';
+        : 'Cada intento suma. Practica y volverÃƒ¡s mÃƒ¡s fuerte.';
 
     await showDialog<void>(
       context: context,
@@ -439,7 +440,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
               ),
               const SizedBox(height: 14),
               Text(
-                aprobado ? '¡Test aprobado!' : 'Sigue practicando',
+                aprobado ? 'Ã‚¡Test aprobado!' : 'Sigue practicando',
                 style: TextStyle(
                   fontWeight: FontWeight.w900,
                   fontSize: 18,
@@ -513,7 +514,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
               ),
               const SizedBox(height: 12),
               const Text(
-                '¡Genial, lo lograste!',
+                'Ã‚¡Genial, lo lograste!',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontWeight: FontWeight.w900,
@@ -523,7 +524,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Sigue con la siguiente lección, tu progreso se está notando.',
+                'Sigue con la siguiente lecciÃƒÂ³n, tu progreso se estÃƒ¡ notando.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Color(0xFF1F2937),
@@ -589,7 +590,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Tómate un respiro y vuelve a intentarlo. Puedes practicar en Refuerzo.',
+                'TÃƒÂ³mate un respiro y vuelve a intentarlo. Puedes practicar en Refuerzo.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Color(0xFF1F2937),
@@ -798,39 +799,94 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
     Future<bool> confirmExit() async {
       return await showDialog<bool>(
             context: context,
-            builder: (_) => AlertDialog(
-              title: const Text('Salir de la lección'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Image.asset(
-                    'assets/images/mascota/salida1.png',
-                    width: 140,
-                    height: 140,
-                    fit: BoxFit.contain,
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Perderás tu progreso actual. ¿Deseas salir?',
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+            builder: (_) => Dialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+              insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFE7D2),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Image.asset(
+                        'assets/images/mascota/salida1.png',
+                        width: 120,
+                        height: 120,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Salir de la lección',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 18,
+                        color: Color(0xFF2C1B0E),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Perderás tu progreso actual. ¿Quieres salir?',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Color(0xFF4B4F56),
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                        height: 1.35,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFF6B4F3B),
+                              side: const BorderSide(color: Color(0xFFE1C4A8)),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text(
+                              'Cancelar',
+                              style: TextStyle(fontWeight: FontWeight.w800),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFFF8A3D),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text(
+                              'Salir',
+                              style: TextStyle(fontWeight: FontWeight.w800),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: const Text('Cancelar'),
-                ),
-                ElevatedButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  child: const Text('Salir'),
-                ),
-              ],
             ),
           ) ??
           false;
     }
-
     if (cargando) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
@@ -843,6 +899,12 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
         appBar: AppBar(
         backgroundColor: widget.accentColor,
         foregroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.white),
+        systemOverlayStyle: SystemUiOverlayStyle.light.copyWith(
+          statusBarColor: const Color(0xFF283347),
+          statusBarIconBrightness: Brightness.light,
+          statusBarBrightness: Brightness.dark,
+        ),
           title: Text(displayLeccion),
         ),
         body: const Center(
@@ -866,11 +928,17 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
         backgroundColor: const Color(0xFFFCF8F2),
         appBar: AppBar(
         backgroundColor: const Color(0xFF283347),
+        iconTheme: const IconThemeData(color: Colors.white),
+        systemOverlayStyle: SystemUiOverlayStyle.light.copyWith(
+          statusBarColor: const Color(0xFF283347),
+          statusBarIconBrightness: Brightness.light,
+          statusBarBrightness: Brightness.dark,
+        ),
           title: Text(displayLeccion),
         ),
         body: const Center(
           child: Text(
-            'No hay preguntas para esta lección.',
+            'No hay preguntas para esta lecciÃƒÂ³n.',
             style: TextStyle(color: Color(0xFF2C1B0E)),
           ),
         ),
@@ -892,6 +960,12 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(64),
           child: AppBar(
+            systemOverlayStyle: SystemUiOverlayStyle.light.copyWith(
+              statusBarColor: const Color(0xFF283347),
+              statusBarIconBrightness: Brightness.light,
+              statusBarBrightness: Brightness.dark,
+            ),
+            iconTheme: const IconThemeData(color: Colors.white),
             flexibleSpace: Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
@@ -1030,7 +1104,7 @@ class _LeccionCursoScreenState extends State<LeccionCursoScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: const [
                             Text(
-                              'Desafío final',
+                              'DesafÃƒÂ­o final',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w900,
@@ -1272,3 +1346,4 @@ class _infoChip extends StatelessWidget {
     );
   }
 }
+

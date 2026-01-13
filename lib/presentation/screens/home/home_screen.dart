@@ -32,17 +32,22 @@ class _HomeScreenState extends State<HomeScreen> {
             const SnackBar(content: Text("Inicio de sesion exitoso")),
           );
 
-          if (state.rol == "admin") {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const AdminHomeScreen()),
-            );
-            return;
-          }
-
-          Navigator.pushReplacement(
+          await _showLoginDelay(
             context,
-            MaterialPageRoute(builder: (_) => const StudentHomeScreen()),
+            onFinish: () {
+              if (!mounted) return;
+              if (state.rol == "admin") {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AdminHomeScreen()),
+                );
+                return;
+              }
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const StudentHomeScreen()),
+              );
+            },
           );
         }
 
@@ -297,6 +302,55 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _showLoginDelay(
+    BuildContext context, {
+    required VoidCallback onFinish,
+  }) async {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Scaffold(
+        backgroundColor: Color(0xFFFCF8F2),
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image(
+                image: AssetImage('assets/gif/open.gif'),
+                width: 220,
+                height: 220,
+                fit: BoxFit.contain,
+              ),
+              SizedBox(height: 12),
+              Text(
+                'Cargando...',
+                style: TextStyle(
+                  color: Color(0xFF1E2026),
+                  fontWeight: FontWeight.w800,
+                  fontSize: 14,
+                ),
+              ),
+              SizedBox(height: 8),
+              SizedBox(
+                width: 140,
+                child: LinearProgressIndicator(
+                  minHeight: 4,
+                  color: Color(0xFFFFA451),
+                  backgroundColor: Color(0xFFFFE2C4),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    await Future.delayed(const Duration(seconds: 2));
+    if (mounted) {
+      Navigator.of(context, rootNavigator: true).pop();
+    }
+    onFinish();
   }
 }
 

@@ -1,6 +1,7 @@
 ﻿// lib/presentation/screens/student/aprende/curso_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'leccion_curso_screen.dart';
@@ -75,6 +76,7 @@ class _CursoScreenState extends State<CursoScreen> {
       context: context,
       barrierDismissible: true,
       builder: (_) => Dialog(
+        backgroundColor: const Color(0xFFF9FAF9),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         insetPadding: const EdgeInsets.symmetric(horizontal: 26, vertical: 24),
         child: Padding(
@@ -83,7 +85,7 @@ class _CursoScreenState extends State<CursoScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Image.asset(
-                'assets/images/mascota/refuerzo1.png',
+                'assets/gif/Vcurso.gif',
                 width: 150,
                 height: 150,
                 fit: BoxFit.contain,
@@ -226,6 +228,11 @@ class _CursoScreenState extends State<CursoScreen> {
         elevation: 0,
         backgroundColor: const Color(0xFF283347),
         foregroundColor: Colors.white,
+        systemOverlayStyle: SystemUiOverlayStyle.light.copyWith(
+          statusBarColor: const Color(0xFF283347),
+          statusBarIconBrightness: Brightness.light,
+          statusBarBrightness: Brightness.dark,
+        ),
         title: Text(
           widget.cursoNombre,
           style: const TextStyle(fontWeight: FontWeight.w800),

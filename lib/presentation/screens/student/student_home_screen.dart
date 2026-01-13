@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'ajustes/student_settings_screen.dart';
   import 'aprende/aprende_screen.dart';
@@ -12,6 +13,7 @@ import 'ajustes/student_settings_screen.dart';
   import 'practicas/student_practicas_screen.dart';
   import 'perfil/student_profile_screen.dart';
 import '../../../services/notification_service.dart';
+import '../../../services/app_usage_service.dart';
 
 class StudentHomeScreen extends StatefulWidget {
   const StudentHomeScreen({super.key});
@@ -55,6 +57,15 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
       label: 'Ajustes',
     ),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      AppUsageService().logDailyUsage(uid);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -141,87 +152,94 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
           );
         }
 
-        return Scaffold(
-          backgroundColor: const Color(0xFFFCF8F2),
-          body: DecoratedBox(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFFFCF8F2), Color(0xFFEFE3CF)],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-            ),
-            child: Column(
-              children: [
-                const _StudentHud(),
-                const SizedBox(height: 8),
-                Expanded(
-                  child: _items[_currentIndex].screen,
-                ),
-              ],
-            ), 
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: SystemUiOverlayStyle.light.copyWith(
+            statusBarColor: const Color(0xFF283347),
+            statusBarIconBrightness: Brightness.light,
+            statusBarBrightness: Brightness.dark,
           ),
-          bottomNavigationBar: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF1F2533), Color(0xFF141927)],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+          child: Scaffold(
+            backgroundColor: const Color(0xFFFCF8F2),
+            body: DecoratedBox(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFFFCF8F2), Color(0xFFEFE3CF)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Color(0x44000000),
-                  blurRadius: 16,
-                  offset: Offset(0, -2),
-                ),
-              ],
+              child: Column(
+                children: [
+                  const _StudentHud(),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: _items[_currentIndex].screen,
+                  ),
+                ],
+              ),
             ),
-            child: SafeArea(
-              top: false,
-              child: BottomNavigationBar(
-                currentIndex: _currentIndex,
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                selectedItemColor: const Color(0xFFFFA451),
-                unselectedItemColor: Colors.white70,
-                selectedIconTheme: const IconThemeData(size: 26, color: Color(0xFFFFA451)),
-                unselectedIconTheme: const IconThemeData(
-                  size: 22,
-                  color: Colors.white70,
+            bottomNavigationBar: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF1F2533), Color(0xFF141927)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                 ),
-                selectedLabelStyle: const TextStyle(
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.3,
-                ),
-                unselectedLabelStyle: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.2,
-                ),
-                type: BottomNavigationBarType.fixed,
-                onTap: (i) async {
-                  final bool isAjustes = _items[i].label.toLowerCase() == 'ajustes';
-                  if (!pretestOk && i > 0 && !isAjustes) {
-                    await _showPretestNeeded();
-                    return;
-                  }
-                  setState(() => _currentIndex = i);
-                },
-                items: _items
-                    .map(
-                      (item) => BottomNavigationBarItem(
-                        icon: Icon(item.icon),
-                        activeIcon: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFA451).withOpacity(0.16),
-                            borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0x44000000),
+                    blurRadius: 16,
+                    offset: Offset(0, -2),
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                top: false,
+                child: BottomNavigationBar(
+                  currentIndex: _currentIndex,
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  selectedItemColor: const Color(0xFFFFA451),
+                  unselectedItemColor: Colors.white70,
+                  selectedIconTheme: const IconThemeData(size: 26, color: Color(0xFFFFA451)),
+                  unselectedIconTheme: const IconThemeData(
+                    size: 22,
+                    color: Colors.white70,
+                  ),
+                  selectedLabelStyle: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.3,
+                  ),
+                  unselectedLabelStyle: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.2,
+                  ),
+                  type: BottomNavigationBarType.fixed,
+                  onTap: (i) async {
+                    final bool isAjustes = _items[i].label.toLowerCase() == 'ajustes';
+                    if (!pretestOk && i > 0 && !isAjustes) {
+                      await _showPretestNeeded();
+                      return;
+                    }
+                    setState(() => _currentIndex = i);
+                  },
+                  items: _items
+                      .map(
+                        (item) => BottomNavigationBarItem(
+                          icon: Icon(item.icon),
+                          activeIcon: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFA451).withOpacity(0.16),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(item.activeIcon, color: const Color(0xFFFFA451)),
                           ),
-                          child: Icon(item.activeIcon, color: const Color(0xFFFFA451)),
+                          label: item.label,
                         ),
-                        label: item.label,
-                      ),
-                    )
-                    .toList(),
+                      )
+                      .toList(),
+                ),
               ),
             ),
           ),
@@ -379,32 +397,31 @@ class _StudentHudState extends State<_StudentHud> {
               divisionNombre = (div['nombre'] ?? divisionNombre).toString();
             }
 
-            return SafeArea(
-              bottom: false,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF283347), Color(0xFF1E2433)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x33000000),
-                      blurRadius: 10,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(18),
-                    bottomRight: Radius.circular(18),
-                  ),
+            final topPadding = MediaQuery.of(context).padding.top;
+            return Container(
+              width: double.infinity,
+              padding: EdgeInsets.fromLTRB(16, 14 + topPadding, 16, 12),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF283347), Color(0xFF1E2433)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0x33000000),
+                    blurRadius: 10,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(18),
+                  bottomRight: Radius.circular(18),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -549,8 +566,7 @@ class _StudentHudState extends State<_StudentHud> {
                         ],
                       ),
                     ],
-                  ],
-                ),
+                ],
               ),
             );
           },

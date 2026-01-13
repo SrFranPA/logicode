@@ -33,7 +33,8 @@ class DivisionesScreen extends StatefulWidget {
   State<DivisionesScreen> createState() => _DivisionesScreenState();
 }
 
-class _DivisionesScreenState extends State<DivisionesScreen> {
+class _DivisionesScreenState extends State<DivisionesScreen>
+    with SingleTickerProviderStateMixin {
   String? _divisionActual;
   bool _loadingDivision = true;
   String? _uid;
@@ -43,11 +44,21 @@ class _DivisionesScreenState extends State<DivisionesScreen> {
   bool _readyForDivisionToast = false;
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _divSub;
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _userSub;
+  late final AnimationController _gifPulseController;
+  Animation<double> _gifPulse = const AlwaysStoppedAnimation(1.0);
 
   @override
   void initState() {
     super.initState();
     _uid = FirebaseAuth.instance.currentUser?.uid;
+    _gifPulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    _gifPulse = Tween<double>(begin: 1.0, end: 1.04).animate(
+      CurvedAnimation(parent: _gifPulseController, curve: Curves.easeInOut),
+    );
+    _startGifPulse();
     _startDivisionSync();
   }
 
@@ -55,7 +66,19 @@ class _DivisionesScreenState extends State<DivisionesScreen> {
   void dispose() {
     _divSub?.cancel();
     _userSub?.cancel();
+    _gifPulseController.dispose();
     super.dispose();
+  }
+
+  void _startGifPulse() {
+    _gifPulseController.forward().then((_) async {
+      if (!mounted) return;
+      await _gifPulseController.reverse();
+      if (!mounted) return;
+      Future.delayed(const Duration(seconds: 6), () {
+        if (mounted) _startGifPulse();
+      });
+    });
   }
 
   void _startDivisionSync() {
@@ -208,14 +231,21 @@ class _DivisionesScreenState extends State<DivisionesScreen> {
                           color: Colors.white.withOpacity(0.12),
                           shape: BoxShape.circle,
                         ),
-                        child: _divisionActual != null && _divisionActual!.isNotEmpty
-                            ? _divisionBadgeWidget(
-                                idOrName: _divisionActual!,
-                                currentDivision: _divisionActual,
-                                size: 64,
-                                dark: dark,
-                              )
-                            : const Icon(Icons.flag, color: Colors.white),
+                        child: AnimatedBuilder(
+                          animation: _gifPulse,
+                          builder: (context, child) => Transform.scale(
+                            scale: _gifPulse.value,
+                            child: child,
+                          ),
+                          child: ClipOval(
+                            child: Image.asset(
+                              'assets/gif/Vcurso.gif',
+                              width: 64,
+                              height: 64,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
                       ),
                     const SizedBox(width: 12),
                     Expanded(

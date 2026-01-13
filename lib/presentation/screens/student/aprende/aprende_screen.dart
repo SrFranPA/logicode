@@ -303,7 +303,7 @@ class AprendeScreen extends StatelessWidget {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
                                         content: Text(
-                                          'Debes aprobar el curso anterior (test final >= 7) para desbloquear este contenido.',
+                                          'Aprueba el curso anterior para desbloquear este contenido.',
                                         ),
                                       ),
                                     );
