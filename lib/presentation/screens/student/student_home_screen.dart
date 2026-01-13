@@ -433,9 +433,19 @@ class _StudentHudState extends State<_StudentHud> {
                             borderRadius: BorderRadius.circular(14),
                           ),
                           padding: const EdgeInsets.all(6),
-                          child: Image.asset(
-                            'assets/gif/abeja.gif',
-                            
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.asset(
+                                'assets/gif/abeja.gif',
+                                fit: BoxFit.contain,
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 12),
